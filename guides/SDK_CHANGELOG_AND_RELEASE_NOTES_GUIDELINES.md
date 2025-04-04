@@ -64,8 +64,8 @@ Release notes provide a detailed summary of changes for a given release, includi
 Group release notes into the following categories:
 
 - **Summary:** A brief overview of key changes, enhancements, and improvements.
-- **Upgrading:** Instructions or links to migration guides.
 - **Breaking Changes:** Clearly highlight any changes that may require action from developers.
+- **Upgrading:** Instructions or links to migration guides.
 - **Deprecated**: Clearly highlight any deprecations.
 - **Enhancements:** New features and improvements.
 - **Bug Fixes:** A summary of resolved issues.
