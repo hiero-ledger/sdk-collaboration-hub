@@ -22,6 +22,7 @@ Group changes into the following categories:
 - **Clarity & Conciseness:** Use clear and direct language. Avoid jargon and overly technical terms where possible.
 - **Consistent Grouping:** Organize changes by category to help readers quickly find the information they need.
 - **Linking HIPs:** When referencing a Hiero Improvement Proposal (HIP), include a link to the full HIP document.
+- **Linking Examples:** When adding new APIs, include a link to the corresponding example.
 - **Pull Request References:** At the end of each entry, include a link to the relevant pull request.
 - **Versioning:** For beta releases, maintain the same structure. When a stable release follows a beta, ensure that the stable version overrides any beta-specific changes.
 
@@ -31,7 +32,7 @@ Group changes into the following categories:
 ## [Unreleased]
 
 ### Added
-- Support for HIP-1021 ([HIP Link](https://hips.hedera.com/hip/hip-1021)): Improves the assignment of auto-renew account IDs for topics, enhancing user experience in key areas. [#1234](link to the PR)
+- Support for HIP-1021 ([HIP Link](https://hips.hedera.com/hip/hip-1021)): Improves the assignment of auto-renew account IDs for topics, enhancing user experience in key areas. Example can be found in `examples/create-account-with-alias.js` [#1234](link to the PR)
 - New APIs in `AccountCreateTransaction`:
   - `setKeyWithAlias(ECDSAKey)`
   - `setKeyWithAlias(Key, ECDSAKey)`
