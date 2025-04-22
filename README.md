@@ -47,7 +47,7 @@ This project is maintained by the Hiero organization. For questions or support, 
 
 ## Hiero SDK Call 
 
-We meet fortnightly on Monday's to collaborate on Hiero's SDK. Minutes are posted under /minutes.
+We meet fortnightly on Monday's to collaborate on Hiero's SDK.
 
 Join by signing up to the SDK Call via the Linux Foundation Decentralized Trust: [calendar](https://www.lfdecentralizedtrust.org/meeting-calendar).
 You can also use that link to view the recordings.
