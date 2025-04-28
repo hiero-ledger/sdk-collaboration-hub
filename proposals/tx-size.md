@@ -26,7 +26,7 @@ Since the actual wire format can only be known after encoding, this method retur
 
 ```javascript
 get size() {
-    this._requireFeozen();
+    this._requireFrozen();
     return this._makeRequestAsync().then(
         (request) =>
             HieroProto.proto.Transaction.encode(request).finish().length,
