@@ -1,5 +1,7 @@
 # Manual Signature Injection Support for HSM-based Transaction Signing
 
+**Date Submitted:** 2025-04-16
+
 ## Summary
 
 This proposal introduces a new capability in the Hiero SDKs (JavaScript, Java, Go, etc.) to allow **external signing of transactions via HSM (Hardware Security Modules)**. In many enterprise use cases, private keys must remain in secure hardware and cannot be exposed to the application. Developers need the ability to:
@@ -22,6 +24,10 @@ This proposal introduces a single new public getter to expose these canonical by
 The transaction **must be frozen** before calling this method. If not frozen, the SDK will throw an error to ensure the returned bytes are stable.
 
 This API is intended for secure signing workflows via HSMs, KMS, or offline signing mechanisms.
+
+- Expose `bodyBytes` through the new `signableBodyBytesList` getter.
+- Ensure this getter throws if the transaction is not frozen (`_requireFrozen()`).
+- Ensure ordering of returned `bodyBytes` aligns with the order of `nodeAccountIds`.
 
 **POC Implementation**:
 
@@ -53,29 +59,8 @@ This API is intended for secure signing workflows via HSMs, KMS, or offline sign
 
     ```javascript
     const transactionSignableBodyBytesList = transaction.signableBodyBytesList;
-    // send each bodyBytesList[i] to HSM for signing
+    // send each transactionSignableBodyBytesList[i] to HSM for signing
     ```
-
-## Internal Changes
-
-- Expose `bodyBytes` through the new `signableBodyBytesList` getter.
-- Ensure this getter throws if the transaction is not frozen (`_requireFrozen()`).
-- Ensure ordering of returned `bodyBytes` aligns with the order of `nodeAccountIds`.
-
-No other internal changes are needed. This addition leverages the existing `_signedTransactions` structure populated during the freeze process.
-
----
-
-## Response Codes
-
-- No new consensus node response codes are introduced.
-- If an invalid signature is injected, the network will respond with standard errors like `INVALID_SIGNATURE`.
-
----
-
-## Transaction Retry
-
-No changes needed to retry behavior. This proposal does not impact how retry logic evaluates transaction status.
 
 ---
 
@@ -89,10 +74,10 @@ No changes needed to retry behavior. This proposal does not impact how retry log
    **When** all node-specific signatures are correctly applied,  
    **Then** the transaction executes successfully with retries allowed.
 
-3. **Given** an invalid or mismatched signature,  
+3. **Given** a transaction with an invalid or mismatched signature applied via `signableBodyBytesList`,  
    **Then** the transaction fails with `INVALID_SIGNATURE`.
 
-4. **Given** a call to `signableBodyBytesList`,  
+4. **Given** a call to `signableBodyBytesList` on a frozen transaction,  
    **Then** the returned array length equals the number of node IDs.
 
 5. **Given** a call to `signableBodyBytesList` before freezing,  
@@ -128,6 +113,9 @@ const tx = await new TransferTransaction()
 
 const bodyBytesList = tx.signableBodyBytesList;
 
+// hsmSign is not part of this SDK.
+// It is a placeholder function for an external signing service (e.g., a Hardware Security Module or KMS)
+// that generates a digital signature for the transaction body bytes.
 const sig1 = hsmSign(bodyBytesList[0]);
 const sig2 = hsmSign(bodyBytesList[1]);
 
@@ -149,5 +137,3 @@ console.log("Transaction status:", receipt.status.toString());
 ## Conclusion
 
 This enhancement provides a simple and effective way for enterprise developers to securely sign Hedera transactions using external key infrastructure. By exposing the correct `bodyBytes` through `signableBodyBytesList`, the SDK becomes safer, more transparent, and more robust for production use cases requiring external signing.
-
-This update should be applied across all Hiero SDKs for consistency (Java, Go, etc.).
