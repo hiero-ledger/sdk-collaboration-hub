@@ -116,11 +116,31 @@ const bodyBytesList = tx.signableBodyBytesList;
 // hsmSign is not part of this SDK.
 // It is a placeholder function for an external signing service (e.g., a Hardware Security Module or KMS)
 // that generates a digital signature for the transaction body bytes.
-const sig1 = hsmSign(bodyBytesList[0]);
-const sig2 = hsmSign(bodyBytesList[1]);
+const signature1 = hsmSign(bodyBytesList[0]);
+const signature2 = hsmSign(bodyBytesList[1]);
 
-tx.addSignature(publicKey, sig1, node1);
-tx.addSignature(publicKey, sig2, node2);
+// Add the transaction HSM signatures for all the nodes to a SignatureMap
+// Note: Each signature must be created using the bodyBytes of the specific nodeId
+// where the signature is being attached. Signatures must exactly correspond
+// to the node they're assigned to, or the transaction will fail.
+const signatureMap = new SignatureMap();
+
+signatureMap.addSignature(
+  node1,
+  transaction.transactionId,
+  publicKey,
+  signature1
+);
+
+signatureMap.addSignature(
+  node2,
+  transaction.transactionId,
+  publicKey,
+  signature2
+);
+
+// Add the populated signature map to the transaction
+tx.addSignature(publicKey, signatureMap);
 
 const response = await tx.execute(client);
 const receipt = await response.getReceipt(client);
