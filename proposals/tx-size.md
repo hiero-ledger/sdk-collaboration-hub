@@ -48,16 +48,16 @@ get bodySize() {
 }
 ```
 
-### `FileAppendTransaction.bodySizeAllChunks`
+### `ChunkTransaction.bodySizeAllChunks (FileAppendTransaction and TopicMessageSubmitTransaction)`
 
 **Type**: `number[]`  
-**Description**: Returns an array of body sizes for all chunks in a FileAppendTransaction. This is particularly useful for transactions that need to be split into multiple chunks, such as large file appends.
+**Description**: Returns an array of body sizes for all chunks in a transaction that supports chunk. This is particularly useful for transactions that need to be split into multiple chunks, such as large file appends and submitting message to a topic .
 
 **Implementation**:
 
 ```javascript
 /**
- * Get the body sizes for all chunks in a FileAppendTransaction.
+ * Get the body sizes for all chunks in a ChunkTransaction.
  * For transactions with multiple chunks (like large file appends),
  * this returns an array containing the size of each chunk's transaction body.
  * The size is calculated by encoding the transaction body to protobuf format.
@@ -135,7 +135,7 @@ console.log(`Chunk sizes in bytes: ${chunkSizes.join(", ")}`);
 - Fully backward compatible - adds new getters without modifying existing behavior
 - No changes to transaction execution or serialization
 - Works with all transaction types
-- Special handling for multi-chunk transactions via FileAppendTransaction
+- Special handling for multi-chunk transactions via FileAppendTransaction and TopicMessageSubmitTransaction
 
 ## Implementation Notes
 
