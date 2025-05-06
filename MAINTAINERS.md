@@ -14,11 +14,11 @@ Maintainers are assigned the following scopes in this repository:
 
 <!-- Please keep this sorted alphabetically by github -->
 
-| Name           | GitHub ID      | Scope | LFID | Discord ID | Email | Company Affiliation |
-|----------------|----------------|-------|------|------------|-------|---------------------|
-| Simi Hunjan    | @SimiHunjan    |       |      |            |       |                     |
-| Hendrik Ebbers | @hendrikebbers |       |      |            |       |                     |
-| Rob Walworth   | @rwalworth     |       |      |            |       |                     |
+| Name           | GitHub ID      | Scope | LFID | Discord ID      | Email | Company Affiliation |
+|----------------|----------------|-------|------|-----------------|-------|---------------------|
+| Simi Hunjan    | @SimiHunjan    |       |      |                 |       | Hashgraph           |
+| Hendrik Ebbers | @hendrikebbers |       |      | hendrik.ebbers  |       | Hashgraph           |
+| Rob Walworth   | @rwalworth     |       |      | robert.walworth |       | Hashgraph           |
 
 
 ## Emeritus Maintainers
