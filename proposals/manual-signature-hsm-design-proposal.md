@@ -12,54 +12,60 @@ This proposal introduces a new capability in the Hiero SDKs (JavaScript, Java, G
 
 Currently, in the JavaScript SDK, `PrivateKey.sign(transaction.toBytes())` does not produce a network-valid signature because it signs the entire transaction, not the canonical `bodyBytes`.
 
-This proposal introduces a single new public getter to expose these canonical bytes: `signableBodyBytesList`.
+This proposal introduces a new structured way to expose these canonical bytes clearly associated with their node account IDs.
 
 ## New API
 
-### `Transaction.signableBodyBytesList`
+### `SignableNodeTransactionBodyBytes`
 
-**Type**: `Uint8Array[]`  
-**Description**: Returns an array of `bodyBytes` for each node that the transaction targets. These are the exact serialized protobuf `TransactionBody` values used to compute the transaction hash and must be signed externally.
+**Type**: `Class`  
+**Description**: Represents a transaction body ready for external signing, explicitly associated with a node account ID.
 
-The transaction **must be frozen** before calling this method. If not frozen, the SDK will throw an error to ensure the returned bytes are stable.
+**Implementation**:
 
-This API is intended for secure signing workflows via HSMs, KMS, or offline signing mechanisms.
+```javascript
+export class SignableNodeTransactionBodyBytes {
+  constructor(nodeAccountId, signableTransactionBodyBytes) {
+    this.nodeAccountId = nodeAccountId;
+    this.signableTransactionBodyBytes = signableTransactionBodyBytes;
+  }
+}
+```
 
-- Expose `bodyBytes` through the new `signableBodyBytesList` getter.
-- Ensure this getter throws if the transaction is not frozen (`_requireFrozen()`).
-- Ensure ordering of returned `bodyBytes` aligns with the order of `nodeAccountIds`.
+### `Transaction.signableNodeBodyBytesList`
+
+**Type**: `SignableNodeTransactionBodyBytes[]`  
+**Description**: Returns an array of `SignableNodeTransactionBodyBytes` containing the canonical `bodyBytes` paired explicitly with their respective `nodeAccountId` for signing.
 
 **POC Implementation**:
 
 ```javascript
-    get signableBodyBytesList() {
-        this._requireFrozen();
+get signableNodeBodyBytesList() {
+    this._requireFrozen();
 
-        const result = [];
-        const nodeAccountIds = this._nodeAccountIds.list;
-
-        for (let i = 0; i < nodeAccountIds.length; i++) {
-            const nodeId = nodeAccountIds[i];
-            const signedTransaction = this._signedTransactions.get(i);
-
-            if (!signedTransaction?.bodyBytes) {
-                throw new Error(
-                    'Missing bodyBytes for node ' + nodeId.toString()
-                );
-            }
-
-            result.push(signedTransaction.bodyBytes);
+    return this._signedTransactions.list.map((signedTransaction) => {
+        if (!signedTransaction.bodyBytes) {
+            throw new Error("Missing bodyBytes in signed transaction.");
         }
 
-        return result;
-    }
+        const body = proto.TransactionBody.decode(signedTransaction.bodyBytes);
+
+        if (!body.nodeAccountID) {
+            throw new Error("Missing nodeAccountID in transaction body.");
+        }
+
+        const nodeAccountId = AccountId._fromProtobuf(body.nodeAccountID);
+
+        return new SignableNodeTransactionBodyBytes(nodeAccountId, signedTransaction.bodyBytes);
+    });
+}
 ```
 
 **JavaScript Example**:
 
     ```javascript
-    const transactionSignableBodyBytesList = transaction.signableBodyBytesList;
-    // send each transactionSignableBodyBytesList[i] to HSM for signing
+    const signableTransactionNodeBodyBytesList = transaction.signableNodeBodyBytesList;
+    // send each signableTransactionNodeBodyBytesList[i] to HSM for signing
     ```
 
 ---
@@ -74,26 +80,14 @@ This API is intended for secure signing workflows via HSMs, KMS, or offline sign
    **When** all node-specific signatures are correctly applied,  
    **Then** the transaction executes successfully with retries allowed.
 
-3. **Given** a transaction with an invalid or mismatched signature applied via `signableBodyBytesList`,  
+3. **Given** a transaction with an invalid or mismatched signature applied via `signableNodeBodyBytesList`,  
    **Then** the transaction fails with `INVALID_SIGNATURE`.
 
-4. **Given** a call to `signableBodyBytesList` on a frozen transaction,  
+4. **Given** a call to `signableNodeBodyBytesList` on a frozen transaction,  
    **Then** the returned array length equals the number of node IDs.
 
-5. **Given** a call to `signableBodyBytesList` before freezing,  
+5. **Given** a call to `signableNodeBodyBytesList` before freezing,  
    **Then** an error is thrown.
-
----
-
-## TCK
-
-Define TCK tests to verify:
-
-- Returned `bodyBytes` match canonical encoding per protobuf.
-- Valid externally signed transactions are accepted by the network.
-- Multi-node signing succeeds only when all `bodyBytes` are signed.
-- Single-node behavior remains unchanged.
-- Invalid signature injection results in `INVALID_SIGNATURE`.
 
 ---
 
@@ -104,56 +98,48 @@ Define TCK tests to verify:
 **JavaScript Example**:
 
 ```javascript
-const tx = await new TransferTransaction()
-  .addHbarTransfer(senderId, Hbar.fromTinybars(-100))
-  .addHbarTransfer(receiverId, Hbar.fromTinybars(100))
-  .setTransactionId(TransactionId.generate(senderId))
-  .setNodeAccountIds([node1, node2])
-  .freezeWith(client);
+        const tx = new TransferTransaction()
+            .addHbarTransfer(senderId, Hbar.fromTinybars(-100))
+            .addHbarTransfer(receiverId, Hbar.fromTinybars(100))
+            .setTransactionId(TransactionId.generate(senderId))
+            .setNodeAccountIds([node1, node2])
+            .freezeWith(client);
 
-const bodyBytesList = tx.signableBodyBytesList;
+        const signableTransactionNodeBodyBytesList = tx.signableNodeBodyBytesList;
 
-// hsmSign is not part of this SDK.
-// It is a placeholder function for an external signing service (e.g., a Hardware Security Module or KMS)
-// that generates a digital signature for the transaction body bytes.
-const signature1 = hsmSign(bodyBytesList[0]);
-const signature2 = hsmSign(bodyBytesList[1]);
+        // hsmSign is not part of this SDK.
+        // It is a placeholder function for an external signing service (e.g., a Hardware Security Module or KMS)
+        // that generates a digital signature for the transaction body bytes.
+        const signatureMap = new SignatureMap();
 
-// Add the transaction HSM signatures for all the nodes to a SignatureMap
-// Note: Each signature must be created using the bodyBytes of the specific nodeId
-// where the signature is being attached. Signatures must exactly correspond
-// to the node they're assigned to, or the transaction will fail.
-const signatureMap = new SignatureMap();
+        signableTransactionNodeBodyBytesList.forEach(({nodeAccountId, signableTransactionBodyBytes}) => {
+            const signature = await hsmSign(signableTransactionBodyBytes);
 
-signatureMap.addSignature(
-  node1,
-  transaction.transactionId,
-  publicKey,
-  signature1
-);
+            signatureMap.addSignature(
+                nodeAccountId,
+                tx.transactionId,
+                publicKey,
+                signature,
+            );
+        });
 
-signatureMap.addSignature(
-  node2,
-  transaction.transactionId,
-  publicKey,
-  signature2
-);
+        tx.addSignature(publicKey, signatureMap);
 
-// Add the populated signature map to the transaction
-tx.addSignature(publicKey, signatureMap);
-
-const response = await tx.execute(client);
-const receipt = await response.getReceipt(client);
-console.log("Transaction status:", receipt.status.toString());
+        const response = await tx.execute(client);
+        const receipt = await response.getReceipt(client);
+        console.log("Transaction status:", receipt.status.toString());
 ```
+
+---
 
 ## Compatibility
 
 - Fully backward compatible.
 - No changes to existing APIs or behavior.
 - Works seamlessly with multi-node and single-node transactions.
-- Optional for users—only needed for HSM/external signing flows.
+- Clearly associates each signable body with the corresponding node ID for improved clarity and type safety.
+- Optional for users—only needed for external HSM signing workflows.
 
 ## Conclusion
 
-This enhancement provides a simple and effective way for enterprise developers to securely sign Hedera transactions using external key infrastructure. By exposing the correct `bodyBytes` through `signableBodyBytesList`, the SDK becomes safer, more transparent, and more robust for production use cases requiring external signing.
+This enhancement provides a simple and effective way for enterprise developers to securely sign Hedera transactions using external key infrastructure. By exposing the correct `signableTransactionBodyBytes` through `SignableNodeTransactionBodyBytes` class, the SDK becomes safer, more transparent, and more robust for production use cases requiring external signing.
