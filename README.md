@@ -45,6 +45,13 @@ Instead, it is a **support system** for Hiero SDK contributors, meant to lower t
 
 This project is maintained by the Hiero organization. For questions or support, open an issue or reach out to a [maintainer](MAINTAINERS.md).
 
+## Hiero SDK Call 
+
+We meet fortnightly on Monday's to collaborate on Hiero's SDK.
+
+Join by signing up to the SDK Call via the Linux Foundation Decentralized Trust: [calendar](https://www.lfdecentralizedtrust.org/meeting-calendar).
+You can also use that link to view the recordings.
+
 ## Contributing
 
 To get started as a contributor:
