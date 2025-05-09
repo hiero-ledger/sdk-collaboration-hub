@@ -20,13 +20,13 @@ The Hiero SDK Collaboration Hub exists to:
 
 ## 📂 What's in this Repo?
 
-| Folder / File     | Description                                               |
-|-------------------|-----------------------------------------------------------|
-| `proposals/`      | Active and archived Hiero SDK design proposals            |
-| `guides/`         | Contribution guides, best practices, and onboarding docs  |
-| `templates/`      | Reusable templates for proposals, issues, and PRs         |
-| `meeting-notes/`  | Notes from technical contributor meetings                 |
-| `README.md`       | You're here! Overview of the repo's purpose and structure |
+| Folder / File | Description                                               |
+|---------------|-----------------------------------------------------------|
+| `proposals/`  | Active and archived Hiero SDK design proposals            |
+| `guides/`     | Contribution guides, best practices, and onboarding docs  |
+| `templates/`  | Reusable templates for proposals, issues, and PRs         |
+| `meetings/`   | Notes from technical contributor meetings                 |
+| `README.md`   | You're here! Overview of the repo's purpose and structure |
 
 
 ## 🧭 Why This Repo Exists
