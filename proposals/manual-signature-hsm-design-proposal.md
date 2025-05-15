@@ -77,10 +77,10 @@ export class SignableNodeTransactionBodyBytes {
 
 **JavaScript Example**:
 
-    ```javascript
-    const signableTransactionNodeBodyBytesList = transaction.signableNodeBodyBytesList;
-    // send each signableTransactionNodeBodyBytesList[i] to HSM for signing
-    ```
+```javascript
+const signableTransactionNodeBodyBytesList = transaction.signableNodeBodyBytesList;
+// send each signableTransactionNodeBodyBytesList[i] to HSM for signing
+```
 
 ---
 
