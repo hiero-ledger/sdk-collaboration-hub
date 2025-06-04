@@ -44,6 +44,16 @@ This update introduces a new type, `MirrorNetworkConfiguration`, to be used with
     client.setShard(2);
     ```
 
+### `MirrorNetworkConfiguration`
+
+Defines a configuration type for `Client.forMirrorNetwork()` calls that excludes properties resolved internally (`network`, `mirrorNetwork`).
+
+```typescript
+/**
+ * @typedef {Omit<ClientConfiguration, "network" | "mirrorNetwork">} MirrorNetworkConfiguration
+ */
+```
+
 ---
 
 ## Updated APIs
@@ -61,16 +71,6 @@ The base configuration object used to instantiate a `Client` is extended to supp
  * @property {boolean} [scheduleNetworkUpdate]
  * @property {number} [realm] - Defaults to 0
  * @property {number} [shard] - Defaults to 0
- */
-```
-
-### `MirrorNetworkConfiguration` (New)
-
-Defines a configuration type for `Client.forMirrorNetwork()` calls that excludes properties resolved internally (`network`, `mirrorNetwork`).
-
-```typescript
-/**
- * @typedef {Omit<ClientConfiguration, "network" | "mirrorNetwork">} MirrorNetworkConfiguration
  */
 ```
 
