@@ -12,6 +12,22 @@ This update introduces a new type, `MirrorNetworkConfiguration`, to be used with
 
 ## New APIs
 
+### `BaseClientConfiguration`
+
+The base configuration object with shared properties from `ClientConfiguration` is introduced for client factory methods used to instantiate a `Client` and is extended to support `realm` and `shard`, both defaulting to `0` if unspecified.
+
+```typescript
+/**
+ * @typedef {object} BaseClientConfiguration
+ * @property {{[key: string]: (string | AccountId)} | string} network
+ * @property {string[] | string} [mirrorNetwork]
+ * @property {Operator} [operator]
+ * @property {boolean} [scheduleNetworkUpdate]
+ * @property {number} [realm] - Defaults to 0
+ * @property {number} [shard] - Defaults to 0
+ */
+```
+
 ### `getRealm(): number`
 
 - Returns the currently stored `realm` value used for address book queries.
@@ -60,21 +76,18 @@ Defines a configuration type for `Client.forMirrorNetwork()` calls that excludes
 
 ### `ClientConfiguration` (Updated)
 
-The base configuration object used to instantiate a `Client` is extended to support `realm` and `shard`, both defaulting to `0` if unspecified.
+The `ClientConfiguration` object now extends the `BaseClientConfiguration` which includes `realm` and `shard` support, both defaulting to `0` if unspecified.
 
 ```typescript
 /**
- * @typedef {object} ClientConfiguration
- * @property {{[key: string]: (string | AccountId)} | string} network
- * @property {string[] | string} [mirrorNetwork]
- * @property {Operator} [operator]
- * @property {boolean} [scheduleNetworkUpdate]
- * @property {number} [realm] - Defaults to 0
- * @property {number} [shard] - Defaults to 0
+ * @typedef {BaseClientConfiguration & {
+ *   network?: {[key: string]: (string | AccountId)} | string,
+ *   mirrorNetwork?: string[] | string
+ * }} ClientConfiguration
  */
 ```
 
-### `Client.forMirrorNetwork(mirrorNetwork: string[], config: MirrorNetworkConfiguration): Client`
+### `Client.forMirrorNetwork(mirrorNetwork: string[], config: BaseClientConfiguration): Client`
 
 - Accepts:
   - `mirrorNetwork`: An array of mirror node URLs.
@@ -113,7 +126,7 @@ The previously proposed overload:
 Client.forMirrorNetwork(mirrorNetwork, (realm = 0), (shard = 0));
 ```
 
-will be **scheduled for deprecation**. Users are encouraged to adopt the `MirrorNetworkConfiguration` approach going forward for clarity and consistency. This new API pattern aligns with modern configuration best practices and avoids ambiguity in usage.
+will be **scheduled for deprecation**. Users are encouraged to adopt the `ClientConfiguration` approach going forward for clarity and consistency. This new API pattern aligns with modern configuration best practices and avoids ambiguity in usage.
 
 ---
 
