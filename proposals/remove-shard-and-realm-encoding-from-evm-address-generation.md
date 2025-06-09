@@ -6,7 +6,7 @@
 
 ## Summary
 
-The SDKs currently encode shard and realm values when generating an EVM address from an entity ID. The entity ID can be an account, token, topic, contract, delegate contract or file. This appllies to all entity types. This proposal recommends removing shard and realm encoding entirely, and eliminating any assumptions that default these values to zero.
+The SDKs currently encode shard and realm values when generating an EVM address from an entity ID. The entity ID can be an account, token, topic, contract, delegate contract or file. This applies to all entity types. This proposal recommends removing shard and realm encoding entirely, and eliminating any assumptions that default these values to zero.
 
 ## New APIs
 
