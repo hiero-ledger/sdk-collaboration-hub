@@ -32,10 +32,60 @@ const id = AccountId.fromEvmAddress(
   "00000000000000000000000000000000000004d2"
 );
 // Should return 1.1.1234 — not 0.0.1234
+
+const id = AccountId.fromEvmAddress(
+  1,
+  1,
+  "742d35Cc6634C0532925a3b844Bc454e4438f44e"
+);
+// Should return 1.1.742d35Cc6634C0532925a3b844Bc454e4438f44e
+
 ```
 
 **Note:**  
 If `<EntityId>.fromEvmAddress(shard, realm, evmAddress)` is not yet implemented in a specific SDK language, it should be implemented as part of this proposal to ensure consistent support across all Hiero SDKs.
+
+### `<EntityId>.toEvmAddress()`
+
+This method provides the EVM-compatible address representation of an `EntityId`. It complements `.fromEvmAddress()` by standardizing how entity identifiers are represented in EVM-compatible environments.
+
+**Behavior:**
+
+- If the `EntityId` has an alias-style EVM address (e.g., a 20-byte Ethereum address like `0x742d…`), that address is returned directly.
+- If the entity uses a numerical ID (i.e., has a non-zero `entityNum` and no alias), the returned address is a 20-byte hex string where:
+  - The **first 12 bytes are zero**
+  - The **last 8 bytes** encode the `entityNum` in **big-endian** format
+- The `shard` and `realm` values are **not** encoded in the EVM address.
+
+**Clarification:**
+
+- This method ensures that `toEvmAddress()` and `fromEvmAddress(shard, realm, evmAddress)` are consistent inverses of each other when used together.
+- The output is identical for all entities with the same `entityNum`, regardless of `shard` or `realm`.
+
+**Example:**
+
+```js
+// Pass entity ID 0.0.1234
+const evmAddress1 = new AccountId(0, 0, 1234).toEvmAddress();
+console.log("To EVM address: " + evmAddress1);
+// Result: 00000000000000000000000000000000000004d2
+
+// Pass entity ID 1.1.1234
+const evmAddress2 = new AccountId(1, 1, 1234).toEvmAddress();
+console.log("To EVM address: " + evmAddress2);
+// Result: 00000000000000000000000000000000000004d2
+
+// Pass entity ID 1.1.742d35Cc6634C0532925a3b844Bc454e4438f44e
+const evmAddress3 = new AccountId(
+  1,
+  1,
+  "742d35Cc6634C0532925a3b844Bc454e4438f44e"
+).toEvmAddress();
+console.log("To EVM address: " + evmAddress3);
+// Result: 742d35Cc6634C0532925a3b844Bc454e4438f44e
+
+```
+
 
 ---
 
@@ -44,35 +94,21 @@ If `<EntityId>.fromEvmAddress(shard, realm, evmAddress)` is not yet implemented 
 ### `<EntityId>.fromSolidityAddress(string address)`
 
 - **Status:** Deprecated    
-- **Replacement:** `<EntityId>.fromEvmAddress(shard, realm, evmAddress)`
-
-### `<EntityId>.fromEvmAddress(int64 shard, int64 realm, string evmAddress)`
-
-- **Behavior:** Takes shard and realm explicitly along with the 20-byte EVM address (only entity number encoded).  
+- **Replacement:** `<EntityId>.fromEvmAddress(shard, realm, evmAddress)` 
 
 ### `<EntityId>.toSolidityAddress()`
+- **Status:** Deprecated    
+- **Replacement:** `<EntityId>.toEvmAddress()` 
 
-- **Update:** The output of `toSolidityAddress()` should no longer encode shard and realm values. Only the entity number should be encoded into the resulting 20-byte EVM address. This change is not considered breaking, as shard and realm values have historically always been zero. As a result, the output of this API should remain the same for all existing use cases.
-
-**Examples:**
-
-```js
-// Current incorrect behavior
-const evmAddress = new AccountId(1, 1, 1234).toSolidityAddress();
-// Result: 00000001000000000000000100000000000004d2
-
-// Expected behavior after update
-// Result: 00000000000000000000000000000000000004d2
-```
 
 ## Test Plan
 
 1. **Given** an entity ID with non-zero shard and realm,  
-   **When** `toSolidityAddress()` is called,  
+   **When** `toEvmAddress()` is called,  
    **Then** the resulting EVM address encodes only the entity number and does **not** encode shard or realm values.
 
 2. **Given** an entity ID with shard and realm both set to `0`,  
-   **When** `toSolidityAddress()` is called before and after the update,  
+   **When** `toEvmAddress()` is called before and after the update,  
    **Then** the resulting EVM address remains unchanged, ensuring backward compatibility.
 
 3. **Given** a call to `fromEvmAddress(1, 1, evmAddress)`,  
@@ -87,8 +123,6 @@ const evmAddress = new AccountId(1, 1, 1234).toSolidityAddress();
    **When** non-zero shard and realm values are passed,  
    **Then** the method must respect those values and return the correct entity ID, rather than defaulting to `0.0`.
 
-
-
 ---
 
 ## SDK Example
@@ -96,12 +130,12 @@ const evmAddress = new AccountId(1, 1, 1234).toSolidityAddress();
 ```js
 // 0.0.1234 → EVM address: 00000000000000000000000000000000000004d2
 const accountId = new AccountId(0, 0, 1234);
-console.log(accountId.toSolidityAddress()); 
+console.log(accountId.toEvmAddress()); 
 // Expected output: 00000000000000000000000000000000000004d2
 
 // 1.1.1234 → EVM address should still be: 00000000000000000000000000000000000004d2
 const accountIdNonZero = new AccountId(1, 1, 1234);
-console.log(accountIdNonZero.toSolidityAddress()); 
+console.log(accountIdNonZero.toEvmAddress()); 
 // Expected output: 00000000000000000000000000000000000004d2
 
 // Create AccountId from evm address and explicit shard/realm
@@ -118,10 +152,12 @@ console.log(accountIdFromEvm.toString());
 ---
 
 ## Compatibility
-Proposal is expected to be backwards compatible. Any deprecated APIs will not be removed. 
+Proposal is expected to be backwards compatible. Any deprecated APIs will not be removed until a future major version update.
 
 ---
 
 ## Conclusion
 
 This proposal removes the encoding for shard and realm values in EVM addresses as well as any assumptions for zero shard and realm values.
+
+It was proposed to keep `toSolidityAddress` and update its logic to not encode the shard and realm, but was rejected for for maintaining a consistent experience in the SDKs with `fromEvmAddress`.
