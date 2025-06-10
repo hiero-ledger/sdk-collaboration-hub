@@ -111,7 +111,7 @@ console.log("To EVM address: " + evmAddress3);
    **When** `toEvmAddress()` is called before and after the update,  
    **Then** the resulting EVM address remains unchanged, ensuring backward compatibility.
 
-3. **Given** a call to `fromEvmAddress(1, 1, evmAddress)`,  
+3. **Given** a call to `fromEvmAddress(1, 1, longZeroAddress)`,  
    **When** the EVM address contains only the entity number (e.g., `"00000000000000000000000000000000000004d2"`),  
    **Then** the resulting entity ID is correctly returned as `1.1.1234`.
 
