@@ -6,7 +6,7 @@
 
 This proposal builds on the functionality introduced in the “Non-Zero Realm and Shard File IDs for Static Files” design by enhancing the `Client` behavior in Hiero SDKs. Specifically, it ensures persistent storage and use of `realm` and `shard` values within the `Client` instance. The original proposal enabled non-zero realm/shard usage but failed to persist these values in the client lifecycle, causing network inconsistency during dynamic operations like address book refreshes.
 
-This update introduces a new type, `MirrorNetworkConfiguration`, to be used with `Client.forMirrorNetwork()`. This type is derived from `ClientConfiguration` but omits the `network` and `mirrorNetwork` properties—since `forMirrorNetwork()` determines these internally based on the queried address book. The previously proposed overload of `forMirrorNetwork(mirrorNetwork, realm, shard)` will be **scheduled for deprecation** in favor of this clearer, more maintainable approach.
+This update introduces a new type, `BaseNetworkConfiguration`, to be used with `Client.forMirrorNetwork()`. This type is derived from `ClientConfiguration` but omits the `network` and `mirrorNetwork` properties—since `forMirrorNetwork()` determines these internally based on the queried address book. The previously proposed overload of `forMirrorNetwork(mirrorNetwork, realm, shard)` will be **scheduled for deprecation** in favor of this clearer, more maintainable approach.
 
 ---
 
@@ -60,16 +60,6 @@ The base configuration object with shared properties from `ClientConfiguration` 
     client.setShard(2);
     ```
 
-### `MirrorNetworkConfiguration`
-
-Defines a configuration type for `Client.forMirrorNetwork()` calls that excludes properties resolved internally (`network`, `mirrorNetwork`).
-
-```typescript
-/**
- * @typedef {Omit<ClientConfiguration, "network" | "mirrorNetwork">} MirrorNetworkConfiguration
- */
-```
-
 ---
 
 ## Updated APIs
@@ -91,7 +81,7 @@ The `ClientConfiguration` object now extends the `BaseClientConfiguration` which
 
 - Accepts:
   - `mirrorNetwork`: An array of mirror node URLs.
-  - `config`: A config object derived from `ClientConfiguration`, omitting `network` and `mirrorNetwork`.
+  - `props`: A config object derived from `BaseClientConfiguration`
 
 ```javascript
 const client = Client.forMirrorNetwork(
@@ -110,13 +100,13 @@ The following factory methods should also be confirmed to support `realm` and `s
 
 - `Client.fromConfig(data: string | ClientConfiguration): Client`
 - `Client.fromConfigFile(filename: string): Promise<Client>`
-- `Client.forNetwork(network: {[key: string]: (string | AccountId)}, props?: ClientConfiguration): Client`
-- `Client.forName(network: string, props?: ClientConfiguration): Client`
-- `Client.forMainnet(props?: ClientConfiguration): Client`
-- `Client.forTestnet(props?: ClientConfiguration): Client`
-- `Client.forPreviewnet(props?: ClientConfiguration): Client`
+- `Client.forNetwork(network: {[key: string]: (string | AccountId)}, props?: BaseClientConfiguration): Client`
+- `Client.forName(network: string, props?: BaseClientConfiguration): Client`
+- `Client.forMainnet(props?: BaseClientConfiguration): Client`
+- `Client.forTestnet(props?: BaseClientConfiguration): Client`
+- `Client.forPreviewnet(props?: BaseClientConfiguration): Client`
 
-These methods already accept a `ClientConfiguration` object and should pass the `realm` and `shard` values into the client constructor for persistence and usage in all future address book queries.
+These methods already accept a `BaseClientConfiguration` object and should pass the `realm` and `shard` values into the client constructor for persistence and usage in all future address book queries.
 
 ### Deprecation Notice
 
@@ -126,7 +116,7 @@ The previously proposed overload:
 Client.forMirrorNetwork(mirrorNetwork, (realm = 0), (shard = 0));
 ```
 
-will be **scheduled for deprecation**. Users are encouraged to adopt the `ClientConfiguration` approach going forward for clarity and consistency. This new API pattern aligns with modern configuration best practices and avoids ambiguity in usage.
+will be **scheduled for deprecation**. Users are encouraged to adopt the `BaseClientConfiguration` approach going forward for clarity and consistency. This new API pattern aligns with modern configuration best practices and avoids ambiguity in usage.
 
 ---
 
@@ -213,4 +203,4 @@ console.log(client.getShard()); // 2
 
 ## Conclusion
 
-This enhancement finalizes support for persistent realm and shard values in the Hiero SDK `Client`. The introduction of `MirrorNetworkConfiguration` promotes cleaner usage while scheduling deprecation of redundant overloads. These updates ensure better consistency, maintainability, and long-term compatibility for applications operating across diverse Hedera network topologies.
+This enhancement finalizes support for persistent realm and shard values in the Hiero SDK `Client`. The introduction of `BaseNetworkConfiguration` promotes cleaner usage while scheduling deprecation of redundant overloads. These updates ensure better consistency, maintainability, and long-term compatibility for applications operating across diverse Hedera network topologies.
