@@ -1,7 +1,8 @@
-# Persistent Realm and Shard Support in Client for Address Book Queries
+# Persistent Shard and Realm Support in Client for Address Book Queries
 
 **Date Submitted**: 2025-06-03
 
+## JavaScript SDK
 ## Summary
 
 This proposal builds on the functionality introduced in the “Non-Zero Realm and Shard File IDs for Static Files” design by enhancing the `Client` behavior in Hiero SDKs. Specifically, it ensures persistent storage and use of `shard` and `realm` values within the `Client` instance. The original proposal enabled non-zero shard/realm usage but failed to persist these values in the client lifecycle, causing network inconsistency during dynamic operations like address book refreshes.
@@ -26,6 +27,13 @@ The base configuration object with shared properties from `ClientConfiguration` 
  * @property {number} [realm] - Defaults to 0
  */
 ```
+### `getShard(): number`
+
+- Returns the currently stored `shard` value used for address book queries.
+  - Example:
+    ```javascript
+    const shard = client.getShard();
+    ```
 
 ### `getRealm(): number`
 
@@ -35,21 +43,13 @@ The base configuration object with shared properties from `ClientConfiguration` 
     const realm = client.getRealm();
     ```
 
-### `getShard(): number`
-
-- Returns the currently stored `shard` value used for address book queries.
-  - Example:
-    ```javascript
-    const shard = client.getShard();
-    ```
-
 ---
 
 ## Updated APIs
 
 ### `ClientConfiguration` (Updated)
 
-The `ClientConfiguration` object now extends the `BaseClientConfiguration` which includes `realm` and `shard` support, both defaulting to `0` if unspecified.
+The `ClientConfiguration` object now extends the `BaseClientConfiguration` which includes `shard` and `realm` support, both defaulting to `0` if unspecified.
 
 ```typescript
 /**
@@ -71,15 +71,15 @@ const client = Client.forMirrorNetwork(
   ["https://testnet.mirrornode.hedera.com"],
   {
     scheduleNetworkUpdate: true,
-    realm: 1,
     shard: 2,
+    realm: 1
   }
 );
 ```
 
-### Additional support for realm and shard in factory methods
+### Additional support for shard and realm in factory methods
 
-The following factory methods should also be confirmed to support `realm` and `shard` as part of their `ClientConfiguration`:
+The following factory methods should also be confirmed to support `shard` and `realm` as part of their `ClientConfiguration`:
 
 - `Client.fromConfig(data: string | ClientConfiguration): Client`
 - `Client.fromConfigFile(filename: string): Promise<Client>`
@@ -89,7 +89,7 @@ The following factory methods should also be confirmed to support `realm` and `s
 - `Client.forTestnet(props?: BaseClientConfiguration): Client`
 - `Client.forPreviewnet(props?: BaseClientConfiguration): Client`
 
-These methods already accept a `BaseClientConfiguration` object and should pass the `realm` and `shard` values into the client constructor for persistence and usage in all future address book queries.
+These methods already accept a `BaseClientConfiguration` object and should pass the `shard` and `realm` values into the client constructor for persistence and usage in all future address book queries.
 
 ---
 
@@ -171,8 +171,22 @@ console.log(client.getRealm()); // 5
 - Fully backward compatible.
 - All new functionality is additive and encourages cleaner, type-safe configuration practices for users operating in non-default network contexts.
 
+## Other SDKs
+## Summary
+
+For SDKs outside of JavaScript (e.g., Java, Go, C++, etc.), persistent support for shard and realm will be added via method overloading in their respective factory methods.
+
+## Expected Changes
+Each SDK Client should:
+
+Overload existing factory methods like forMainnet, forTestnet, fromConfig, etc.
+
+Include variants that accept shard and realm parameters directly or via an overloaded configuration object.
+
+Expose getShard() and getRealm() methods (or properties) as appropriate.
+
 ---
 
 ## Conclusion
 
-This enhancement finalizes support for persistent realm and shard values in the Hiero SDK `Client`. The introduction of `BaseNetworkConfiguration` promotes cleaner usage. These updates ensure better consistency, maintainability, and long-term compatibility for applications operating across diverse Hedera network topologies.
+This enhancement finalizes support for persistent shard and realm values in the Hiero SDK `Client`. The introduction of `BaseNetworkConfiguration` promotes cleaner usage. These updates ensure better consistency, maintainability, and long-term compatibility for applications operating across diverse Hedera network topologies.
