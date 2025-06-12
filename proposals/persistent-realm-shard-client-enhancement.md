@@ -184,9 +184,3 @@ Overload existing factory methods like forMainnet, forTestnet, fromConfig, etc.
 Include variants that accept shard and realm parameters directly or via an overloaded configuration object.
 
 Expose getShard() and getRealm() methods (or properties) as appropriate.
-
----
-
-## Conclusion
-
-This enhancement finalizes support for persistent shard and realm values in the Hiero SDK `Client`. The introduction of `BaseNetworkConfiguration` promotes cleaner usage. These updates ensure better consistency, maintainability, and long-term compatibility for applications operating across diverse Hedera network topologies.
