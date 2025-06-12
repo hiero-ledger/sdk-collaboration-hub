@@ -4,17 +4,16 @@
 
 ## Summary
 
-This proposal builds on the functionality introduced in the “Non-Zero Realm and Shard File IDs for Static Files” design by enhancing the `Client` behavior in Hiero SDKs. Specifically, it ensures persistent storage and use of `realm` and `shard` values within the `Client` instance. The original proposal enabled non-zero realm/shard usage but failed to persist these values in the client lifecycle, causing network inconsistency during dynamic operations like address book refreshes.
+This proposal builds on the functionality introduced in the “Non-Zero Realm and Shard File IDs for Static Files” design by enhancing the `Client` behavior in Hiero SDKs. Specifically, it ensures persistent storage and use of `shard` and `realm` values within the `Client` instance. The original proposal enabled non-zero shard/realm usage but failed to persist these values in the client lifecycle, causing network inconsistency during dynamic operations like address book refreshes.
 
-This update introduces a new type, `BaseNetworkConfiguration`, to be used with `Client.forMirrorNetwork()`. This type is derived from `ClientConfiguration` but omits the `network` and `mirrorNetwork` properties—since `forMirrorNetwork()` determines these internally based on the queried address book. The previously proposed overload of `forMirrorNetwork(mirrorNetwork, realm, shard)` will be **scheduled for deprecation** in favor of this clearer, more maintainable approach.
-
+This update introduces a new type, `BaseNetworkConfiguration`, to be used with `Client.forMirrorNetwork()`. This type is derived from `ClientConfiguration` but omits the `network` and `mirrorNetwork` properties—since `forMirrorNetwork()` determines these internally based on the queried address book. 
 ---
 
 ## New APIs
 
 ### `BaseClientConfiguration`
 
-The base configuration object with shared properties from `ClientConfiguration` is introduced for client factory methods used to instantiate a `Client` and is extended to support `realm` and `shard`, both defaulting to `0` if unspecified.
+The base configuration object with shared properties from `ClientConfiguration` is introduced for client factory methods used to instantiate a `Client` and is extended to support `shard` and `realm`, both defaulting to `0` if unspecified.
 
 ```typescript
 /**
@@ -23,8 +22,8 @@ The base configuration object with shared properties from `ClientConfiguration` 
  * @property {string[] | string} [mirrorNetwork]
  * @property {Operator} [operator]
  * @property {boolean} [scheduleNetworkUpdate]
- * @property {number} [realm] - Defaults to 0
  * @property {number} [shard] - Defaults to 0
+ * @property {number} [realm] - Defaults to 0
  */
 ```
 
@@ -92,16 +91,6 @@ The following factory methods should also be confirmed to support `realm` and `s
 
 These methods already accept a `BaseClientConfiguration` object and should pass the `realm` and `shard` values into the client constructor for persistence and usage in all future address book queries.
 
-### Deprecation Notice
-
-The previously proposed overload:
-
-```javascript
-Client.forMirrorNetwork(mirrorNetwork, (realm = 0), (shard = 0));
-```
-
-will be **scheduled for deprecation**. Users are encouraged to adopt the `BaseClientConfiguration` approach going forward for clarity and consistency. This new API pattern aligns with modern configuration best practices and avoids ambiguity in usage.
-
 ---
 
 ## SDK Example (JavaScript)
@@ -109,22 +98,22 @@ will be **scheduled for deprecation**. Users are encouraged to adopt the `BaseCl
 ### Using `forMirrorNetwork`
 
 ```javascript
-const realm = parseInt(process.env.REALM);
 const shard = parseInt(process.env.SHARD);
+const realm = parseInt(process.env.REALM);
 const mirrorNodeUrl = process.env.MIRROR_NODE_URL;
 
 const client = Client.forMirrorNetwork([mirrorNodeUrl], {
-  realm,
   shard,
+  realm,
   scheduleNetworkUpdate: true,
 });
 
-console.log("Initial Realm:", client.getRealm());
 console.log("Initial Shard:", client.getShard());
+console.log("Initial Realm:", client.getRealm());
 
 // Update values at runtime
-client.setRealm(1);
 client.setShard(2);
+client.setRealm(1);
 
 // Perform a network update using the updated context
 await client.updateNetwork();
@@ -136,8 +125,8 @@ await client.updateNetwork();
 const client = Client.fromConfig({
   network: "testnet",
   operator: myOperator,
-  realm: 2,
   shard: 1,
+  realm: 2
   scheduleNetworkUpdate: true,
 });
 ```
@@ -147,8 +136,8 @@ const client = Client.fromConfig({
 ```javascript
 const client = Client.forMainnet({
   operator: myOperator,
-  realm: 1,
   shard: 3,
+  realm: 1
 });
 ```
 
@@ -163,16 +152,16 @@ const client = Client.forMainnet({
     "accountId": "0.0.1234",
     "privateKey": "302e020100300506032b657004220420..."
   },
-  "realm": 5,
-  "shard": 2
+  "shard": 2,
+  "realm": 5
 }
 ```
 
 ```javascript
 const client = await Client.fromConfigFile("config.json");
 
-console.log(client.getRealm()); // 5
 console.log(client.getShard()); // 2
+console.log(client.getRealm()); // 5
 ```
 
 ---
@@ -180,11 +169,10 @@ console.log(client.getShard()); // 2
 ## Compatibility
 
 - Fully backward compatible.
-- `forMirrorNetwork(mirrorNetwork)` and the deprecated `(mirrorNetwork, realm, shard)` overload will continue to work for now.
 - All new functionality is additive and encourages cleaner, type-safe configuration practices for users operating in non-default network contexts.
 
 ---
 
 ## Conclusion
 
-This enhancement finalizes support for persistent realm and shard values in the Hiero SDK `Client`. The introduction of `BaseNetworkConfiguration` promotes cleaner usage while scheduling deprecation of redundant overloads. These updates ensure better consistency, maintainability, and long-term compatibility for applications operating across diverse Hedera network topologies.
+This enhancement finalizes support for persistent realm and shard values in the Hiero SDK `Client`. The introduction of `BaseNetworkConfiguration` promotes cleaner usage. These updates ensure better consistency, maintainability, and long-term compatibility for applications operating across diverse Hedera network topologies.
