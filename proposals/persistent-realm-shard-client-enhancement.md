@@ -44,22 +44,6 @@ The base configuration object with shared properties from `ClientConfiguration` 
     const shard = client.getShard();
     ```
 
-### `setRealm(realm: number): Client`
-
-- Sets the `realm` for future address book queries.
-  - Example:
-    ```javascript
-    client.setRealm(1);
-    ```
-
-### `setShard(shard: number): Client`
-
-- Sets the `shard` for future address book queries.
-  - Example:
-    ```javascript
-    client.setShard(2);
-    ```
-
 ---
 
 ## Updated APIs
