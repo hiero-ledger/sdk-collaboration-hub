@@ -12,6 +12,9 @@ This proposal enhances the `Client` behavior in Hiero SDKs to support persistent
 
 The `Client` class will be enhanced to store and utilize shard and realm values throughout its lifecycle. These values can be used in network operations, including scheduled updates.
 
+### `Client.forMirrorNetwork`
+- Persists shard and realm values in the client instance
+
 ### `Client.forNetwork`
 - Extracts shard and realm values from the provided consensus node network
 - Validates that all nodes in the network share the same shard and realm values
