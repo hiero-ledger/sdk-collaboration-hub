@@ -1,4 +1,4 @@
-# Persistent Shard and Realm Support in Client for Address Book Queries
+# Persistent Shard and Realm Support in Client
 
 **Date Submitted**: 2025-06-03
 
