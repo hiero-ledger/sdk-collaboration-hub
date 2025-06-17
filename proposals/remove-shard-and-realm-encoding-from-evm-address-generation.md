@@ -8,6 +8,17 @@
 
 The SDKs currently encode shard and realm values when generating an EVM address from an entity ID. The entity ID can be an account, token, topic, contract, delegate contract or file. This applies to all entity types. This proposal recommends removing shard and realm encoding entirely, and eliminating any assumptions that default these values to zero.
 
+**Justification for decision to move forward without EVM address encoding:**
+The decision to proceed by abandoning bit-packing the shard and realm information was driven by the conclusion that cross-chain transactions would still ultimately require explicit system contract calls regardless of address encoding. So the sacrifice of reduction in address space simply was without value.
+
+**Why explicitly declaring the addresses and passing them in protobuf messages?**
+- Long zeros can't necessarily be differentiated from ETH addresses due to the potential for zeroes at the leading bits of ETH addresses.
+- Cross chain calls will demand explicit system contract calls regardless of the addresses being packed with shard and realm values, therefore the ultimate benefit of incorporating those values is not ultimately realizable.
+- Triple ordering resulting in local networks always identifying as 0.0 values additionally contribute to the irrelevance of incorporating any shard and realm values packed within addresses.
+- CAIP2/ChainID's per realm adoption across multiple networks simplified.
+- We don't have to make Consensus nodes do extra work parsing addresses when they can simply be inferred.
+- Minimal difference between present method of provisioning accounts on our path to cross ledger communications(user impacts basically non-existent).
+
 ## New APIs
 
 ### `<EntityId>.fromEvmAddress(int64 shard, int64 realm, string evmAddress)`
