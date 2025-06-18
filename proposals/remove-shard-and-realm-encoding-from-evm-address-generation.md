@@ -34,6 +34,9 @@ This method already exists in some SDKs as a replacement for `.fromSolidityAddre
 **Clarification:**  
 If any SDK currently assumes default values of `0` for shard and realm (e.g., ignoring the passed-in values), those assumptions must be removed.
 
+The intent was for AccountId.fromEvmAddress(1, 1, "00000000000000000000000000000000000004d2") to return 1.1.1234. However, the current implementation returns 1.1.00000000000000000000000000000000000004d2. We would prefer not to introduce a breaking change by altering the return type.
+
+
 **Example:**
 
 ```js
@@ -42,7 +45,7 @@ const id = AccountId.fromEvmAddress(
   1,
   "00000000000000000000000000000000000004d2"
 );
-// Should return 1.1.1234 — not 0.0.1234
+// Should return 1.1.00000000000000000000000000000000000004d2
 
 const id = AccountId.fromEvmAddress(
   1,
@@ -124,7 +127,7 @@ console.log("To EVM address: " + evmAddress3);
 
 3. **Given** a call to `fromEvmAddress(1, 1, longZeroAddress)`,  
    **When** the EVM address contains only the entity number (e.g., `"00000000000000000000000000000000000004d2"`),  
-   **Then** the resulting entity ID is correctly returned as `1.1.1234`.
+   **Then** the resulting entity ID is correctly returned as `1.1.00000000000000000000000000000000000004d2`.
 
 4. **Given** a call to `fromEvmAddress(0, 0, evmAddress)`,  
    **When** the EVM address contains only the entity number,  
@@ -134,6 +137,9 @@ console.log("To EVM address: " + evmAddress3);
    **When** non-zero shard and realm values are passed,  
    **Then** the method must respect those values and return the correct entity ID, rather than defaulting to `0.0`.
 
+6. **Given** an entity ID with non-zero shard and realm with an evm address (0.0.742d35Cc6634C0532925a3b844Bc454e4438f44e),  
+   **When** `toEvmAddress()` is called,  
+   **Then** the resulting EVM address is the evm address(742d35Cc6634C0532925a3b844Bc454e4438f44e).
 ---
 
 ## SDK Example
