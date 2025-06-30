@@ -36,10 +36,14 @@ If any SDK currently assumes default values of `0` for shard and realm (e.g., ig
 
 The intent was for AccountId.fromEvmAddress(1, 1, "00000000000000000000000000000000000004d2") to return 1.1.1234. However, the current implementation returns 1.1.00000000000000000000000000000000000004d2. We would prefer not to introduce a breaking change by altering the return type.
 
+EXCEPT the Hiero JavaScript returns 1.1.1234 where it decodes the num value to the corresponding number value. The return type for the Hiero JaavScript SDK will remain as is. If returning the account number alias is needed, another method can be introduced. 
+
 
 **Example:**
 
 ```js
+
+// All SDKs except JavaScript
 const id = AccountId.fromEvmAddress(
   1,
   1,
@@ -47,6 +51,17 @@ const id = AccountId.fromEvmAddress(
 );
 // Should return 1.1.00000000000000000000000000000000000004d2
 
+//JavaScript SDK
+// All SDKs except JavaScript
+const id = AccountId.fromEvmAddress(
+  1,
+  1,
+  "00000000000000000000000000000000000004d2"
+);
+// Should return 1.1.1234
+
+
+//All SDKs
 const id = AccountId.fromEvmAddress(
   1,
   1,
