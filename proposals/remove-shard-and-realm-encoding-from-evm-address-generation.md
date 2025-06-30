@@ -52,7 +52,6 @@ const id = AccountId.fromEvmAddress(
 // Should return 1.1.00000000000000000000000000000000000004d2
 
 //JavaScript SDK
-// All SDKs except JavaScript
 const id = AccountId.fromEvmAddress(
   1,
   1,
