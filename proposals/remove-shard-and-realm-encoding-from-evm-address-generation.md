@@ -144,8 +144,8 @@ console.log("To EVM address: " + evmAddress3);
    **Then** the resulting entity ID is correctly returned as `1.1.00000000000000000000000000000000000004d2`.
 
 4. **Given** a call to `fromEvmAddress(0, 0, evmAddress)`,  
-   **When** the EVM address contains only the entity number,  
-   **Then** the resulting entity ID is correctly returned as `0.0.<number>`.
+   **When** the EVM address is non long zero evm address,  
+   **Then** the resulting entity ID is correctly returned as `0.0.<evmAddress>`.
 
 5. **Given** a call to `fromEvmAddress(shard, realm, evmAddress)` in an SDK where shard and realm default to zero,  
    **When** non-zero shard and realm values are passed,  
