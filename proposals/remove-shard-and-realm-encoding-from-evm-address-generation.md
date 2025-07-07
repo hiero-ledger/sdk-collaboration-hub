@@ -34,16 +34,35 @@ This method already exists in some SDKs as a replacement for `.fromSolidityAddre
 **Clarification:**  
 If any SDK currently assumes default values of `0` for shard and realm (e.g., ignoring the passed-in values), those assumptions must be removed.
 
-The intent was for AccountId.fromEvmAddress(1, 1, "00000000000000000000000000000000000004d2") to return 1.1.1234. However, the current implementation returns 1.1.00000000000000000000000000000000000004d2. We would prefer not to introduce a breaking change by altering the return type.
+The intent was for `AccountId.fromEvmAddress(1, 1, "00000000000000000000000000000000000004d2")` to return `1.1.1234`. However, the current implementation returns `1.1.00000000000000000000000000000000000004d2`. We would prefer not to introduce a breaking change by altering the return type.
 
 EXCEPT the Hiero JavaScript returns 1.1.1234 where it decodes the num value to the corresponding number value. The return type for the Hiero JavaScript SDK will remain as is. If returning the account number alias is needed, another method can be introduced. 
+
+**fromEvmAddress Behavior for TopicId, TokenId, and FileId**
+
+The entity types TopicId, TokenId, and FileId are not intended to support standard (non-long-zero) EVM addresses. Instead, the fromEvmAddress method for each of these will return shard.realm.num. 
+```
+<TopicId>.fromEvmAddress(1,1, 00000000000000000000000000000000000004d2) will return 1.1.1234.
+```
+
+EVM address is not a valid type for topics etc as it is defined for accounts and contracts:
+
+accounts and contracts:
+- https://github.com/hiero-ledger/hiero-consensus-node/blob/2bbd88b7ef85b3353e6b9f1cd54a8987cf902cfc/hapi/hedera-protobuf-java-api/src/main/proto/services/basic_types.proto#L200
+
+- https://github.com/hiero-ledger/hiero-consensus-node/blob/2bbd88b7ef85b3353e6b9f1cd54a8987cf902cfc/hapi/hedera-protobuf-java-api/src/main/proto/services/basic_types.proto#L282
+
+topics:
+- [https://github.com/hiero-ledger/hiero-consensus-node/blob/2bbd88b7ef85b3353e6b9f1c[…]era-protobuf-java-api/src/main/proto/services/basic_types.proto
+](https://github.com/hiero-ledger/hiero-consensus-node/blob/2bbd88b7ef85b3353e6b9f1cd54a8987cf902cfc/hapi/hedera-protobuf-java-api/src/main/proto/services/basic_types.proto#L314)
+
 
 
 **Example:**
 
 ```js
 
-// All SDKs except JavaScript
+// All SDKs for Accounts and Contracts except JavaScript
 const id = AccountId.fromEvmAddress(
   1,
   1,
@@ -51,7 +70,8 @@ const id = AccountId.fromEvmAddress(
 );
 // Should return 1.1.00000000000000000000000000000000000004d2
 
-//JavaScript SDK
+//JavaScript SDK for Accounts and Contracts
+//All SDKs for topic, file and token IDs
 const id = AccountId.fromEvmAddress(
   1,
   1,
@@ -60,7 +80,7 @@ const id = AccountId.fromEvmAddress(
 // Should return 1.1.1234
 
 
-//All SDKs
+//All SDKs for Accounts and Contracts
 const id = AccountId.fromEvmAddress(
   1,
   1,
