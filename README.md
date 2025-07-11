@@ -1,5 +1,9 @@
 # Hiero SDK Collaboration Hub
 
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/hiero-ledger/sdk-collaboration-hub/badge)](https://scorecard.dev/viewer/?uri=github.com/hiero-ledger/sdk-collaboration-hub)
+[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/10697/badge)](https://bestpractices.coreinfrastructure.org/projects/10697)
+[![License](https://img.shields.io/badge/license-apache2-blue.svg)](LICENSE)
+
 Welcome to the **Hiero SDK Collaboration Hub** – your centralized resource for contributing to the SDKs in the [Hiero](https://github.com/hiero-ledger) organization.
 
 This repository serves as a collaborative space for design proposals, contribution guidelines, templates, and other helpful documentation to support Hiero SDK contributors.
