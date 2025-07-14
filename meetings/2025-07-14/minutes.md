@@ -8,6 +8,9 @@
 - Georgi Stoykov
 - Anuj Saxena
 - Angelina Ceppaluni
+- Jessica Gonzalez
+- Henrick Ebbers
+- Keith Kowal
 
 ## Minutes
 
