@@ -8,3 +8,5 @@
   - HIP-1195: Hiero hooks and an application to allowances
   - HIP-991 (update): Add max_custom_fees to scheduled transactions
 - New response code: `NFT_TRANSFERS_ONLY_ALLOWED_FOR_NON_FUNGIBLE_UNIQUE`
+- Hendrik Java SDK prototype
+- Hiero solo action one command update via Docker (Hendrik)
