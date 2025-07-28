@@ -1,2 +1,10 @@
 ## Agenda
-- 
+- Go through agenda and approve previous meeting minutes
+- Dual-publishing SDKs (first dual publish release next week?)
+  - Migration docs provided in JS, Java, and Rust repos
+- Python SDK office hours survey responses
+- Upcoming HIPs:
+  - HIP-1139: Rollable and Fully Immutable Topic Ids
+  - HIP-1195: Hiero hooks and an application to allowances
+  - HIP-991 (update): Add max_custom_fees to scheduled transactions
+- New response code: `NFT_TRANSFERS_ONLY_ALLOWED_FOR_NON_FUNGIBLE_UNIQUE`
