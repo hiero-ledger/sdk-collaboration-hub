@@ -10,6 +10,7 @@
 - Angelina Ceppaluni
 - Roger Barker
 - Andrew Brandt
+- Krystal Lee
 
 ## Minutes
 
