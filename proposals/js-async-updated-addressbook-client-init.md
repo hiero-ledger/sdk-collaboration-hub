@@ -8,7 +8,7 @@ This proposal introduces a new set of asynchronous static methods to the `WebCli
 
 This enhancement avoids breaking existing synchronous APIs by introducing new `Async`-suffixed methods (e.g., `forMainnetAsync()`) instead of overloading existing methods with dynamic options.
 
-These async methods will perform the address book update by default unless the `scheduleNetworkUpdate` configuration is explicitly set to `false`. This aligns with the goal of providing the freshest address book while still allowing opt-out behavior consistent with other SDKs.
+These async methods will perform the address book update by default unless the `scheduleNetworkUpdate` configuration is explicitly set to `false`. This aligns with the goal of providing the newest address book while still allowing opt-out behavior consistent with other SDKs.
 
 This proposal addresses issues similar to those raised in: [sdk-collaboration-hub PR #23](https://github.com/hiero-ledger/sdk-collaboration-hub/pull/23).
 
@@ -37,7 +37,7 @@ This proposal addresses issues similar to those raised in: [sdk-collaboration-hu
 
 ### Updated API: `WebClient.updateNetwork()`
 
-- Will return the client wrapped in a promise e.g `Promise<WebClient>` to be consistent in the SDK with the builder pattern as until not it returned `Promise<void>`
+- Will return the client wrapped in a promise e.g `Promise<WebClient>` to be consistent in the SDK with the builder pattern as until now it returned `Promise<void>` (This is NOT a breaking change)
 
 ## Test Plan
 
@@ -46,10 +46,6 @@ This proposal addresses issues similar to those raised in: [sdk-collaboration-hu
 3. **Given** `WebClient.forNameAsync("mainnet")` is called, **when** a valid network is specified, **then** update behavior matches other methods.
 4. **Given** `WebClient.forNameAsync("local")` is called, **then** no update is performed.
 5. **Given** user uses `forMainnet()` (sync), **then** the existing behavior remains unchanged (no initial network update).
-
-### TCK
-
-Tests described above should be replicated in the [TCK repository](https://github.com/hiero-ledger/hiero-sdk-tck) to ensure platform-wide consistency.
 
 ## SDK Example
 
