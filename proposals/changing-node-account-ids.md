@@ -1,4 +1,4 @@
-# Node Account ID Rotation Test Plan
+# Changing Node Account Ids
 
 ## Summary
 
@@ -24,14 +24,10 @@ This test plan validates the functionality for updating the `account_id` field i
 
 9. Given a node with an existing account_id, when a NodeUpdateTransaction is submitted to change the account_id to an deleted account with proper signatures, then the transaction fails with `INVALID_ACCOUNT_ID`.
 
-10. Given a node update transaction that attempts to set account_id to the treasury account (0.0.2), the transaction fails.
+10. Given a node update transaction, when it attempts to set account_id to the treasury account (0.0.2), then the transaction fails.
 
-11. Given multiple nodes with different existing account_ids, when NodeUpdateTransactions are submitted to change all of their account_ids to the same shared account with proper signatures, then all transactions succeed and the nodes share the same account_id after roster activation.
+11. Given a node with an existing account_id where a transaction is successfully submitted, when the node's account_id is updated to a new account and a subsequent transaction is submitted using `setNodeAccountIDs` with the old account_id, then the transaction fails with `INVALID_NODE_ACCOUNT`.
 
-12. Given a node with an existing account_id where a transaction is successfully submitted, when the node's account_id is updated to a new account and a subsequent transaction is submitted using `setNodeAccountIDs` with the old account_id, then the transaction fails with `INVALID_NODE_ACCOUNT`.
+12. Given a scheduled transaction is created and submitted to a node with the original account_id, when the node's account_id is updated to a new account and a ScheduleSignTransaction is subsequently submitted to sign the scheduled transaction, then the scheduled transaction executes successfully once all required signatures are collected.
 
-13. Given a scheduled transaction is created and submitted to a node with the original account_id, when the node's account_id is updated to a new account and a ScheduleSignTransaction is subsequently submitted to sign the scheduled transaction, then the scheduled transaction executes successfully once all required signatures are collected.
-
-## SDK Example
-
-TODO
+13. Given a node with an existing account_id where a transaction is successfully submitted, when the node's account_id is updated to a new account and a subsequent transaction is submitted to this node with the old account_id, then the SDK retries using different node and triggers an address book update.
