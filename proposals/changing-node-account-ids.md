@@ -4,6 +4,11 @@
 
 This test plan validates the functionality for updating the `account_id` field in `NodeUpdateTransactionBody` as part of the Dynamic Address Book (DAB) enhancement. The feature allows node operators to change the account associated with their node.
 
+When a node’s account ID is changed via `NodeUpdateTransaction`, the new node account ID must be used immediately (i.e., for any subsequent transactions that target that node after the update reaches consensus).
+Transactions that still reference the old node account ID will fail with `INVALID_NODE_ACCOUNT_ID`.
+
+The updated node account ID must propagate to the mirror node, and clients/SDKs should pick up the change from the mirror node’s nodes API. Node account ID changes can occur at any time; there are no scheduling restrictions.
+
 ## Test Plan
 
 1. Given a node with an existing account_id, when a NodeUpdateTransaction is submitted to change the account_id to a new valid account with signatures from both the node admin key and the account id key, then the transaction succeeds.
