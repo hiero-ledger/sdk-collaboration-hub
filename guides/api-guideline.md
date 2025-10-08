@@ -13,26 +13,24 @@ Each proposal should include a section that documents the API in a language-agno
 
 The following basic data types should be used in the API documentation.
 
-| Data Type       | Description                   |
-|-----------------|-------------------------------|
-| `string`        | A sequence of characters      |
-| `intX`          | A signed integer of X bits    |
-| `uintX`         | An unsigned integer of X bits |
-| `int`           | A signed integer              |
-| `long`          | A signed long integer         |
-| `float`         | A floating-point number       |
-| `bool`          | A boolean value               |
-| `bytes`         | A sequence of bytes           |
-| `immutableList` | An immutable list of elements |
-| `mutableList`   | An mutable list of elements   |
-| `immutableSet`  | An immutable set of elements  |
-| `mutableSet`    | An mutable set of elements    |
-| `immutableMap`  | An immutable map of elements  |
-| `mutableMap`    | An mutable map of elements    |
-| `date`          | A date value                  |
-| `time`          | A time value                  |
-| `dateTime`      | A date and time value         |
-| `uuid`          | A UUID value                  |
+| Data Type       | Description                                                   |
+|-----------------|---------------------------------------------------------------|
+| `string`        | A sequence of characters                                      |
+| `intX`          | A signed integer of X bits                                    |
+| `uintX`         | An unsigned integer of X bits                                 |
+| `int`           | A signed integer of 32 bits                                   |
+| `long`          | A signed integer of 64 bits                                   |
+| `double`        | A native floating-point number in 64-bit base-2 format        |
+| `decimal`       | A decimal number with arbitrary precision                     |
+| `bool`          | A boolean value                                               |
+| `bytes`         | A sequence of bytes                                           |
+| `list<TYPE>`    | A list of elements of type TYPE                               |
+| `set<TYPE>`     | A set of elements of type TYPE                                |
+| `map<TYPE>`     | An immutable map of elements of type TYPE                     |
+| `date`          | A date value (ISO 8601 calendar date)                         |
+| `time`          | A time value without date or timezone (nanosecond precision)  |
+| `dateTime`      | A date and time value without timezone (nanosecond precision) |
+| `zonedDateTime` | A date and time value with timezone (nanosecond precision)    |
 
 ### Enumerations
 
