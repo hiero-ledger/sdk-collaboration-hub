@@ -1,0 +1,135 @@
+# API Guideline
+
+This document outlines the best practices and conventions for designing and implementing APIs for the SDKs.
+Following these guidelines will help ensure that APIs are consistent, easy to use, and maintainable.
+Next to that the guidelines defines a syntax for documenting the APIs in a language-agnostic way for proposals.
+
+## Language Agnostic API Documentation Syntax
+
+The [proposals](../proposals) folder contains design documents of new features or changes for our SDKs.
+Each proposal should include a section that documents the API in a language-agnostic way.
+
+### Basic data types
+
+The following basic data types should be used in the API documentation.
+
+| Data Type       | Description                   |
+|-----------------|-------------------------------|
+| `string`        | A sequence of characters      |
+| `intX`          | A signed integer of X bits    |
+| `uintX`         | An unsigned integer of X bits |
+| `float`         | A floating-point number       |
+| `bool`          | A boolean value               |
+| `bytes`         | A sequence of bytes           |
+| `immutableList` | An immutable list of elements |
+| `mutableList`   | An mutable list of elements   |
+| `immutableSet`  | An immutable set of elements  |
+| `mutableSet`    | An mutable set of elements    |
+| `immutableMap`  | An immutable map of elements  |
+| `mutableMap`    | An mutable map of elements    |
+| `date`          | A date value                  |
+| `time`          | A time value                  |
+| `dateTime`      | A date and time value         |
+| `uuid`          | A UUID value                  |
+
+### Enumerations
+
+Enumerations can be defined using the following syntax:
+```
+enum EnumName {
+    VALUE1
+    VALUE2
+}
+```
+
+### Attribute annotations
+
+Attribute annotations can be used to provide additional information about attributes in complex data types.
+The following annotations should be used:
+- `@immutable`: Indicates that the field is immutable and cannot be changed after creation.
+- `@optional`: Indicates that the field is optional and can be null or undefined.
+- `@default(value)`: Indicates that the field has a default value.
+- `@deprecated`: Indicates that the field is deprecated and should not be used.
+- `@removed`: Indicates that the field must be removed.
+- `@min(value)`: Indicates the minimum value for numeric fields.
+- `@max(value)`: Indicates the maximum value for numeric fields.
+- `@minLength(value)`: Indicates the minimum length for string fields.
+- `@maxLength(value)`: Indicates the maximum length for string fields.
+- `@pattern(regex)`: Indicates a regex pattern that the string field must match.
+
+### Method annotations
+
+Method annotations can be used to provide additional information about methods.
+The following annotations should be used:
+- `@async`: Indicates that the method is asynchronous and returns a promise or future.
+- `@throws(error-type)`: Indicates that the method can throw an exception/error.
+- `@deprecated`: Indicates that the method is deprecated and should not be used.
+- `@removed`: Indicates that the method must be removed.
+
+### Method definitions
+
+Methods can be defined using the following syntax:
+
+```
+ReturnType methodName(param1: DataType1, param2: DataType2)
+```
+
+The following attribute annotations can be used on method parameters: `@optional`, `@deprecated`, `@removed`, `@min(value)`, `@max(value)`, `@minLength(value)`, `@maxLength(value)`, `@pattern(regex)`
+
+The following attribute annotations can be used on method return types: `@immutable`, `@optional`
+
+A complete method definition example:
+```
+@async
+@throws(parse-error)
+@optional ResponseType fetchData(@deprecated id: uint64, @optional filter: string)
+```
+
+### Complex data types
+
+Complexe data types can be defined using the basic data types and other complex data types.
+The following syntax should be used to define complex data types:
+```
+DataTypeName {
+    fieldName1: DataType1
+    fieldName2: DataType2
+    ReturnType methodName(param1: DataType1, param2: DataType2)
+}
+```
+A complete complex data type example:
+```
+User {
+    @immutable id: uuid
+    @minLength(3) @maxLength(100) email: string
+    @optional @min(0) @max(120) age: uint8
+    
+    @async
+    @throws(not-found-error)
+    @optional UserProfile fetchProfile(apiKey: string)
+}
+```
+
+### Namespace
+
+Namespaces can be used to group related data types and methods.
+The following syntax should be used to define namespaces:
+```
+namespace transactions
+
+    Transaction {
+        @immutable id: uuid
+        @immutable amount: float
+        @immutable date: dateTime
+        @immutable status: TransactionStatus
+
+        @async
+        @throws(not-found-error)
+        @optional TransactionDetails fetchDetails(apiKey: string)
+    }
+
+    enum TransactionStatus {
+        PENDING
+        COMPLETED
+        FAILED
+    }
+```
