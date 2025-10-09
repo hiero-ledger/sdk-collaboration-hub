@@ -83,7 +83,7 @@ A complete method definition example:
 
 ### Complex data types
 
-Complexe data types can be defined using the basic data types and other complex data types.
+Complex data types can be defined using the basic data types and other complex data types.
 The following syntax should be used to define complex data types:
 ```
 DataTypeName {
