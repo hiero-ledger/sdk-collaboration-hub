@@ -49,8 +49,6 @@ The following annotations should be used:
 - `@immutable`: Indicates that the field is immutable and cannot be changed after creation.
 - `@optional`: Indicates that the field is optional and can be null or undefined.
 - `@default(value)`: Indicates that the field has a default value.
-- `@deprecated`: Indicates that the field is deprecated and should not be used.
-- `@removed`: Indicates that the field must be removed.
 - `@min(value)`: Indicates the minimum value for numeric fields.
 - `@max(value)`: Indicates the maximum value for numeric fields.
 - `@minLength(value)`: Indicates the minimum length for string fields.
@@ -63,8 +61,6 @@ Method annotations can be used to provide additional information about methods.
 The following annotations should be used:
 - `@async`: Indicates that the method is asynchronous and returns a promise or future.
 - `@throws(error-type)`: Indicates that the method can throw an exception/error.
-- `@deprecated`: Indicates that the method is deprecated and should not be used.
-- `@removed`: Indicates that the method must be removed.
 
 ### Method definitions
 
@@ -74,7 +70,7 @@ Methods can be defined using the following syntax:
 ReturnType methodName(param1: DataType1, param2: DataType2)
 ```
 
-The following attribute annotations can be used on method parameters: `@optional`, `@deprecated`, `@removed`, `@min(value)`, `@max(value)`, `@minLength(value)`, `@maxLength(value)`, `@pattern(regex)`
+The following attribute annotations can be used on method parameters: `@optional`, `@min(value)`, `@max(value)`, `@minLength(value)`, `@maxLength(value)`, `@pattern(regex)`
 
 The following attribute annotations can be used on method return types: `@immutable`, `@optional`
 
@@ -82,7 +78,7 @@ A complete method definition example:
 ```
 @async
 @throws(parse-error)
-@optional ResponseType fetchData(@deprecated id: uint64, @optional filter: string)
+@optional ResponseType fetchData(id: uint64, @optional filter: string)
 ```
 
 ### Complex data types
