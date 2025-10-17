@@ -1,4 +1,4 @@
-# Hiero SDK Design Doc: Global gRPC Deadline Configuration
+# Global gRPC Deadline Configuration
 
 **Date Submitted:** 2025-10-17
 
@@ -10,7 +10,9 @@ Currently, the Java SDK supports a configurable per-request gRPC deadline via `C
 
 This global deadline will also be applied during the **warmup RPC call (initial TCP handshake)** to ensure consistent timeout handling across both initialization and execution flows. The intention is to expose this as a configurable parameter so developers can fine-tune network behavior based on their latency and reliability requirements.
 
-This change promotes consistent client behavior across SDKs, simplifies configuration, and enhances usability by allowing global control of network timeouts.
+Additionally, this proposal ensures that all SDKs consistently include the **`requestTimeout` property** on the `Client` class. This timeout governs the **overall execution duration** of a `Transaction` or `Query` (including retries, backoff, and node rotation). If not already implemented in a specific SDK, it should be added with a default value of **2 minutes (120,000 ms)**.
+
+This change promotes consistent client behavior across SDKs, simplifies configuration, and enhances usability by allowing global control of both **per-request** and **overall operation** timeouts.
 
 ---
 
@@ -20,7 +22,6 @@ This change promotes consistent client behavior across SDKs, simplifies configur
 
 - `number grpcDeadline` : Defines the maximum duration in milliseconds for a gRPC request before timing out.
   - Default: **10,000 milliseconds (10 seconds)**
-  - Minimum value: **1,000 milliseconds (1 second)**
   - Optional property — if not set, the default value applies.
   - Added as a property of the **`Client` class** across all Hiero SDKs.
 
@@ -39,6 +40,31 @@ const client = Client.forMainnet();
 client.setGrpcDeadline(5000); // Set global gRPC deadline to 5 seconds
 
 console.log(client.getGrpcDeadline()); // 5000
+```
+
+---
+
+### New API #2: `Client.requestTimeout`
+
+- `number requestTimeout` : Defines the maximum duration in milliseconds for a **complete `Transaction` or `Query` execution operation**, including all retries and backoff logic.
+  - Default: **120,000 milliseconds (2 minutes)**
+  - Optional property — if not set, the default value applies.
+  - Added to all SDKs where it does not already exist to ensure consistent timeout handling across the ecosystem.
+
+#### Methods
+
+- `Client setRequestTimeout(number requestTimeoutMs)`  
+  Sets the maximum allowed time for a complete execution operation.
+
+- `number getRequestTimeout()`  
+  Returns the currently configured overall execution timeout in milliseconds.
+
+#### Example Usage
+
+```ts
+const client = Client.forMainnet();
+client.setRequestTimeout(60000); // 1 minute timeout for full execute() operation
+console.log(client.getRequestTimeout()); // 60000
 ```
 
 ---
@@ -85,11 +111,12 @@ await tx.execute(client); // Uses 2000 ms
 3. **Default Configuration**
 
    - The default global gRPC deadline will be **10 seconds**, matching standard gRPC developer defaults for cross-SDK consistency.
-   - This aligns the SDK’s network behavior with official gRPC expectations rather than introducing custom aggressive timeout values.
+   - The default global request timeout will be **2 minutes**, defining the upper bound for the total execution lifecycle.
+   - `requestTimeout` should always be **greater than or equal to** the configured `grpcDeadline` to ensure logical consistency.
 
 4. **Exposed Configurability**
 
-   - Developers will be able to customize the timeout globally through `Client.setGrpcDeadline()` to accommodate network distance or latency tolerance.
+   - Developers can adjust both global timeouts (`grpcDeadline` and `requestTimeout`) via the `Client` API to fine-tune network tolerance.
 
 5. **Browser Environment (JavaScript SDK)**
    - In the **JavaScript browser environment**, the SDK uses **gRPC Envoy proxies** to replicate behavior consistent with Node and other SDKs.
@@ -97,16 +124,6 @@ await tx.execute(client); // Uses 2000 ms
    - The healthcheck will have a **timeout equal to the configured `grpcDeadline` in milliseconds**.
    - The healthcheck result will be **cached per node address** so subsequent calls to the same node skip repeating it.
    - All other timeout and retry behavior will remain consistent with other SDKs.
-
----
-
-### Response Codes
-
-No new response codes are introduced as part of this change.
-
-#### Transaction Retry
-
-No new retry logic is introduced directly by this proposal. However, consistent timeout enforcement across SDKs will improve predictability of retry handling.
 
 ---
 
@@ -119,8 +136,4 @@ No new retry logic is introduced directly by this proposal. However, consistent 
 5. **Given** a browser environment, **when** a healthcheck request times out, **then** the node should be marked unhealthy and the SDK should skip the transaction attempt.
 6. **Given** multiple browser requests to the same node, **when** a cached healthcheck exists, **then** no duplicate healthcheck requests should be made.
 7. **Given** network delays or simulated timeouts, **when** multiple SDKs (Java, JS, Go, etc.) perform the same operation, **then** behavior and timeout enforcement should be consistent across implementations.
-8. **Given** an invalid (negative or zero) `grpcDeadline`, **when** the client is initialized, **then** an error or validation exception should occur.
-
----
-
-**Labels:** `enhancement`, `timeout`, `cross-sdk`, `network`, `grpc`, `configuration`, `browser-support`
+8. **Given** a `requestTimeout` smaller than `grpcDeadline`, **then** initialization should throw or adjust automatically to ensure logical ordering.
