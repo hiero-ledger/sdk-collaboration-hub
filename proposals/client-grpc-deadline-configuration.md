@@ -21,6 +21,7 @@ This change promotes consistent client behavior across SDKs, simplifies configur
 ### New API #1: `Client.grpcDeadline`
 
 - `int grpcDeadline` : Defines the maximum duration in milliseconds for a gRPC request before timing out.
+  - Must be a **positive, non-zero integer**.
   - Default: **10,000 milliseconds (10 seconds)**
   - Optional property — if not set, the default value applies.
   - Added as a property of the **`Client` class** across all Hiero SDKs.
@@ -28,7 +29,8 @@ This change promotes consistent client behavior across SDKs, simplifies configur
 #### Methods
 
 - `Client setGrpcDeadline(int grpcDeadlineMs)`  
-  Sets the client-level gRPC deadline in milliseconds on the `Client` instance.
+  Sets the client-level gRPC deadline in milliseconds on the `Client` instance.  
+  Throws an error if `grpcDeadlineMs` ≤ 0.
 
 - `int getGrpcDeadline()`  
   Returns the currently configured client-level gRPC deadline in milliseconds.
@@ -47,6 +49,7 @@ console.log(client.getGrpcDeadline()); // 5000
 ### New API #2: `Client.requestTimeout`
 
 - `int requestTimeout` : Defines the maximum duration in milliseconds for a **complete `Transaction` or `Query` execution operation**, including all retries and backoff logic.
+  - Must be a **positive, non-zero integer**.
   - Default: **120,000 milliseconds (2 minutes)**
   - Optional property — if not set, the default value applies.
   - Added to all SDKs where it does not already exist to ensure consistent timeout handling across the ecosystem.
@@ -54,7 +57,8 @@ console.log(client.getGrpcDeadline()); // 5000
 #### Methods
 
 - `Client setRequestTimeout(int requestTimeoutMs)`  
-  Sets the maximum allowed time for a complete execution operation.
+  Sets the maximum allowed time for a complete execution operation.  
+  Throws an error if `requestTimeoutMs` ≤ 0.
 
 - `int getRequestTimeout()`  
   Returns the currently configured overall execution timeout in milliseconds.
@@ -142,3 +146,4 @@ await tx.execute(client); // Uses 2000 ms
 6. **Given** multiple browser requests to the same node, **when** a cached healthcheck exists, **then** no duplicate healthcheck requests should be made.
 7. **Given** network delays or simulated timeouts, **when** multiple SDKs (Java, JS, Go, etc.) perform the same operation, **then** behavior and timeout enforcement should be consistent across implementations.
 8. **Given** a `requestTimeout` smaller than `grpcDeadline`, **then** initialization should throw or adjust automatically to ensure logical ordering.
+9. **Given** a `grpcDeadline` or `requestTimeout` less than or equal to 0, **then** the client should throw an error during configuration.
