@@ -119,11 +119,16 @@ await tx.execute(client); // Uses 2000 ms
    - Developers can adjust both client-level timeouts (`grpcDeadline` and `requestTimeout`) via the `Client` API to fine-tune network tolerance.
 
 5. **Browser Environment (JavaScript SDK)**
+
    - In the **JavaScript browser environment**, the SDK uses **gRPC Envoy proxies** to replicate behavior consistent with Node and other SDKs.
    - Before performing an actual gRPC request, the SDK will issue an **initial HTTP healthcheck request** to the proxy endpoint.
    - The healthcheck will have a **timeout equal to the configured `grpcDeadline` in milliseconds**.
    - The healthcheck result will be **cached per node address** so subsequent calls to the same node skip repeating it.
    - All other timeout and retry behavior will remain consistent with other SDKs.
+
+6. **Behavior Change**
+   - Previously in the JavaScript SDK, when a `grpcDeadline` was set on a transaction level and exceeded, a **fatal error** was thrown, which terminated the execution of the `execute()` method without attempting to move to another node.
+   - Going forward, when this timeout occurs, all the SDKs should **mark the node as unhealthy** and **automatically retry on the next available node** in the client’s network, ensuring improved resilience and consistency across SDKs.
 
 ---
 
