@@ -49,11 +49,11 @@ The following annotations should be used:
 - `@immutable`: Indicates that the field is immutable and cannot be changed after creation.
 - `@optional`: Indicates that the field is optional and can be null or undefined.
 - `@default(value)`: Indicates that the field has a default value.
-- `@min(value)`: Indicates the minimum value for numeric fields.
-- `@max(value)`: Indicates the maximum value for numeric fields.
-- `@minLength(value)`: Indicates the minimum length for string fields.
-- `@maxLength(value)`: Indicates the maximum length for string fields.
-- `@pattern(regex)`: Indicates a regex pattern that the string field must match.
+- `@min(value)`: Indicates the minimum value for numeric fields. Should be included if the value must be enforced at the SDK level.
+- `@max(value)`: Indicates the maximum value for numeric fields. Should be included if the value must be enforced at the SDK level.
+- `@minLength(value)`: Indicates the minimum length for string fields. Should be included if the value must be enforced at the SDK level.
+- `@maxLength(value)`: Indicates the maximum length for string fields. Should be included if the value must be enforced at the SDK level.
+- `@pattern(regex)`: Indicates a regex pattern that the string field must match. Should be included if the value must be enforced at the SDK level.
 
 ### Method annotations
 
