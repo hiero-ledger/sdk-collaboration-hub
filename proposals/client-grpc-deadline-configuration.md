@@ -141,9 +141,8 @@ await tx.execute(client); // Uses 2000 ms
 1. **Given** a Client with no `grpcDeadline` set, **when** a Transaction executes, **then** it should use the default 10-second client-level deadline.
 2. **Given** a Client with a custom `grpcDeadline` set, **when** a Transaction executes, **then** it should apply the configured deadline to all gRPC calls.
 3. **Given** a Transaction with its own `grpcDeadline`, **when** it executes, **then** it should override the client-level deadline.
-4. **Given** a warmup RPC call during Client initialization, **when** it exceeds the client-level `grpcDeadline`, **then** the SDK should abort the connection and mark the node as temporarily unhealthy.
-5. **Given** a browser environment, **when** a healthcheck request times out, **then** the node should be marked unhealthy and the SDK should skip the transaction attempt.
-6. **Given** multiple browser requests to the same node, **when** a cached healthcheck exists, **then** no duplicate healthcheck requests should be made.
-7. **Given** network delays or simulated timeouts, **when** multiple SDKs (Java, JS, Go, etc.) perform the same operation, **then** behavior and timeout enforcement should be consistent across implementations.
-8. **Given** a `requestTimeout` smaller than `grpcDeadline`, **then** initialization should throw or adjust automatically to ensure logical ordering.
-9. **Given** a `grpcDeadline` or `requestTimeout` less than or equal to 0, **then** the client should throw an error during configuration.
+4. **Given** a browser environment, **when** a healthcheck request times out, **then** the node should be marked unhealthy and the SDK should skip the transaction attempt.
+5. **Given** multiple browser requests to the same node, **when** a cached healthcheck exists, **then** no duplicate healthcheck requests should be made.
+6. **Given** network delays or simulated timeouts, **when** multiple SDKs (Java, JS, Go, etc.) perform the same operation, **then** behavior and timeout enforcement should be consistent across implementations.
+7. **Given** a `requestTimeout` smaller than `grpcDeadline`, **then** initialization should throw or adjust automatically to ensure logical ordering.
+8. **Given** a `grpcDeadline` or `requestTimeout` less than or equal to 0, **then** the client should throw an error during configuration.
