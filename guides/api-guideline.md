@@ -13,24 +13,24 @@ Each proposal should include a section that documents the API in a language-agno
 
 The following basic data types should be used in the API documentation.
 
-| Data Type       | Description                                                   |
-|-----------------|---------------------------------------------------------------|
-| `string`        | A sequence of characters                                      |
-| `intX`          | A signed integer of X bits                                    |
-| `uintX`         | An unsigned integer of X bits                                 |
-| `int`           | A signed integer of 32 bits                                   |
-| `long`          | A signed integer of 64 bits                                   |
-| `double`        | A native floating-point number in 64-bit base-2 format        |
-| `decimal`       | A decimal number with arbitrary precision                     |
-| `bool`          | A boolean value                                               |
-| `bytes`         | A sequence of bytes                                           |
-| `list<TYPE>`    | A list of elements of type TYPE                               |
-| `set<TYPE>`     | A set of elements of type TYPE                                |
-| `map<TYPE, TYPE>`     | A map of elements of type TYPE                     |
-| `date`          | A date value (ISO 8601 calendar date)                         |
-| `time`          | A time value without date or timezone (nanosecond precision)  |
-| `dateTime`      | A date and time value without timezone (nanosecond precision) |
-| `zonedDateTime` | A date and time value with timezone (nanosecond precision)    |
+| Data Type         | Description                                                   |
+|-------------------|---------------------------------------------------------------|
+| `string`          | A sequence of characters                                      |
+| `intX`            | A signed integer of X bits                                    |
+| `uintX`           | An unsigned integer of X bits                                 |
+| `int`             | A signed integer of 32 bits                                   |
+| `long`            | A signed integer of 64 bits                                   |
+| `double`          | A native floating-point number in 64-bit base-2 format        |
+| `decimal`         | A decimal number with arbitrary precision                     |
+| `bool`            | A boolean value                                               |
+| `bytes`           | A sequence of bytes                                           |
+| `list<TYPE>`      | A list of elements of type TYPE                               |
+| `set<TYPE>`       | A set of elements of type TYPE                                |
+| `map<KEY, VALUE>` | A map of elements of type TYPE                                |
+| `date`            | A date value (ISO 8601 calendar date)                         |
+| `time`            | A time value without date or timezone (nanosecond precision)  |
+| `dateTime`        | A date and time value without timezone (nanosecond precision) |
+| `zonedDateTime`   | A date and time value with timezone (nanosecond precision)    |
 
 ### Enumerations
 
