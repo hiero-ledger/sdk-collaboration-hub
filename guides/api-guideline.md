@@ -26,7 +26,7 @@ The following basic data types should be used in the API documentation.
 | `bytes`         | A sequence of bytes                                           |
 | `list<TYPE>`    | A list of elements of type TYPE                               |
 | `set<TYPE>`     | A set of elements of type TYPE                                |
-| `map<TYPE>`     | An immutable map of elements of type TYPE                     |
+| `map<TYPE, TYPE>`     | A map of elements of type TYPE                     |
 | `date`          | A date value (ISO 8601 calendar date)                         |
 | `time`          | A time value without date or timezone (nanosecond precision)  |
 | `dateTime`      | A date and time value without timezone (nanosecond precision) |
