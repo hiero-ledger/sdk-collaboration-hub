@@ -136,7 +136,7 @@ ContactInfo {
 Complex data types can inherit from other complex data types to reuse fields and methods.
 
 - Syntax: Use `extends` to declare a child type.
-- Only a single inheritance / one direct parent type is supported.
+- Only single inheritance (one direct parent type) is supported.
 - Multiple inheritance and mixins are not supported.
 - Inherited members: All fields and methods from the parent are inherited by the child (since we only define public API)
 
