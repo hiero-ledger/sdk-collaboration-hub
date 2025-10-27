@@ -103,7 +103,7 @@ User {
     @optional @min(0) @max(120) age: uint8
     
     @async
-    @throws(not-found-error)
+    @throws(not-found-error, io-error)
     @optional UserProfile fetchProfile(apiKey: string)
 }
 ```
