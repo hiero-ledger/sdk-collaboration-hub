@@ -103,6 +103,26 @@ User {
 }
 ```
 
+### Inheritance
+
+Complex data types can inherit from other complex data types to reuse fields and methods.
+
+- Syntax: Use `extends` to declare a child type.
+- Only single inheritance / one direct parent type is supported.
+- Multiple inheritance and mixins are not supported.
+- Inherited members: All fields and methods from the parent are inherited by the child (since we only define public API)
+
+Syntax examples:
+```
+Person {
+    name: string
+}
+
+Employee extends Person {
+    employeeNumber: string
+}
+```
+
 ### Namespace
 
 Namespaces can be used to group related data types and methods.
