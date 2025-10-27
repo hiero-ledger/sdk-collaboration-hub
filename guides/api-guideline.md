@@ -59,6 +59,9 @@ Method annotations can be used to provide additional information about methods.
 The following annotations should be used:
 - `@async`: Indicates that the method is asynchronous and returns a promise or future.
 - `@throws(error-type)`: Indicates that the method can throw an exception/error.
+  The error-type should be a stable identifier, not transport-specific.
+  Use lowercase-kebab for error identifiers (e.g., `not-found-error`, `parse-error`).
+  Multiple `@throws(error-type)` annotations can be used at a single method to indicate multiple possible errors.
 
 ### Method definitions
 
@@ -78,6 +81,8 @@ A complete method definition example:
 @throws(parse-error)
 @optional ResponseType fetchData(id: uint64, @optional filter: string)
 ```
+
+If a method has no return type, the return type should be `void`.
 
 ### Complex data types
 
@@ -155,7 +160,7 @@ namespace transactions
 
     Transaction {
         @immutable id: uuid
-        @immutable amount: float
+        @immutable amount: double
         @immutable date: dateTime
         @immutable status: TransactionStatus
 
@@ -170,3 +175,13 @@ namespace transactions
         FAILED
     }
 ```
+
+### Naming conventions
+
+To keep the API surface consistent and predictable, use the following naming rules:
+
+- Types (complex types, interfaces, enums, namespaces): PascalCase (e.g., UserProfile, Fetchable).
+- Fields and methods: lowerCamelCase (e.g., employeeNumber, fetchById).
+- Enum values: UPPER_SNAKE_CASE (e.g., PENDING, COMPLETED).
+- Namespace names: lowerCamelCase (e.g., transactions).
+- Error identifiers (in `@throws`): lowercase-kebab-case (e.g., not-found-error, parse-error).
