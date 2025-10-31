@@ -24,75 +24,6 @@ public final class KeyFactory {
     }
 
     /**
-     * Generates a new private key for the given algorithm.
-     *
-     * @param algorithm the key algorithm
-     * @return a new private key
-     */
-    @NonNull
-    public static PrivateKey createPrivateKey(@NonNull final KeyAlgorithm algorithm) {
-        Objects.requireNonNull(algorithm, "algorithm must not be null");
-        if (algorithm == KeyAlgorithm.ED25519) {
-            return KeyUtilitiesED25519.createPrivateKey();
-        } else if (algorithm == KeyAlgorithm.ECDSA) {
-            return KeyUtilitiesECDSA.createPrivateKey();
-        } else {
-            throw new IllegalArgumentException("Unsupported signature algorithm: " + algorithm);
-        }
-    }
-
-    /**
-     * Creates a private key from a hexadecimal string.
-     *
-     * @param privateKey the hex-encoded private key (with or without 0x prefix)
-     * @return the decoded private key
-     */
-    @NonNull
-    public static PrivateKey createPrivateKey(String privateKey) {
-        final byte[] privateKeyBytes = decodeHex(privateKey);
-        return createPrivateKey(privateKeyBytes);
-    }
-
-    /**
-     * Infers the key algorithm from the encoded private key.
-     *
-     * @param privateKey the encoded private key bytes
-     * @return the detected key algorithm
-     */
-    @NonNull
-    public static KeyAlgorithm getAlgorithmForPrivateKey(@NonNull final byte[] privateKey) {
-        //TODO: can we remove this if to make the code cleaner?
-        if ((privateKey.length == Ed25519.SECRET_KEY_SIZE)
-                || (privateKey.length == Ed25519.SECRET_KEY_SIZE + Ed25519.PUBLIC_KEY_SIZE)) {
-            return KeyAlgorithm.ED25519;
-        }
-        try {
-            final PrivateKeyInfo privateKeyInfo = PrivateKeyInfo.getInstance(privateKey);
-            if (privateKeyInfo.getPrivateKeyAlgorithm()
-                    .equals(new AlgorithmIdentifier(KeyUtilitiesED25519.ID_ED25519))) {
-                return KeyAlgorithm.ED25519;
-            } else {
-                return KeyAlgorithm.ECDSA;
-            }
-        } catch (ClassCastException | IllegalArgumentException e) {
-            //TODO: Does this makes sense????
-            return KeyAlgorithm.ECDSA;
-        }
-    }
-
-    /**
-     * Creates a private key from its binary representation. The algorithm is auto-detected.
-     *
-     * @param privateKey the encoded private key bytes
-     * @return the private key
-     */
-    @NonNull
-    public static PrivateKey createPrivateKey(@NonNull final byte[] privateKey) {
-        final KeyAlgorithm algorithm = getAlgorithmForPrivateKey(privateKey);
-        return createPrivateKey(privateKey, algorithm);
-    }
-
-    /**
      * Creates a private key from its binary representation for the specified algorithm.
      *
      * @param privateKey the encoded private key bytes
@@ -101,15 +32,10 @@ public final class KeyFactory {
      * @throws IllegalArgumentException if the bytes do not match the algorithm
      */
     @NonNull
-    public static PrivateKey createPrivateKey(@NonNull final byte[] privateKey, @NonNull final KeyAlgorithm algorithm) {
+    public static PrivateKey createPrivateKey(@NonNull final KeyAlgorithm algorithm, @NonNull final byte[] privateKey) {
         Objects.requireNonNull(algorithm, "algorithm must not be null");
         Objects.requireNonNull(privateKey, "privateKey must not be null");
         if (algorithm == KeyAlgorithm.ED25519) {
-            if ((privateKey.length == Ed25519.SECRET_KEY_SIZE)
-                    || (privateKey.length == Ed25519.SECRET_KEY_SIZE + Ed25519.PUBLIC_KEY_SIZE)) {
-                return KeyUtilitiesED25519.createPrivateKeyFromBytes(privateKey);
-            }
-            //TODO: can we remove this if to make the code cleaner?
             if ((privateKey.length == Ed25519.SECRET_KEY_SIZE)
                     || (privateKey.length == Ed25519.SECRET_KEY_SIZE + Ed25519.PUBLIC_KEY_SIZE)) {
                 return KeyUtilitiesED25519.createPrivateKeyFromBytes(privateKey);
@@ -146,18 +72,8 @@ public final class KeyFactory {
         if (encoded == null) {
             throw new IllegalArgumentException("Given key does not support encoding");
         }
-        return createPrivateKey(encoded);
-    }
-
-    /**
-     * Creates a public key from a hexadecimal string.
-     *
-     * @param publicKey the hex-encoded public key (with or without 0x prefix)
-     * @return the decoded public key
-     */
-    public static PublicKey createPublicKey(String publicKey) {
-        final byte[] publicKeyBytes = decodeHex(publicKey);
-        return createPublicKey(publicKeyBytes);
+        final KeyAlgorithm algorithm = KeyAlgorithm.valueOf(privateKey.getAlgorithm());
+        return createPrivateKey(algorithm, encoded);
     }
 
     /**
@@ -168,8 +84,14 @@ public final class KeyFactory {
      * @throws UnsupportedOperationException until implemented
      */
     @NonNull
-    public static PublicKey createPublicKey(@NonNull final byte[] publicKey) {
-        throw new UnsupportedOperationException("PublicKeyFactory.create is not implemented yet");
+    public static PublicKey createPublicKey(KeyAlgorithm algorithm, @NonNull final byte[] publicKey) {
+        if(algorithm == KeyAlgorithm.ECDSA) {
+            return new PublicKeyWithECDSA(publicKey);
+        }
+        if(algorithm == KeyAlgorithm.ED25519) {
+            return new PublicKeyWithED25519(publicKey);
+        }
+        throw new UnsupportedOperationException("Public key creation for algorithm " + algorithm + " is not supported");
     }
 
     /**
@@ -185,7 +107,8 @@ public final class KeyFactory {
         if (encoded == null) {
             throw new IllegalArgumentException("Given key does not support encoding");
         }
-        return createPublicKey(encoded);
+        final KeyAlgorithm algorithm = KeyAlgorithm.valueOf(publicKey.getAlgorithm());
+        return createPublicKey(algorithm, encoded);
     }
 
     /**
@@ -276,5 +199,20 @@ public final class KeyFactory {
                 return publicKey.hashCode();
             }
         };
+    }
+
+    public static @NonNull PrivateKey createPrivateKey(KeyAlgorithm algorithm) {
+        if(algorithm == KeyAlgorithm.ECDSA) {
+            return KeyUtilitiesECDSA.createPrivateKey();
+        }
+        if(algorithm == KeyAlgorithm.ED25519) {
+            return KeyUtilitiesED25519.createPrivateKey();
+        } else {
+            throw new UnsupportedOperationException("Private key creation for algorithm " + algorithm + " is not supported");
+        }
+    }
+
+    public static byte[] decode(String key, KeyEncoding encoding) {
+        return encoding == KeyEncoding.DER ? Hex.decode(key) : Hex.decode(key.startsWith("0x") ? key.substring(2) : key);
     }
 }

@@ -46,8 +46,9 @@ public interface PublicKey extends Key {
      */
     //TODO: Do we really want to have that method without the definition of the KeyAlgorithm and KeyEncoding?
     @NonNull
-    static PublicKey from(@NonNull final String publicKey) {
-        return KeyFactory.createPublicKey(publicKey);
+    static PublicKey from(KeyAlgorithm algorithm, KeyEncoding encoding, @NonNull final String publicKey) {
+        final byte[] bytes = KeyFactory.decode(publicKey, encoding);
+        return from(algorithm, bytes);
     }
 
     /**
@@ -58,7 +59,7 @@ public interface PublicKey extends Key {
      */
     //TODO: Do we really want to have that method without the definition of the KeyAlgorithm and KeyEncoding?
     @NonNull
-    static PublicKey from(@NonNull byte[] publicKey) {
-        return KeyFactory.createPublicKey(publicKey);
+    static PublicKey from(KeyAlgorithm algorithm, @NonNull byte[] publicKey) {
+        return KeyFactory.createPublicKey(algorithm, publicKey);
     }
 }
