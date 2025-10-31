@@ -118,7 +118,7 @@ Rules and recommendations for `@oneOf`:
 - All listed fields must be declared with `@optional`
 - None or all listed fields must be declared with `@immutable`.
 - If the fields are not `@immutable` and a field is set, an SDK must unset all other fields
-- None or extacly one of the listed fields must be annotated by `@default(value)`
+- None or exactly one of the listed fields must be annotated by `@default(value)`
 - If the fields are not `@immutable` and none is annotated by `@default(value)` at least one must be set by the constructor to not end in an invalid state. 
 
 Examples:
