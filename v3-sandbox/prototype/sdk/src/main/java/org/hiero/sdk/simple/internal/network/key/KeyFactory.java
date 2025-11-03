@@ -217,9 +217,8 @@ public final class KeyFactory {
         }
         if(algorithm == KeyAlgorithm.ED25519) {
             return KeyUtilitiesED25519.createPrivateKey();
-        } else {
-            throw new UnsupportedOperationException("Private key creation for algorithm " + algorithm + " is not supported");
         }
+        throw new UnsupportedOperationException("Private key creation for algorithm " + algorithm + " is not supported");
     }
 
     public static byte[] decode(String key, KeyEncoding encoding) {
