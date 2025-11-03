@@ -53,3 +53,10 @@ PrivateKey createPrivateKey(algorithm: KeyAlgorithm, encoding: KeyEncoding, byte
 PublicKey createPublicKey(algorithm: KeyAlgorithm, bytes: bytes)
 PublicKey createPublicKey(algorithm: KeyAlgorithm, encoding: KeyEncoding, bytes: string)
 ```
+
+### Comments
+
+@rwalworth: What do you think about only exposing a `KeyPair` API and making `PublicKey` and `PrivateKey` internal?
+This would consolidate all the key processing to one object, users wouldn't have to keep track of two different objects.
+`KeyPair` objects could still be initialized from `PrivateKey` or `PublicKey` bytes/strings and all the same functionality would be kept but just in one object instead of two.
+Thoughts?
