@@ -201,6 +201,16 @@ public final class KeyFactory {
         };
     }
 
+    /**
+     * Creates a new {@link PrivateKey} instance for the specified {@link KeyAlgorithm}.
+     * <p>
+     * Supported algorithms are ECDSA and ED25519. If an unsupported algorithm is provided,
+     * an {@link UnsupportedOperationException} is thrown.
+     *
+     * @param algorithm the key algorithm for which to create a private key
+     * @return a new {@link PrivateKey} instance for the specified algorithm
+     * @throws UnsupportedOperationException if the algorithm is not supported
+     */
     public static @NonNull PrivateKey createPrivateKey(KeyAlgorithm algorithm) {
         if(algorithm == KeyAlgorithm.ECDSA) {
             return KeyUtilitiesECDSA.createPrivateKey();
