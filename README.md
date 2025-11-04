@@ -50,11 +50,21 @@ Instead, it is a **support system** for Hiero SDK contributors, meant to lower t
 This project is maintained by the Hiero organization. For questions or support, open an issue or reach out to a [maintainer](MAINTAINERS.md).
 
 ## Hiero SDK Call 
-
-We meet fortnightly on Monday's to collaborate on Hiero's SDK.
-
-Join by signing up to the SDK Call via the Linux Foundation Decentralized Trust: [calendar](https://www.lfdecentralizedtrust.org/meeting-calendar).
-You can also use that link to view the recordings.
+### What it is
+The SDK Community Call is a bi-weekly (fortnightly) open gathering of developers, maintainers, and contributors working on the Hiero SDKs. It’s the ideal forum to:
+- Share what you’re working on (new features, language-bindings, SDK performance, identity/VC flows etc.)
+- Raise questions and discuss technical issues or design proposals
+- Align across SDK stacks (Java, JavaScript/TS, Go, Rust, Python) and contribute to cross-cutting topics
+- Build a stronger, more collaborative SDK ecosystem together
+### Why attend
+- Get visibility into what others are doing, avoid duplicate work, and discover opportunities to collaborate
+- Contribute your ideas early and influence design decisions and roadmap priorities
+- Connect with the maintainers and the broader community in a direct and informal setting
+- Catch up on recordings if you miss a live call — they’re archived for reference
+### When & how to join
+- The meeting is scheduled at a regular cadence on Mondays (every two weeks) under the project’s community calendar. 
+- To register for the call, please use the registration link on the LFX Calendar page for the SDK meeting series [here](https://zoom-lfx.platform.linuxfoundation.org/meeting/94709702244-1762182000000/summaries?password=90c20c92-81b0-4c1e-b37c-2369fdc30cc3).
+- For all community call times, past recordings, and calendar invites, refer to the public Hiero project calendar [here](https://www.lfdecentralizedtrust.org/meeting-calendar).
 
 ## Contributing
 
