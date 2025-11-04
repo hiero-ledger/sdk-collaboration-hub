@@ -18,6 +18,7 @@ enum KeyEncoding {
 }
 
 // abstract key definition
+@abstraction
 Key {
     @immutable bytes: bytes //the raw bytes of the key
     @immutable algorithm: KeyAlgorithm //the algorithm of the key
