@@ -73,7 +73,7 @@ ReturnType methodName(param1: DataType1, param2: DataType2)
 
 The following attribute annotations can be used on method parameters: `@optional`, `@min(value)`, `@max(value)`, `@minLength(value)`, `@maxLength(value)`, `@pattern(regex)`
 
-The following attribute annotations can be used on method return types: `@immutable`, `@optional`
+The following attribute annotations can be used on method return types: `@optional`
 
 A complete method definition example:
 ```
@@ -98,7 +98,7 @@ DataTypeName {
 A complete complex data type example:
 ```
 User {
-    @immutable id: uuid
+    @immutable id: string
     @minLength(3) @maxLength(100) email: string
     @optional @min(0) @max(120) age: uint8
     
