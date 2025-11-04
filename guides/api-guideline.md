@@ -40,6 +40,28 @@ enum EnumName {
 }
 ```
 
+Attribute (defined below) can be added to enumerations. Attributes added to enumerations must be immutable.
+
+```
+enum EnumName {
+    VALUE1
+    VALUE2
+    
+    @immutable primitiveValue: int
+}
+
+Methods (defined below) can be added to enumerations:
+
+```
+enum EnumName {
+    VALUE1
+    VALUE2
+    
+    @optional int calcPrimitiveType()
+}
+```
+
+
 ### Attribute annotations
 
 Attribute annotations can be used to provide additional information about attributes in complex data types.
@@ -102,6 +124,9 @@ User {
     @optional UserProfile fetchProfile(apiKey: string)
 }
 ```
+
+The following annotations can be used on complexe data types to provide additional information and context: 
+- `@abstraction`: a complex data type that can not be instanciated but is a base type for other complex data types.
 
 ### Namespace
 
