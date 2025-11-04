@@ -58,10 +58,9 @@ The following annotations should be used:
 Method annotations can be used to provide additional information about methods.
 The following annotations should be used:
 - `@async`: Indicates that the method is asynchronous and returns a promise or future.
-- `@throws(error-type)`: Indicates that the method can throw an exception/error.
-  The error-type should be a stable identifier, not transport-specific.
+- `@throws(error-type-a[, ...])`: Indicates that the method can throw an exception/error.
+  The error-types should be stable identifiers, not transport-specific.
   Use lowercase-kebab for error identifiers (e.g., `not-found-error`, `parse-error`).
-  Multiple `@throws(error-type)` annotations can be used at a single method to indicate multiple possible errors.
 
 ### Method definitions
 
@@ -113,13 +112,21 @@ User {
 Type annotations apply to a complex data type as a whole (as opposed to a single attribute or a method).
 The following annotations should be used:
 - `@oneOf(field1, field2[, ...])`: Exactly one of the referenced fields can be non-null/non-undefined at any given time.
+- `@oneOrNoneOf(field1, field2[, ...])`: Exactly one of the referenced fields can be non-null/non-undefined at any given time or all fields are null/undefined.
 
 Rules and recommendations for `@oneOf`:
 - All listed fields must be declared with `@optional`
 - None or all listed fields must be declared with `@immutable`.
 - If the fields are not `@immutable` and a field is set, an SDK must unset all other fields
+- If the fields are not `@immutable` and the currently set field is unset, an SDK must throw an error.
 - None or exactly one of the listed fields must be annotated by `@default(value)`
 - If the fields are not `@immutable` and none is annotated by `@default(value)` at least one must be set by the constructor to not end in an invalid state. 
+
+Rules and recommendations for `@oneOrNoneOf`:
+- All listed fields must be declared with `@optional`
+- None or all listed fields must be declared with `@immutable`.
+- If the fields are not `@immutable` and a field is set, an SDK must unset all other fields
+- None or exactly one of the listed fields must be annotated by `@default(value)`
 
 Examples:
 ```
