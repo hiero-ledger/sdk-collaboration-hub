@@ -49,6 +49,7 @@ enum EnumName {
     
     @immutable primitiveValue: int
 }
+```
 
 Methods (defined below) can be added to enumerations:
 
