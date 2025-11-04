@@ -127,7 +127,7 @@ User {
 ```
 
 The following annotations can be used on complex data types to provide additional information and context: 
-- `@abstraction`: a complex data type that can not be instanciated but is a base type for other complex data types.
+- `@abstraction`: a complex data type that can not be instantiated but is a base type for other complex data types.
 
 ### Namespace
 
