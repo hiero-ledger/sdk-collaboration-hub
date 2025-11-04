@@ -4,5 +4,5 @@ This file defines the API for the prototype in the format defined at our [api-gu
 
 ## APIs
 
-- [Common Datatypes]
+- [Common Datatypes](common_datatypes.md)
 - [Key API](keys.md)
