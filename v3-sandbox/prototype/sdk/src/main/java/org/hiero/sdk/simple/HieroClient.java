@@ -8,6 +8,7 @@ import java.util.function.BiFunction;
 import org.hiero.sdk.simple.grpc.GrpcClient;
 import org.hiero.sdk.simple.internal.HieroClientImpl;
 import org.hiero.sdk.simple.network.Account;
+import org.hiero.sdk.simple.network.Network;
 import org.hiero.sdk.simple.network.TransactionId;
 import org.hiero.sdk.simple.network.settings.NetworkSettings;
 import org.jspecify.annotations.NonNull;
@@ -72,6 +73,14 @@ public interface HieroClient {
      */
     @NonNull
     NetworkSettings getNetworkSettings();
+
+    /**
+     *  Returns the network used by this Hiero client.
+     *
+     * @return the network
+     */
+    @NonNull
+    Network getNetwork();
 
     /**
      * Returns the default timeout in milliseconds for network operations.
