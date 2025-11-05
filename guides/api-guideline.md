@@ -58,7 +58,7 @@ enum EnumName {
     VALUE1
     VALUE2
     
-    @optional int calcPrimitiveType()
+    int calcPrimitiveType()
 }
 ```
 
