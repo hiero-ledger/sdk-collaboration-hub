@@ -16,5 +16,6 @@ public record Network(@NonNull String identifier, @Nullable String name, @NonNul
     public Network {
         Objects.requireNonNull(identifier, "identifier must not be null");
         Objects.requireNonNull(id, "id must not be null");
+        id = id.clone();
     }
 }
