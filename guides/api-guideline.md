@@ -102,6 +102,8 @@ A complete method definition example:
 @optional ResponseType fetchData(id: uint64, @optional filter: string)
 ```
 
+If a method has no return type, the return type should be `void`.
+
 ### Complex data types
 
 Complex data types can be defined using the basic data types and other complex data types.
@@ -126,8 +128,57 @@ User {
 }
 ```
 
-The following annotations can be used on complex data types to provide additional information and context: 
-- `@abstraction`: a complex data type that can not be instantiated but is a base type for other complex data types.
+### Type annotations
+
+Type annotations apply to a complex data type as a whole (as opposed to a single attribute or a method).
+The following annotations should be used:
+- `@oneOf(field1, field2[, ...])`: Exactly one of the referenced fields can be non-null/non-undefined at any given time.
+- `@oneOrNoneOf(field1, field2[, ...])`: Exactly one of the referenced fields can be non-null/non-undefined at any given time or all fields are null/undefined.
+- `@abstraction`: a complex data type that can not be instanciated but is a base type for other complex data types.
+
+Rules and recommendations for `@oneOf`:
+- All listed fields must be declared with `@optional`
+- None or all listed fields must be declared with `@immutable`.
+- If the fields are not `@immutable` and a field is set, an SDK must unset all other fields
+- If the fields are not `@immutable` and the currently set field is unset, an SDK must throw an error.
+- None or exactly one of the listed fields must be annotated by `@default(value)`
+- If the fields are not `@immutable` and none is annotated by `@default(value)` at least one must be set by the constructor to not end in an invalid state. 
+
+Rules and recommendations for `@oneOrNoneOf`:
+- All listed fields must be declared with `@optional`
+- None or all listed fields must be declared with `@immutable`.
+- If the fields are not `@immutable` and a field is set, an SDK must unset all other fields
+- None or exactly one of the listed fields must be annotated by `@default(value)`
+
+Examples:
+```
+@oneOf(email, phone)
+ContactInfo {    
+    @optional email: string
+    @optional phone: string
+}
+
+```
+
+### Inheritance
+
+Complex data types can inherit from other complex data types to reuse fields and methods.
+
+- Syntax: Use `extends` to declare a child type.
+- Only single inheritance (one direct parent type) is supported.
+- Multiple inheritance and mixins are not supported.
+- Inherited members: All fields and methods from the parent are inherited by the child (since we only define public API)
+
+Syntax examples:
+```
+Person {
+    name: string
+}
+
+Employee extends Person {
+    employeeNumber: string
+}
+```
 
 ### Namespace
 
@@ -153,3 +204,13 @@ namespace transactions
         FAILED
     }
 ```
+
+### Naming conventions
+
+To keep the API surface consistent and predictable, use the following naming rules:
+
+- Types (complex types, interfaces, enums, namespaces): PascalCase (e.g., UserProfile, Fetchable).
+- Fields and methods: lowerCamelCase (e.g., employeeNumber, fetchById).
+- Enum values: UPPER_SNAKE_CASE (e.g., PENDING, COMPLETED).
+- Namespace names: lowerCamelCase (e.g., transactions).
+- Error identifiers (in `@throws`): lowercase-kebab-case (e.g., not-found-error, parse-error).
