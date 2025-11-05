@@ -191,7 +191,7 @@ namespace transactions
 
     Transaction {
         @immutable id: uuid
-        @immutable amount: float
+        @immutable amount: double
         @immutable date: dateTime
         @immutable status: TransactionStatus
 
