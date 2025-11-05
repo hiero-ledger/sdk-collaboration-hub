@@ -81,7 +81,9 @@ The following annotations should be used:
 Method annotations can be used to provide additional information about methods.
 The following annotations should be used:
 - `@async`: Indicates that the method is asynchronous and returns a promise or future.
-- `@throws(error-type)`: Indicates that the method can throw an exception/error.
+- `@throws(error-type-a[, ...])`: Indicates that the method can throw an exception/error.
+  The error-types should be stable identifiers, not transport-specific.
+  Use lowercase-kebab for error identifiers (e.g., `not-found-error`, `parse-error`).
 
 ### Method definitions
 
