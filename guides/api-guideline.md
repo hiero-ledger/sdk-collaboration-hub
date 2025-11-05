@@ -40,6 +40,29 @@ enum EnumName {
 }
 ```
 
+Attribute (defined below) can be added to enumerations. Attributes added to enumerations must be immutable.
+
+```
+enum EnumName {
+    VALUE1
+    VALUE2
+    
+    @immutable primitiveValue: int
+}
+```
+
+Methods (defined below) can be added to enumerations:
+
+```
+enum EnumName {
+    VALUE1
+    VALUE2
+    
+    int calcPrimitiveType()
+}
+```
+
+
 ### Attribute annotations
 
 Attribute annotations can be used to provide additional information about attributes in complex data types.
@@ -113,6 +136,7 @@ Type annotations apply to a complex data type as a whole (as opposed to a single
 The following annotations should be used:
 - `@oneOf(field1, field2[, ...])`: Exactly one of the referenced fields can be non-null/non-undefined at any given time.
 - `@oneOrNoneOf(field1, field2[, ...])`: Exactly one of the referenced fields can be non-null/non-undefined at any given time or all fields are null/undefined.
+- `@abstraction`: a complex data type that can not be instanciated but is a base type for other complex data types.
 
 Rules and recommendations for `@oneOf`:
 - All listed fields must be declared with `@optional`
