@@ -43,13 +43,4 @@ public interface Address {
      */
     boolean validateChecksum(@NonNull Network network);
 
-    /**
-     *  Returns a human readable string representation of this address.
-     *
-     * @return a human readable string representation of this address
-     */
-    @NonNull
-    default String toHumanReadbleString() {
-        return shard() + "." + realm() + "." + num();
-    }
 }

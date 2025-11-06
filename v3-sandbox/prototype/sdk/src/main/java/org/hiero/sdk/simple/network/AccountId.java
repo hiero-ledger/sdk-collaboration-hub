@@ -30,4 +30,24 @@ public record AccountId(long shard,
     public boolean validateChecksum(@NonNull Network network) {
         throw new UnsupportedOperationException("Not yet implemented");
     }
+
+    /**
+     *  Returns a human readable string representation of this address.
+     *
+     * @return a human readable string representation of this address
+     */
+    @Override
+    public String toString() {
+        return shard() + "." + realm() + "." + num();
+    }
+
+    /**
+     *  Returns a human readable string representation of this address with checksum.
+     *
+     * @return a human readable string representation of this address with checksum
+     */
+    @NonNull
+    public String toStringWithChecksum() {
+        return toString() + "-" + checksum();
+    }
 }
