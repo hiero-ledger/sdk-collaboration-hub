@@ -30,7 +30,7 @@ HBarExchangeRate {
     @immutable exchangeRateInUsdCents: double // exchange rate of HBar in USD cents
 }
 
-// Represents a specifif ledger instance
+// Represents a specific ledger instance
 Ledger {
     @immutable id: bytes // identifier of the ledger
 }
