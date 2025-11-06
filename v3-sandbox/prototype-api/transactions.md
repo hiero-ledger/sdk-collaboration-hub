@@ -54,7 +54,7 @@ PackedTransaction {
 
   Transaction unpack() // returns a new basic transaction instance based on this packed transaction
 
-  // Question: Should we provide another complexe type like "SignedTransaction" that is created here and contains the send api? Is there any scenario where we want to send a transaction that is not signed?
+  // Question: Should we provide another complex type like "SignedTransaction" that is created here and contains the send api? Is there any scenario where we want to send a transaction that is not signed?
   void sign(keyPair:KeyPair) // sign the transaction, if the lang supports it, we should provide a fluent API (return this)
   void sign(publicKey:PublicKey, transactionSigner:TransactionSigner) // sign the transaction, if the lang supports it, we should provide a fluent API (return this)
 
