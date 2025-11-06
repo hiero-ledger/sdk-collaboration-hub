@@ -87,7 +87,7 @@ Receipt {
 @abstraction
 Record {
   @immutable transactionId:TransactionId // the transaction id
-  @immutable consensusTimestamp:zonedDateTime // the conensus time of the transaction
+  @immutable consensusTimestamp:zonedDateTime // the consensus time of the transaction
   @immutable receipt:Receipt // the receipt of the transaction
 }
 
