@@ -207,6 +207,14 @@ namespace transactions
     }
 ```
 
+If a namespace depends on other namespaces, use the `requires` keyword to declare the dependencies:
+```
+namespace transactions
+requires common, keys
+
+...
+```
+
 ### Naming conventions
 
 To keep the API surface consistent and predictable, use the following naming rules:
