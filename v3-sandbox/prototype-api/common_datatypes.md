@@ -50,7 +50,7 @@ Address {
 AccountId extends Address {
 }
 
-// factory methods of keys that should be added to the namespace in the best language dependent way
+// factory methods of AccountId that should be added to the namespace in the best language dependent way
 
 AccountId fromString(accountId: string)
 ```
