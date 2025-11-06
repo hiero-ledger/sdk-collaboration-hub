@@ -4,7 +4,7 @@ This section defines the API for transactions.
 
 ```
 namespace transactions
-requires common,keys,client
+requires common, keys, client
 
 // Defines the status of a transaction. Since we can have custom transaction types based on custom services in the consensus node we can not use an enum here anymore
 @abstraction
