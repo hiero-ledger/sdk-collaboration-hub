@@ -44,7 +44,7 @@ Transaction {
   @optional validDuration:long // in milliseconds, a better lang specific type can be used
   @optional memo:string // a memo to be attached to the transaction
 
-  PackedTransaction packTransaction(client:HieroClient) // returns a new packed instance of the transaction (previouisly this was named frozen transaction)
+  PackedTransaction packTransaction(client:HieroClient) // returns a new packed instance of the transaction (previously this was named frozen transaction)
 }
 
 // A packed transaction that can not change any parameters after it was created
