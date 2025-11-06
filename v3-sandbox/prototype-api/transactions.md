@@ -91,7 +91,7 @@ Record {
   @immutable receipt:Receipt // the receipt of the transaction
 }
 
-// factory methods of keys that should be added to the namespace in the best language dependent way
+// factory methods of TransactionId that should be added to the namespace in the best language dependent way
 
 TransactionId generateTransactionId(accountId: AccountId)
 TransactionId fromString(transactionId: string)
