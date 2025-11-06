@@ -4,7 +4,7 @@ This section defines the API for transactions.
 
 ```
 namespace transactions
-requires common,keys
+requires common,keys,client
 
 // Defines the status of a transaction. Since we can have custom transaction types based on custom services in the consensus node we can not use an enum here anymore
 @abstraction
@@ -25,6 +25,7 @@ enum BasicTransactionStatus extends TransactionStatus {
 TransactionId {
   @immutable accountId:AccountId // the account that is the payer of the transaction
   @immutable validStart:zonedDateTime // the start time of the transaction
+  @immutable @optional nonce:int32 // nonce of an internal transaction
   
   string toString() // returns id in format TO_BE_DEFINED_IN_FUTURE_VERSIONS
   string toStringWithChecksum() // returns id in format TO_BE_DEFINED_IN_FUTURE_VERSIONS
@@ -89,4 +90,10 @@ Record {
   @immutable consensusTimestamp:zonedDateTime // the conensus time of the transaction
   @immutable receipt:Receipt // the receipt of the transaction
 }
+
+// factory methods of keys that should be added to the namespace in the best language dependent way
+
+TransactionId generateTransactionId(accountId: AccountId)
+TransactionId fromString(transactionId: string)
+
 ```

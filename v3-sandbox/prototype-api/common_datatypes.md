@@ -47,6 +47,12 @@ Address {
     string toStringWithChecksum() // returns address in format "shard.realm.num-checksum"
 }
 
+AccountId extends Address {
+}
+
+// factory methods of keys that should be added to the namespace in the best language dependent way
+
+AccountId fromString(accountId: string)
 ```
 
 ## Questions
