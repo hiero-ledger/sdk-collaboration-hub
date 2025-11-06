@@ -12,6 +12,14 @@ TransactionStatus {
   @immutable code:int32 // the status code that should be unique based on the consensus node. 
 }
 
+enum BasicTransactionStatus extends TransactionStatus {
+    OK
+    INVALID_TRANSACTION
+    PAYER_ACCOUNT_NOT_FOUND
+    ...          // other status codes should be defined here TO_BE_DEFINED_IN_FUTURE_VERSIONS
+    GRPC_WEB_PROXY_NOT_SUPPORTED
+}
+
 // Id of a transaction
 @abstraction
 TransactionId {
