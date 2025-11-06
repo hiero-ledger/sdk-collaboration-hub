@@ -15,33 +15,34 @@ enum HbarUnit {
     MEGABAR  // Mℏ
     GIGABAR  // Gℏ
     
-    @@immutable symbol: String // symbol of the unit
-    @@immutable tinybars: int64  // number of tinybars in one unit
+    @immutable symbol: String // symbol of the unit
+    @immutable tinybars: int64  // number of tinybars in one unit
 }
 
 // Hbar is a wrapper around int64 that represents a amount of Hbar based on a given unit.
 Hbar {
-    @@immutable amount: int64 // amount in the given unit
-    @@immutable unit: HbarUnit // unit of the amount
+    @immutable amount: int64 // amount in the given unit
+    @immutable unit: HbarUnit // unit of the amount
 }
 
 HBarExchangeRate {
-    @@immutable expirationTime: zonedDateTime // expiration time of the exchange rate
-    @@immutable exchangeRateInUsdCents: double // exchange rate of HBar in USD cents
+    @immutable expirationTime:zonedDateTime // expiration time of the exchange rate
+    @immutable exchangeRateInUsdCents: double // exchange rate of HBar in USD cents
 }
 
-// Represents a specific ledger instance
+// Represents a specifif ledger instance
 Ledger {
-    @@immutable id: bytes // identifier of the ledger
+    @immutable id: bytes // identifier of the ledger
 }
 
 // Represents the base of an address on the Hedera network.
-abstraction Address {
-    @@immutable shard: uint64 // shard number
-    @@immutable realm: uint64 // realm number
-    @@immutable num: uint64 // account number
-    @@immutable checksum: string // checksum of the address
-    boolean validateChecksum(ledger: Ledger) // validates the checksum of the address
+@abstraction
+Address {
+    @immutable shard: uint64 // shard number
+    @immutable realm: uint64 // realm number
+    @immutable num: uint64 // account number
+    @immutable checksum: string // checksum of the address
+    boolean validateChecksum(ledger:Ledger) // validates the checksum of the address
     string toString() // returns address in format "shard.realm.num"
     string toStringWithChecksum() // returns address in format "shard.realm.num-checksum"
 }
@@ -56,4 +57,4 @@ AccountId fromString(accountId: string)
 
 ## Questions
 
-@hendrikebbers: Should we rename `Ledger` to `Network`?
+Should we rename `Ledger` to `Network`?
