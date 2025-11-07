@@ -26,7 +26,7 @@ Hbar {
 }
 
 HBarExchangeRate {
-    @immutable expirationTime:zonedDateTime // expiration time of the exchange rate
+    @immutable expirationTime: zonedDateTime // expiration time of the exchange rate
     @immutable exchangeRateInUsdCents: double // exchange rate of HBar in USD cents
 }
 
