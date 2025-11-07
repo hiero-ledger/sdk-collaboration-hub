@@ -1,11 +1,12 @@
 package org.hiero.sdk.simple.network;
 
 import java.util.regex.Pattern;
+import org.jspecify.annotations.NonNull;
 
 public record AccountId(long shard,
                         long realm,
                         long num,
-                        String checksum) {
+                        String checksum) implements Address {
 
     private static final Pattern ENTITY_ID_REGEX =
             Pattern.compile("(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-([a-z]{5}))?$");
@@ -26,7 +27,27 @@ public record AccountId(long shard,
     }
 
     @Override
+    public boolean validateChecksum(@NonNull Network network) {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    /**
+     *  Returns a human readable string representation of this address.
+     *
+     * @return a human readable string representation of this address
+     */
+    @Override
     public String toString() {
-        return shard + "." + realm + "." + num;
+        return shard() + "." + realm() + "." + num();
+    }
+
+    /**
+     *  Returns a human readable string representation of this address with checksum.
+     *
+     * @return a human readable string representation of this address with checksum
+     */
+    @NonNull
+    public String toStringWithChecksum() {
+        return toString() + "-" + checksum();
     }
 }
