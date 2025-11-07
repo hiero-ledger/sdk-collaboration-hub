@@ -17,8 +17,8 @@ Use the following canonical mappings when turning meta types into Java:
 | `decimal`         | `java.math.BigDecimal`         | -                    |
 | `bool`            |  `boolean`/`java.lang.Boolean`        | -                                               |
 | `bytes`           |  `byte[]`       | -                                       |
-| `list<TYPE>`      |  `java.lang.String`        | -                         |
-| `set<TYPE>`       |  `java.util.List<TYPE>`     | -                          |
+| `list<TYPE>`      |  `java.util.List<TYPE>`        | -                         |
+| `set<TYPE>`       |  `java.util.Set<TYPE>`     | -                          |
 | `map<KEY, VALUE>` |  `java.util.Map<KEY, VALUE>`        | -                               |
 | `date`            | `java.time.LocalDate`         | -                       |
 | `time`            |  `java.time.LocalTime`         | -  |
