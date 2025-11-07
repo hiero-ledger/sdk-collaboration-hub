@@ -6,24 +6,36 @@ This is the template to use for Hiero SDK design documents. These documents shou
 
 Brief description of the design, what it’s meant to accomplish, how it should be used, etc. Any information that would be relevant to the usage of the new design should be provided. Any changes to previous workflows that may result from the new design should be outlined. Links to relevant HIPs, protobuf PRs, services PRs, etc. should be provided here as well to provide additional context for the use of the new design. Links to relevant SDK/TCK issues/PRs should be provided as well.
 
+**Date Submitted:** [YYYY]-[MM]-[DD]
+
 ## New APIs
 
-Define the names of the new APIs being added, as well as how they are interacted with.
+Define the names of the new APIs being added, as well as how they are interacted with. The API definitions provided her should follow the [API Guidelines](../guides/api-guideline.md) outlined in this repo.
 
-### New API #1
+**NOTE:** Only public APIs should be listed in this section. Internal implementation details are left to the discretion of the implementer within their respective SDK.
 
-- `Type property` : description of the property.
-    - Make note of any additional features to know about the property, such as min/max values, required/optional, etc.
-    - Provide generic examples of setting/getting the property in code.
-        - `NewApi setProperty(Type prop)`
-        - `Type getProperty()`
-- `NewApi function(Type1 var1, Type2 var2,...)` : description of what the function does.
-    - Make note of any additional features/ramifications of using this function (anything that may not be immediately clear to the user).
-    - `Type1 var1` : description of input variable.
-        - Make note of any additional features to know about this input, such as min/max values, etc.
-    - `Type2 var2` : description of input variable.
+### ApiName1
 
-### New API #2
+```
+ApiName1 {
+    @attribute field1: type
+    @attribute field2: type
+}
+```
+
+
+### ApiName2
+
+```
+ApiName2 {
+    @attribute
+    ReturnType1 method1(param1: type)
+    
+    @attribute
+    @attribute
+    ReturnType2 method2(param1: type, @attribute param2: type)
+}
+```
 
 …
 
@@ -31,22 +43,27 @@ Define the names of the new APIs being added, as well as how they are interacted
 
 ## Updated APIs
 
-APIs that already exist in the SDKs that are getting updated in some way (generally fields are being added). A brief explanation of why the API is being updated as well should be provided.
+APIs that already exist in the SDKs that are getting updated in some way (generally fields are being added). The API definitions provided her should follow the [API Guidelines](../guides/api-guideline.md) outlined in this repo. You should only list the fields/methods being added to the API.
 
-### Updated API #1
+**NOTE:** Only public APIs should be listed in this section. Internal implementation details are left to the discretion of the implementer within their respective SDK.
 
-- `Type newProperty` : description of the new property.
-    - Make note of any additional features to know about the new property, such as min/max values, required/optional, etc.
-    - Provide generic examples of setting/getting the new property in code.
-        - `NewApi setProperty(Type prop)`
-        - `Type getProperty()`
-- `NewApi function(Type1 var1, Type2 var2,...)` : description of what the function does.
-    - Make note of any additional features/ramifications of using this function (anything that may not be immediately clear to the user).
-    - `Type1 var1` : description of input variable.
-        - Make note of any additional features to know about this input, such as min/max values, required/optional, etc.
-    - `Type2 var2` : description of input variable.
+### AlreadyExistingApiName1
 
-### Updated API #2
+```
+AlreadyExistingApiName1 {
+    @attribute field3: type
+}
+```
+
+
+### AlreadyExistingApiName2
+
+```
+AlreadyExistingApiName2 {
+    @attribute
+    ReturnType3 method3(param1: type)
+}
+```
 
 …
 
@@ -54,7 +71,7 @@ APIs that already exist in the SDKs that are getting updated in some way (genera
 
 ## Internal Changes
 
-If applicable, description of any internal changes to the SDKs that may impact usage that don't involve an API change. It should describe why the change is happening and its relevancy to the feature. It should describe any new expected behavior and how it differs from old behavior, as well as how users should remedy the behavior change.
+If applicable, description of any internal changes to the SDKs that may impact usage that don't involve an API change. It should describe why the change is happening and its relevancy to the feature. It should describe any new expected behavior and how it differs from old behavior, as well as how users should remedy the behavior change (if an approved breaking change).
 
 ### Response Codes
 
