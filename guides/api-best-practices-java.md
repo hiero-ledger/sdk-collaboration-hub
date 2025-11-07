@@ -13,7 +13,7 @@ Use the following canonical mappings when turning meta types into Java:
 | `string`          | `java.lang.String` | -                                      |
 | `intX`            | `byte`/`short`/`int`/`long`/`java.lang.Byte`/`java.lang.Short`/`java.lang.Integer`/`java.lang.Long` | -                            |
 | `uintX`           | `byte`/`short`/`int`/`long`/`java.lang.Byte`/`java.lang.Short`/`java.lang.Integer`/`java.lang.Long` | -                            |
-| `double`          | `byte`/`java.lang.Double` | -        |
+| `double`          | `double`/`java.lang.Double` | -        |
 | `decimal`         | `java.math.BigDecimal`         | -                    |
 | `bool`            |  `boolean`/`java.lang.Boolean`        | -                                               |
 | `bytes`           |  `byte[]`       | -                                       |
