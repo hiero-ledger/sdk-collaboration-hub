@@ -42,7 +42,7 @@ Address {
     @immutable realm: uint64 // realm number
     @immutable num: uint64 // account number
     @immutable checksum: string // checksum of the address
-    boolean validateChecksum(ledger:Ledger) // validates the checksum of the address
+    boolean validateChecksum(ledger: Ledger) // validates the checksum of the address
     string toString() // returns address in format "shard.realm.num"
     string toStringWithChecksum() // returns address in format "shard.realm.num-checksum"
 }
