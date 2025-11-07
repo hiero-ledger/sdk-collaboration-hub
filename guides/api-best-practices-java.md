@@ -164,7 +164,7 @@ A record can be implemented as follows:
 ```java
 public record Example(@NonNull final String name) {
     
-    public Example() {
+    public Example {
         Objects.requireNonNull(name, "name must not be null");   
     }
     
