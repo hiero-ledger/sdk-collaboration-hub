@@ -19,6 +19,14 @@ import org.jspecify.annotations.NonNull;
 public interface NetworkSettings {
 
     /**
+     *  Returns the binary network identifier
+     *
+     * @return the binary network identifier
+     */
+    @NonNull
+    byte[] getId();
+
+    /**
      * Returns the network identifier.
      *
      * @return the network identifier

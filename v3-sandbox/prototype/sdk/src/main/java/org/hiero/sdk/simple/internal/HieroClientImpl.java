@@ -25,6 +25,7 @@ import org.hiero.sdk.simple.internal.grpc.GrpcClientImpl;
 import org.hiero.sdk.simple.internal.grpc.GrpcMethodDescriptorFactory;
 import org.hiero.sdk.simple.internal.util.ProtobufUtil;
 import org.hiero.sdk.simple.network.Account;
+import org.hiero.sdk.simple.network.Network;
 import org.hiero.sdk.simple.network.TransactionId;
 import org.hiero.sdk.simple.network.settings.NetworkSettings;
 import org.jspecify.annotations.NonNull;
@@ -132,5 +133,10 @@ public final class HieroClientImpl implements HieroClient {
     @NonNull
     public NetworkSettings getNetworkSettings() {
         return networkSettings;
+    }
+
+    @Override
+    public @NonNull Network getNetwork() {
+        return new Network(networkSettings.getNetworkIdentifier(), networkSettings.getNetworkName().orElse(null), networkSettings.getId());
     }
 }

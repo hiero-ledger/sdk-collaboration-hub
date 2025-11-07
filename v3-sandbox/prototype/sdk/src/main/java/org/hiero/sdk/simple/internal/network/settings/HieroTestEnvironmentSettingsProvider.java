@@ -29,6 +29,11 @@ public final class HieroTestEnvironmentSettingsProvider implements NetworkSettin
     public @NonNull Set<NetworkSettings> createNetworkSettings() {
         return Set.of(new NetworkSettings() {
             @Override
+            public @NonNull byte[] getId() {
+                return new byte[] {-1};
+            }
+
+            @Override
             public @NonNull String getNetworkIdentifier() {
                 return NETWORK_IDENTIFIER;
             }
