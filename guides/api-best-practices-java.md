@@ -23,7 +23,7 @@ Use the following canonical mappings when turning meta types into Java:
 | `date`            | `java.time.LocalDate`         | -                       |
 | `time`            |  `java.time.LocalTime`         | -  |
 | `dateTime`        |  `java.time.LocalDateTime`         | - |
-| `zonedDateTime`   |  `java.time.ZonesDateTime`        | -    |
+| `zonedDateTime`   |  `java.time.ZonedDateTime`        | -    |
 
 ## Null handling
 
