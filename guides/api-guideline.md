@@ -151,7 +151,7 @@ Attributes can be defined using the following syntax:
 Attribute annotations can be used to provide additional information about attributes in complex data types.
 The following annotations should be used:
 - `@@immutable`: Indicates that the field is immutable and cannot be changed after creation.
-- `@@nullable`: Indicates that the field be null or undefined (language specific).
+- `@@nullable`: Indicates that the field can be null or undefined (language specific).
 - `@@default(value)`: Indicates that the field has a default value.
 - `@@min(value)`: Indicates the minimum value for numeric fields. Should be included if the value must be enforced at the SDK level.
 - `@@max(value)`: Indicates the maximum value for numeric fields. Should be included if the value must be enforced at the SDK level.
