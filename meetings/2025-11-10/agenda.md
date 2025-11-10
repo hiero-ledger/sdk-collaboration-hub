@@ -7,4 +7,5 @@
 - Node account ID update testing
 - HIP-1261 Simple Fees
   - gRPC/REST API
+- SDK sample code guide
 - 
