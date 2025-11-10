@@ -186,7 +186,7 @@ The following annotations should be used:
 
 The following attribute annotations can be used on method parameters: `@@nullable`, `@@min(value)`, `@@max(value)`, `@@minLength(value)`, `@@maxLength(value)`, `@@pattern(regex)`
 
-#### Method Return Typpes annotations
+#### Method Return Types annotations
 
 The following attribute annotations can be used on method return types: `@@nullable`
 
