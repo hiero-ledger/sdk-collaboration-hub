@@ -40,7 +40,7 @@ TransactionSigner {
 // Basic definition of a transaction
 @abstraction
 Transaction {
-  @optional fee:HBar // the maximal fee to be paid for this transaction
+  @optional maxTransactionFee:HBar // the maximal fee to be paid for this transaction
   @optional validDuration:long // in milliseconds, a better lang specific type can be used
   @optional memo:string // a memo to be attached to the transaction
 
