@@ -8,4 +8,3 @@
 - HIP-1261 Simple Fees
   - gRPC/REST API
 - SDK sample code guide
-- 
