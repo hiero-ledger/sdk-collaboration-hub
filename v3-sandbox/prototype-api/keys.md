@@ -18,16 +18,15 @@ enum KeyEncoding {
 }
 
 // abstract key definition
-@abstraction
-Key {
-    @immutable bytes: bytes //the raw bytes of the key
-    @immutable algorithm: KeyAlgorithm //the algorithm of the key
+abstraction Key {
+    @@immutable bytes: bytes //the raw bytes of the key
+    @@immutable algorithm: KeyAlgorithm //the algorithm of the key
 }
 
 // a key pair
 KeyPair {
-    @immutable publicKey: PublicKey // the public key of the key pair
-    @immutable privateKey: PrivateKey // the private key of the key pair
+    @@immutable publicKey: PublicKey // the public key of the key pair
+    @@immutable privateKey: PrivateKey // the private key of the key pair
 }
 
 // public key definition
