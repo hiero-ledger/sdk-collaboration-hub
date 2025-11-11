@@ -36,7 +36,6 @@ abstraction Address {
     @@immutable checksum: string // checksum of the address
     boolean validateChecksum(ledger:Ledger) // validates the checksum of the address
 }
-
 ```
 
 ## Questions
