@@ -57,4 +57,4 @@ AccountId fromString(accountId: string)
 
 ## Questions
 
-Should we rename `Ledger` to `Network`?
+@hendrikebbers: Should we rename `Ledger` to `Network`?
