@@ -23,7 +23,7 @@ Hbar {
     @@immutable unit: HbarUnit // unit of the amount
 }
 
-// Represents a specifif ledger instance
+// Represents a specific ledger instance
 Ledger {
     @@immutable id: bytes // identifier of the ledger
 }
