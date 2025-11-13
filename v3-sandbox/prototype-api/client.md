@@ -1,4 +1,4 @@
-# Client
+# Client API
 
 This section defines the client API.
 

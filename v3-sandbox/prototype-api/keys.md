@@ -1,4 +1,4 @@
-# Keys
+# Keys API
 
 This section defines the API for keys.
 

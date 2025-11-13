@@ -1,4 +1,4 @@
-# Transactions
+# Transactions API
 
 This section defines the API for transactions.
 
