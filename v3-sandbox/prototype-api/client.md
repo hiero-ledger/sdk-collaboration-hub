@@ -17,4 +17,7 @@ HieroClient {
     // TO_BE_DEFINED_IN_FUTURE_VERSIONS
 }
 
+// factory methods of AccountId that should be added to the namespace in the best language dependent way
+
+HieroClient createClient(networkSettings: NetworkSetting, operatorAccount: OperatorAccount)
 ```
