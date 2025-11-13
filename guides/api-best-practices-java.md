@@ -25,28 +25,44 @@ Use the following canonical mappings when turning meta types into Java:
 | `dateTime`        |  `java.time.LocalDateTime`         | - |
 | `zonedDateTime`   |  `java.time.ZonedDateTime`        | -    |
 
+## Immutable Objects
+
+If a non-abstract type and all the types its extends are only contain fields annotated with `@@immutable`, the type should be declared as a Java `record`.
+The following example shows how such type can look like:
+
+```
+// Definition of the Person type in the language agnostic specification
+Person {
+    @@immutable @@nullable name:string
+    @@immutable @@nullable age:int32
+}
+
+// Implementation of the Person type in Java
+record Person(String name, int age) {}
+```
+
 ## Null handling
 
 In Java we use the `org.jspecify:jspecify` library to annotate nullability of types.
 The 2 annotations `org.jspecify.annotations.NonNull` and `org.jspecify.annotations.Nullable` are used to annotate nullability of types.
 All non-primitive constructor parameters, method parameters and method return values must be annotated with one of these annotations.
 
-For fields and method parameters that are not annotated with `@@optional` in the language agnostic specification, a concrete check must be performed in Java to ensure that the parameter is not null.
+For fields and method parameters that are not annotated with `@@nullable` in the language agnostic specification, a concrete check must be performed in Java to ensure that the parameter is not null.
 Here `java.util.Objects.requireNonNull(param)` or better `java.util.Objects.requireNonNull(param, msg)` must be used.
 
 For the generic types `intX`, `uintX`, `double`, and `bool` wrapper classes
 (`java.lang.Byte`/`java.lang.Short`/`java.lang.Integer`/`java.lang.Long`/`java.lang.Integer`,`java.lang.Double`, and `java.lang.Boolean`)
-must be used if the parameter is annotated with `@@optional` in the language agnostic specification.
+must be used if the parameter is annotated with `@@nullable` in the language agnostic specification.
 Otherwise the primitive type must be used.
 
 ### Null handling of mutable and nullable fields
 
-If a field is not annotated with `@@immutable` and `@@optional` in the language agnostic specification, the Java getter and setter must be annotated with `org.jspecify.annotations.Nullable`.
+If a field is not annotated with `@@immutable` and `@@nullable` in the language agnostic specification, the Java getter and setter must be annotated with `org.jspecify.annotations.Nullable`.
 Let's assume we have the following language agnostic specification:
 
 ```
 class Example {
-    @@optional name:string    
+    @@nullable name:string    
 }
 ```
 
@@ -69,7 +85,7 @@ public class Example {
 
 ### Null handling of mutable and not nullable fields
 
-If a field parameter is not annotated with `@@immutable` or `@@optional` in the language agnostic specification, the Java getter and setter must be annotated with `org.jspecify.annotations.NonNull`.
+If a field parameter is not annotated with `@@immutable` or `@@nullable` in the language agnostic specification, the Java getter and setter must be annotated with `org.jspecify.annotations.NonNull`.
 
 Let's assume we have the following language agnostic specification:
 
@@ -104,12 +120,12 @@ public class Example {
 
 ### Null handling of immutable and nullable fields
 
-If a field is annotated with `@@immutable` and `@@optional` in the language agnostic specification, the Java parameter of the constructor must be annotated with `org.jspecify.annotations.Nullable`.
+If a field is annotated with `@@immutable` and `@@nullable` in the language agnostic specification, the Java parameter of the constructor must be annotated with `org.jspecify.annotations.Nullable`.
 Let's assume we have the following language agnostic specification:
 
 ```
 class Example {
-    @@immutable @@optional name:string    
+    @@immutable @@nullable name:string    
 }
 ```
 
@@ -135,7 +151,7 @@ public record Example(@Nullable final String name) {
 
 ### Null handling of immutable and not nullable fields
 
-If a field parameter is annotated with `@@immutable` but not with `@@optional` in the language agnostic specification, the Java parameter of the constructor must be annotated with `org.jspecify.annotations.NonNull`.
+If a field parameter is annotated with `@@immutable` but not with `@@nullable` in the language agnostic specification, the Java parameter of the constructor must be annotated with `org.jspecify.annotations.NonNull`.
 
 Let's assume we have the following language agnostic specification:
 
