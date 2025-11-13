@@ -28,7 +28,7 @@ Use the following canonical mappings when turning meta types into Java:
 ## Immutable Objects
 
 If a non-abstract type and all the types its extends are only contain fields annotated with `@@immutable`, the type should be declared as a Java `record`.
-The following example shows how such type can look like:
+The following example gives an example of such a type:
 
 ```
 // Definition of the Person type in the language agnostic specification
@@ -36,9 +36,49 @@ Person {
     @@immutable @@nullable name:string
     @@immutable @@nullable age:int32
 }
+```
 
+```java
 // Implementation of the Person type in Java
-record Person(String name, int age) {}
+public record Person(@Nullable String name, @Nullable int age) {} // Usage of the @Nullable annotation is described in the follwoing chapter
+```
+
+If only some fields are annotated with `@@immutable`, the type should be declared as a Java `class`.
+Here all fields that are not annotated with `@@immutable` must be declared as `final`, set in the constructor and only accessible via getters.
+The following example gives an example of such a type:
+
+```
+// Definition of the Person type in the language agnostic specification
+Person {
+@@immutable name:string
+age:int32
+}
+```
+
+```java
+public class Person {
+
+    private final String name;
+    
+    private int age;
+
+    public Person(@NonNull final String name) {
+        this.name = Objects.requireNonNull(name, "name must not be null");
+    }
+    
+    @NonNull
+    public String getName() {
+        return name;
+    }
+    
+    public int getAge() {
+        return age;
+    }
+    
+    public void setAge(final int age) {
+        this.age = age;
+    }
+}
 ```
 
 ## Null handling
@@ -55,9 +95,9 @@ For the generic types `intX`, `uintX`, `double`, and `bool` wrapper classes
 must be used if the parameter is annotated with `@@nullable` in the language agnostic specification.
 Otherwise the primitive type must be used.
 
-### Null handling of mutable and nullable fields
+### Null handling of nullable fields
 
-If a field is not annotated with `@@immutable` and `@@nullable` in the language agnostic specification, the Java getter and setter must be annotated with `org.jspecify.annotations.Nullable`.
+If a field is annotated with `@@nullable` in the language agnostic specification, the Java getter and setter must be annotated with `org.jspecify.annotations.Nullable`.
 Let's assume we have the following language agnostic specification:
 
 ```
@@ -70,6 +110,7 @@ A class can be implemented as follows:
 
 ```java
 public class Example {
+    
     private String name;
     
     public void setName(@Nullable final String name) {
@@ -83,15 +124,16 @@ public class Example {
 }
 ```
 
-### Null handling of mutable and not nullable fields
+### Null handling of not nullable fields
 
-If a field parameter is not annotated with `@@immutable` or `@@nullable` in the language agnostic specification, the Java getter and setter must be annotated with `org.jspecify.annotations.NonNull`.
+If a field parameter is not annotated `@@nullable` in the language agnostic specification, the Java getter and setter must be annotated with `org.jspecify.annotations.NonNull`.
+Next to that the field must be initialized in the constructor if it is not annotated by `@@default(value)` in the language agnostic specification.
 
 Let's assume we have the following language agnostic specification:
 
 ```
 class Example {
-    @@immutable name:string    
+    name:string    
 }
 ```
 
@@ -104,7 +146,7 @@ public class Example {
     private String name;
     
     public Example(@NonNull final String name) {
-       this.name = Objects.requireNonNull(name, "name must not be null");  
+        setName(name);
     }
     
     public void setName(@NonNull final String name) {
@@ -118,14 +160,37 @@ public class Example {
 }
 ```
 
-### Null handling of immutable and nullable fields
+### Null handling of immutable fields
 
-If a field is annotated with `@@immutable` and `@@nullable` in the language agnostic specification, the Java parameter of the constructor must be annotated with `org.jspecify.annotations.Nullable`.
+If a field is annotated with `@@immutable` and `@@nullable` in the language agnostic specification and the Java implementation is a record, the Java parameter of the `record` must be annotated with `org.jspecify.annotations.NonNull` and checked in the compact constructor.
 Let's assume we have the following language agnostic specification:
 
 ```
 class Example {
-    @@immutable @@nullable name:string    
+    @@immutable name:string    
+}
+```
+
+The given sample can be implemented as a class or record in Java.
+A class can be implemented as follows:
+
+```java
+public record Example(@NonNull final String name) {
+
+    public Example {
+        Objects.requireNonNull(name, "name must not be null");
+    }
+
+}
+```
+
+If a field is annotated with `@@immutable` and `@@nullable` in the language agnostic specification and the Java implementation is a `class`, the Java parameter of the record must be annotated with `org.jspecify.annotations.NonNull` and checked in the compact constructor.
+Let's assume we have the following language agnostic specification:
+
+```
+class Example {
+    @@immutable name:string
+    //some other nullable fields    
 }
 ```
 
@@ -134,18 +199,21 @@ A class can be implemented as follows:
 
 ```java
 public class Example {
+
     private final String name;
+
+    //other non-final fields
     
-    public Example(@Nullable final String name) {
-        this.name = name;
+    public Example(@NonNull final String name) {
+        this.name = Objects.requireNonNull(name, "name must not be null");
     }
-}
-```
-
-A record can be implemented as follows:
-
-```java
-public record Example(@Nullable final String name) {
+    
+    @NonNull
+    public String getName() {
+        return name;
+    }
+    
+    //other getters and setters
 }
 ```
 
@@ -187,20 +255,10 @@ public record Example(@NonNull final String name) {
 }
 ``` 
  
-### Null handling of nullable method parameter
+### Null handling method parameters
 
 TODO
 
-### Null handling of not nullable method parameter
+### Null handling of method return value
 
 TODO
-
-### Null handling of nullable method return value
-
-TODO
-
-### Null handling of not nullable method return value
-
-TODO
-
-
