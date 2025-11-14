@@ -126,7 +126,7 @@ public class Example {
 
 ### Null handling of not nullable fields
 
-If a field parameter is not annotated `@@nullable` in the language agnostic specification, the Java getter and setter must be annotated with `org.jspecify.annotations.NonNull`.
+If a field parameter is not annotated with `@@nullable` in the language agnostic specification, the Java getter and setter must be annotated with `org.jspecify.annotations.NonNull`.
 Next to that the field must be initialized in the constructor if it is not annotated by `@@default(value)` in the language agnostic specification.
 
 Let's assume we have the following language agnostic specification:
