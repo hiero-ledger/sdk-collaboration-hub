@@ -13,7 +13,7 @@ enum KeyAlgorithm {
 
 // all supported encodings
 enum KeyEncoding {
-    RAW //Hex encoded string (We need to make clear that thius must not algorithm-specific)
+    RAW //Hex encoded string (We need to make clear that this must not be algorithm-specific)
     DER //Distinguished Encoding Rules (X.690) ASN.1 format
 }
 
