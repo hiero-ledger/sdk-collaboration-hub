@@ -1,4 +1,4 @@
-# Keys API
+# Configuration API
 
 This section defines the API for configuration.
 
