@@ -64,5 +64,5 @@ AccountId fromString(accountId: string)
 
 ## Questions
 
-@hendrikebbers: Should we rename `Ledger` to `Network`?
-@hendrikebbers: Do we want an abstraction for currency? HBAR is the only one for now and can be seen as Hedera specific.
+- [@hendrikebbers](https://github.com/hendrikebbers): Should we rename `Ledger` to `Network`?
+- [@hendrikebbers](https://github.com/hendrikebbers): Do we want an abstraction for currency? HBAR is the only one for now and can be seen as Hedera specific.

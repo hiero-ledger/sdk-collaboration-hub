@@ -21,3 +21,7 @@ HieroClient {
 
 HieroClient createClient(networkSettings: NetworkSetting, operatorAccount: OperatorAccount)
 ```
+
+### Comments
+
+- [@rwalworth](https://github.com/rwalworth): Should the operatorAccount of HieroClient be immutable?
