@@ -40,7 +40,7 @@ Person {
 
 ```java
 // Implementation of the Person type in Java
-public record Person(@Nullable String name, @Nullable int age) {} // Usage of the @Nullable annotation is described in the follwoing chapter
+public record Person(@Nullable String name, @Nullable int age) {} // Usage of the @Nullable annotation is described in the following chapter
 ```
 
 If only some fields are annotated with `@@immutable`, the type should be declared as a Java `class`.
