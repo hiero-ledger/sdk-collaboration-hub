@@ -27,7 +27,7 @@ Use the following canonical mappings when turning meta types into Java:
 
 ## Immutable Objects
 
-If a non-abstract type and all the types its extends are only contain fields annotated with `@@immutable`, the type should be declared as a Java `record`.
+If a non-abstract type and all the types it extends only contain fields annotated with `@@immutable`, the type should be declared as a Java `record`.
 The following example gives an example of such a type:
 
 ```
