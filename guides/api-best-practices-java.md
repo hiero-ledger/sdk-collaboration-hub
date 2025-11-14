@@ -184,7 +184,7 @@ public record Example(@NonNull final String name) {
 }
 ```
 
-If a field is annotated with `@@immutable` and `@@nullable` in the language agnostic specification and the Java implementation is a `class`, the Java parameter of the record must be annotated with `org.jspecify.annotations.NonNull` and checked in the compact constructor.
+If a field is annotated with `@@immutable` and `@@nullable` in the language agnostic specification and the Java implementation is a `class`, the Java parameter of the constructor must be annotated with `org.jspecify.annotations.NonNull` and checked in the constructor.
 Let's assume we have the following language agnostic specification:
 
 ```
