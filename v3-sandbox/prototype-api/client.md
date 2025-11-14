@@ -1,10 +1,10 @@
-# Client
+# Client API
 
 This section defines the client API.
 
 ```
 namespace client
-requires common, keys
+requires common, config, keys
 
 OperatorAccount {
     @@immutable accountId: AccountId // the account id of the operator
@@ -17,4 +17,11 @@ HieroClient {
     // TO_BE_DEFINED_IN_FUTURE_VERSIONS
 }
 
+// factory methods of `HieroClient` that should be added to the namespace in the best language dependent way
+
+HieroClient createClient(networkSettings: NetworkSetting, operatorAccount: OperatorAccount)
 ```
+
+### Comments
+
+- [@rwalworth](https://github.com/rwalworth): Should the operatorAccount of HieroClient be immutable?

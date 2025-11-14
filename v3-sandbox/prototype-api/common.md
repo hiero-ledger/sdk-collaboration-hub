@@ -1,4 +1,4 @@
-# Keys
+# Common API
 
 This section defines the common datatypes that are used in the API.
 
@@ -33,9 +33,17 @@ HBarExchangeRate {
 // Represents a specific ledger instance
 Ledger {
     @@immutable id: bytes // identifier of the ledger
+    @@immutable @@nullable name: string // human readable name of the network
 }
 
-// Represents the base of an address on the Hedera network.
+// Represents a consensus node on a network.
+ConsensusNode {
+    @@immutable ip: string
+    @@immutable port: int
+    @@immutable Address account
+}
+
+// Represents the base of an address on a network.
 abstraction Address {
     @@immutable shard: uint64 // shard number
     @@immutable realm: uint64 // realm number
@@ -56,4 +64,5 @@ AccountId fromString(accountId: string)
 
 ## Questions
 
-@hendrikebbers: Should we rename `Ledger` to `Network`?
+- [@hendrikebbers](https://github.com/hendrikebbers): Should we rename `Ledger` to `Network`?
+- [@hendrikebbers](https://github.com/hendrikebbers): Do we want an abstraction for currency? HBAR is the only one for now and can be seen as Hedera specific.
