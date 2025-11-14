@@ -4,7 +4,7 @@ This section defines the client API.
 
 ```
 namespace client
-requires common, keys
+requires common, config, keys
 
 OperatorAccount {
     @@immutable accountId: AccountId // the account id of the operator
