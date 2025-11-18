@@ -2,7 +2,7 @@
 
 This document outlines the best practices and conventions for designing and implementing APIs for the SDKs.
 Following these guidelines will help ensure that APIs are consistent, easy to use, and maintainable.
-Next to that the guidelines defines a syntax for documenting the APIs in a language-agnostic way for proposals.
+Next to that the guidelines define a syntax for documenting the APIs in a language-agnostic way for proposals.
 
 The [proposals](../proposals) folder contains design documents of new features or changes for our SDKs.
 Each proposal should include a section that documents the API in a language-agnostic way by using the guidelines defined in this document.
@@ -151,7 +151,7 @@ Attributes can be defined using the following syntax:
 Attribute annotations can be used to provide additional information about attributes in complex data types.
 The following annotations should be used:
 - `@@immutable`: Indicates that the field is immutable and cannot be changed after creation.
-- `@@nullable`: Indicates that the field can be null or undefined (language specific).
+- `@@nullable`: Indicates that the field can be null or undefined (language-specific).
 - `@@default(value)`: Indicates that the field has a default value.
 - `@@min(value)`: Indicates the minimum value for numeric fields. Should be included if the value must be enforced at the SDK level.
 - `@@max(value)`: Indicates the maximum value for numeric fields. Should be included if the value must be enforced at the SDK level.
@@ -222,6 +222,19 @@ requires common, keys
 ...
  ```
 
+### Best practices and antipattern
+
+the following best practices and antipattern should be followed when defining the API.
+
+#### Never define nullable collections
+
+The data types `list`, `set`, and `map` should never be nullable.
+It is best practice to return an empty collection instead of `null`.
+
+Some languages (like GO) have custom semantics for the defined behavior (like `nil` in GO).
+In that case the language-specific semantics should be used in the implementation.
+Such special behavior must be documented in the best-practice guidelines for the specific language.
+
 ### Naming conventions
 
 To keep the API surface consistent and predictable, use the following naming rules:
@@ -231,3 +244,6 @@ To keep the API surface consistent and predictable, use the following naming rul
 - Enum values: UPPER_SNAKE_CASE (e.g., PENDING, COMPLETED).
 - Namespace names: lowerCamelCase (e.g., transactions).
 - Error identifiers (in `@@throws`): lowercase-kebab-case (e.g., not-found-error, parse-error).
+
+## Questions & Comments
+

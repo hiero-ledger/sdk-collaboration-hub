@@ -2,6 +2,12 @@
 
 This section defines the API for keys.
 
+## Description
+
+TODO
+
+## API Schema
+
 ```
 namespace keys
 
@@ -50,23 +56,22 @@ PublicKey createPublicKey(algorithm: KeyAlgorithm, bytes: bytes)
 PublicKey createPublicKey(algorithm: KeyAlgorithm, encoding: KeyEncoding, bytes: string)
 ```
 
-### Comments
+## Questions & Comments
 
 - [@rwalworth](https://github.com/rwalworth): What do you think about only exposing a `KeyPair` API and making `PublicKey` and `PrivateKey` internal?
 This would consolidate all the key processing to one object, users wouldn't have to keep track of two different objects.
 `KeyPair` objects could still be initialized from `PrivateKey` or `PublicKey` bytes/strings and all the same functionality would be kept but just in one object instead of two.
 Thoughts?
 
-
 We discussed the topic in the SDK Community call. Currently the suggestion is to provide 2 different ways to create a Key:
 
-#### Flexible method
+### Flexible method
 ```
 Key create(String input, KeyAlgorithm algorithm, KeyEncoding encoding)
 ```
 The method provides the most flexible way to create a key by specifying the algorithm and encoding that must be used to interpret the input. If we want to support multiple algorithms and encodings this is the only way that is 100% correct from a technical perspective and supports all edge cases.
 
-#### Convenience method
+### Convenience method
 ```
 Key create(String input)
 ```

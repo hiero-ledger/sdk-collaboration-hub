@@ -2,6 +2,12 @@
 
 This section defines the API for transactions.
 
+## Description
+
+TODO
+
+## API Schema
+
 ```
 namespace transactions
 requires common, keys, client
@@ -99,7 +105,7 @@ TransactionId fromString(transactionId: string)
 
 ```
 
-### Comments
+## Questions & Comments
 
 - [@rwalworth](https://github.com/rwalworth): I can see use cases where it would be beneficial to switch the operator for a HieroClient (e.g. testing), as well as the network it connects to. I don't necessarily see a benefit in enforcing @@immutable here for these types.
 - [@rwalworth](https://github.com/rwalworth) / [@0xivanov](https://github.com/0xivanov): Should maxTransactionFee and validDuration have default values?

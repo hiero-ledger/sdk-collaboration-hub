@@ -2,6 +2,14 @@
 
 This section defines the common datatypes that are used in the API.
 
+## Description
+
+This API defines the common datatypes that are used in the API.
+All definitions must not depend on any other API.
+The API defined in this layer can be shared between SDKs for consensus node, mirror node and block node.
+
+## API Schema
+
 ```
 namespace common
 
@@ -43,6 +51,11 @@ ConsensusNode {
     @@immutable Address account
 }
 
+// Represents a mirror node on a network.
+MirrorNode {
+    @@immutable restBaseUrl: string // base url of the mirror node REST API (scheme://host[:port]/api/v1)
+}
+
 // Represents the base of an address on a network.
 abstraction Address {
     @@immutable shard: uint64 // shard number
@@ -62,7 +75,7 @@ AccountId extends Address {
 AccountId fromString(accountId: string)
 ```
 
-## Questions
+## Questions & Comments
 
 - [@hendrikebbers](https://github.com/hendrikebbers): Should we rename `Ledger` to `Network`?
 - [@hendrikebbers](https://github.com/hendrikebbers): Do we want an abstraction for currency? HBAR is the only one for now and can be seen as Hedera specific.
