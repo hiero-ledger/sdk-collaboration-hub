@@ -79,5 +79,5 @@ The current result is that we can not support all possible key formats with a si
 Having a more configurable method based on enums must be the way to go.
 We still believe that we should provide a convenience method that can be used to create a key based on a string.
 Here we need to define exactly what input is allowed here.
-In the meeting different encodings / algorithms / formats are discussed.
+In the meeting different encodings / algorithms / formats were discussed.
 Here it is still not clear what the final format will be.
