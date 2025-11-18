@@ -222,7 +222,7 @@ requires common, keys
 ...
  ```
 
-### Best practices and antipattern
+### Best practices and antipatterns
 
 the following best practices and antipattern should be followed when defining the API.
 
