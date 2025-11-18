@@ -6,11 +6,13 @@ This section defines the client API.
 namespace client
 requires common, config, keys
 
+// Definition of an account 
 OperatorAccount {
     @@immutable accountId: AccountId // the account id of the operator
     @@immutable privateKey: PrivateKey // the private key of the operator
 }
 
+// The client API that will be used by the SDK to interact with the network
 HieroClient {
     @@immutable operatorAccount: OperatorAccount // the operator account
     @@immutable ledger: Ledger // the network to connect to
@@ -24,4 +26,4 @@ HieroClient createClient(networkSettings: NetworkSetting, operatorAccount: Opera
 
 ### Comments
 
-- [@rwalworth](https://github.com/rwalworth): Should the operatorAccount of HieroClient be immutable?
+- [@rwalworth](https://github.com/rwalworth): Should the `operatorAccount` of `HieroClient` be immutable?

@@ -7,19 +7,11 @@ namespace transactions
 requires common, keys, client
 
 // Defines the status of a transaction. Since we can have custom transaction types based on custom services in the consensus node we can not use an enum here anymore
-
 abstraction TransactionStatus {
   @@immutable code:int32 // the status code that should be unique based on the consensus node. 
 }
 
-enum BasicTransactionStatus extends TransactionStatus {
-    OK
-    INVALID_TRANSACTION
-    PAYER_ACCOUNT_NOT_FOUND
-    ...          // other status codes should be defined here TO_BE_DEFINED_IN_FUTURE_VERSIONS
-    GRPC_WEB_PROXY_NOT_SUPPORTED
-}
-
+// Defines the status codes that are currently used by services that are part of the consensus node repository
 enum BasicTransactionStatus extends TransactionStatus {
     OK
     INVALID_TRANSACTION
@@ -58,7 +50,6 @@ abstraction PackedTransaction {
 
   Transaction unpack() // returns a new basic transaction instance based on this packed transaction
 
-  // Question: Should we provide another complex type like "SignedTransaction" that is created here and contains the send api? Is there any scenario where we want to send a transaction that is not signed?
   void sign(keyPair:KeyPair) // sign the transaction, if the lang supports it, we should provide a fluent API (return this)
   void sign(publicKey:PublicKey, transactionSigner:TransactionSigner) // sign the transaction, if the lang supports it, we should provide a fluent API (return this)
 

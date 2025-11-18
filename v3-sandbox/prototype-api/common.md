@@ -25,6 +25,7 @@ Hbar {
     @@immutable unit: HbarUnit // unit of the amount
 }
 
+// Represents the exchange rate of Hbar in USD cents.
 HBarExchangeRate {
     @@immutable expirationTime: zonedDateTime // expiration time of the exchange rate
     @@immutable exchangeRateInUsdCents: double // exchange rate of HBar in USD cents
@@ -38,9 +39,9 @@ Ledger {
 
 // Represents a consensus node on a network.
 ConsensusNode {
-    @@immutable ip: string
-    @@immutable port: int
-    @@immutable Address account
+    @@immutable ip: string // ip address of the node
+    @@immutable port: int // port of the node
+    @@immutable Address account // account of the node
 }
 
 // Represents the base of an address on a network.
@@ -54,6 +55,7 @@ abstraction Address {
     string toStringWithChecksum() // returns address in format "shard.realm.num-checksum"
 }
 
+// AccountId is the most common type of address on a network.
 AccountId extends Address {
 }
 
