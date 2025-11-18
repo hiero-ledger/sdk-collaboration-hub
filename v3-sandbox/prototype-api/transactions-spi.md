@@ -28,7 +28,7 @@ abstraction TransactionSupport {
     
     Response convert(protoResponse:TransactionResponse) // converts a proto TransactionResponse to a Response
     
-    Receipt convert(protoReceipt:TransactionReceipt) // converts a proto TransactionResponse to a Response
+    Receipt convert(protoReceipt:TransactionReceipt) // converts a proto TransactionReceipt to a Receipt
     
     Record convert(protoRecord:TransactionRecord) // converts a proto TransactionResponse to a Response
 }
