@@ -6,7 +6,7 @@ This section defines the client API.
 namespace client
 requires common, config, keys
 
-// Definition of an account 
+// Definition of an account that signs and pays for requests
 OperatorAccount {
     @@immutable accountId: AccountId // the account id of the operator
     @@immutable privateKey: PrivateKey // the private key of the operator
