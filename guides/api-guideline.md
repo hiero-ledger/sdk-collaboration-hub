@@ -107,6 +107,48 @@ Employee extends Person {
 }
 ```
 
+#### Generic Type parameters
+
+Complex types may declare generic type parameters.
+Generic type parameter names must be written with a leading `$$` to distinguish them from concrete types.
+The name of a generic type parameter can be any name and does not have to be related to a complex type name.
+The name of a generic type parameter must be unique within the scope of the containing type.
+Examples of type parameter names:
+
+- `$$T`, `$$Product`, `$$Self`
+
+A concrete example of the syntax looks like this:
+
+```
+abstraction Factory<$$Product> {
+    $$Product create()
+}
+```
+
+The `$$Product` type parameter is used in the `create` method to define the return type of the method.
+A complexe type that extends a generic type can use the type parameter in its own definition.
+A concrete example of the syntax looks like this:
+```
+CarFactory extends Factory<Car> {
+}
+```
+
+In that example, the `CarFactory` provides a `create` method that returns a `Car`.
+`Car` must be a concrete complexe type (not a generic type parameter).
+
+A Generic types may have multiple parameters are written in angle brackets: `TypeName<$$T1, $$T2, ...>`.
+
+To make a generic type more concrete, the `extends` keyword can be used to constrain the type parameter:
+
+```
+abstraction FruitFactory<$$Product extends Fruit> {
+    $$Product create()
+}
+```
+
+In the given example, the `FruitFactory` provides a `create` method that returns a `Fruit`.
+`Fruit` must be a concrete complexe type (not a generic type parameter).
+
 ### Enumerations
 
 Enumerations can be defined using the following syntax:

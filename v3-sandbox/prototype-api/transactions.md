@@ -44,37 +44,37 @@ abstraction TransactionSigner {
 }
 
 // Basic definition of a transaction
-abstraction Transaction {
+abstraction Transaction<$$PackedTransaction extends PackedTransaction> {
   @@nullable maxTransactionFee:HBar // the maximal fee to be paid for this transaction
   @@nullable validDuration:long // in milliseconds, a better lang specific type can be used
   @@nullable memo:string // a memo to be attached to the transaction
 
-  PackedTransaction packTransaction(client:HieroClient) // returns a new packed instance of the transaction (previously this was named frozen transaction)
+  $$PackedTransaction packTransaction(client:HieroClient) // returns a new packed instance of the transaction (previously this was named frozen transaction)
 }
 
 // A packed transaction that can not change any parameters after it was created
-abstraction PackedTransaction {
+abstraction PackedTransaction<$$Transaction extends Transaction, $$Response extends Response> {
   @@immutable transactionId:TransactionId // the id of the transaction
 
-  Transaction unpack() // returns a new basic transaction instance based on this packed transaction
+  $$Transaction unpack() // returns a new basic transaction instance based on this packed transaction
 
   // Question: Should we provide another complex type like "SignedTransaction" that is created here and contains the send api? Is there any scenario where we want to send a transaction that is not signed?
   void sign(keyPair:KeyPair) // sign the transaction, if the lang supports it, we should provide a fluent API (return this)
   void sign(publicKey:PublicKey, transactionSigner:TransactionSigner) // sign the transaction, if the lang supports it, we should provide a fluent API (return this)
 
-  @@async Response send() // send the transaction, we should provide async and sync versions in best case
-  Response sendAndWait(long timeout) // send the transaction, in milliseconds, a better lang specific type can be used
+  @@async $$Response send() // send the transaction, we should provide async and sync versions in best case
+  $$Response sendAndWait(long timeout) // send the transaction, in milliseconds, a better lang specific type can be used
 }
 
 // The response of a transaction send request
-Response {
+Response<$$Receipt extends Receipt, $$Record extends Record> {
   @immutable transactionId:TransactionId // the id of the transaction
 
-  @@async Receipt queryReceipt() // query for the receipt of the transaction, we should provide async and sync versions in best case
-  Receipt queryReceiptAndWait(long timeout) // query for the receipt of the transaction, in milliseconds, a better lang specific type can be used
+  @@async $$Receipt queryReceipt() // query for the receipt of the transaction, we should provide async and sync versions in best case
+  $$Receipt queryReceiptAndWait(long timeout) // query for the receipt of the transaction, in milliseconds, a better lang specific type can be used
   
-  @async Record queryRecord() // query for the record of the transaction, we should provide async and sync versions in best case
-  Record queryRecordAndWait(long timeout) // query for the record of the transaction, in milliseconds, a better lang specific type can be used
+  @async $$Record queryRecord() // query for the record of the transaction, we should provide async and sync versions in best case
+  $$Record queryRecordAndWait(long timeout) // query for the record of the transaction, in milliseconds, a better lang specific type can be used
 }
 
 // The receipt of a transaction
@@ -86,10 +86,10 @@ Receipt {
 }
 
 // The record of a transaction
-Record {
+Record<$$Receipt extends Receipt> {
   @@immutable transactionId:TransactionId // the transaction id
   @@immutable consensusTimestamp:zonedDateTime // the consensus time of the transaction
-  @@immutable receipt:Receipt // the receipt of the transaction
+  @@immutable receipt:$$Receipt // the receipt of the transaction
 }
 
 // factory methods of TransactionId that should be added to the namespace in the best language dependent way
