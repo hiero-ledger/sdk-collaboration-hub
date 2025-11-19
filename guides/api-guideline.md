@@ -51,6 +51,7 @@ Type annotations apply to a complex data type as a whole (as opposed to a single
 The following annotations should be used:
 - `@@oneOf(field1, field2[, ...])`: Exactly one of the referenced fields can be non-null/non-undefined at any given time.
 - `@@oneOrNoneOf(field1, field2[, ...])`: Exactly one of the referenced fields can be non-null/non-undefined at any given time or all fields are null/undefined.
+- `@@finalType`: Indicates that the type is final and cannot be extended.
 
 Rules and recommendations for `@@oneOf`:
 - All listed fields must be declared with `@@nullable`
