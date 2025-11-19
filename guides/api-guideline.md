@@ -137,7 +137,7 @@ CarFactory extends Factory<Car> {
 In that example, the `CarFactory` provides a `create` method that returns a `Car`.
 `Car` must be a concrete complexe type (not a generic type parameter).
 
-A Generic types may have multiple parameters are written in angle brackets: `TypeName<$$T1, $$T2, ...>`.
+Generic types with multiple parameters are written in angle brackets: `TypeName<$$T1, $$T2, ...>`.
 
 To make a generic type more concrete, the `extends` keyword can be used to constrain the type parameter:
 
