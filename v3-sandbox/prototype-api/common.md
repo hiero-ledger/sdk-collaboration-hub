@@ -41,7 +41,7 @@ Ledger {
 ConsensusNode {
     @@immutable ip: string // ip address of the node
     @@immutable port: int // port of the node
-    @@immutable Address account // account of the node
+    @@immutable AccountId account // account of the node
 }
 
 // Represents the base of an address on a network.
