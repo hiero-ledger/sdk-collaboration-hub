@@ -9,7 +9,7 @@ requires common
 // The full configuration to connect to a specific network
 NetworkSetting {
  
-    @@immutable ledger: Ledger
+    @@immutable ledger: Ledger // the definition of the ledger
    
     @@immutable Set<ConsensusNode> getConsensusNodes() // set of all consensus nodes
     
