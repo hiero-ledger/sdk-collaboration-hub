@@ -85,7 +85,7 @@ public class Person {
 
 The public API must never return `null` for collections. Instead, an empty collection must be returned.
 The most easy way to achieve this is to use one of the static `java.util.Collections.emptyList()`/`java.util.Collections.emptySet()`/`java.util.Collections.emptyMap()`/`List.of()`/`Set.of()`/`Map.of()` factory methods.
-Since the API must never return `null` for collections it never ames sense to wrap a collection in a `java.util.Optional` in the public API.
+Since the API must never return `null` for collections it never makes sense to wrap a collection in a `java.util.Optional` in the public API.
 
 The public API must always use `java.util.List<TYPE>`, `java.util.Set<TYPE>`, and `java.util.Map<KEY, VALUE>` and never expose concrete implementations.
 Collections must be immutable wherever possible.
