@@ -148,7 +148,7 @@ public class Team {
 }
 ```
 
-If a full collection can be replaced at runtime (no @@immutable annotation defined in meta-language) the collection should newer be recreated but the full content should be replaced.
+If a full collection can be replaced at runtime (no @@immutable annotation defined in meta-language) the collection should never be recreated but the full content should be replaced.
 The following example shows how to do this:
 
 ```java
