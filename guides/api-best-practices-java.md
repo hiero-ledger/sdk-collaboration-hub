@@ -85,12 +85,12 @@ public class Person {
 
 The public API must never return `null` for collections. Instead, an empty collection must be returned.
 The most easy way to achieve this is to use one of the static `java.util.Collections.emptyList()`/`java.util.Collections.emptySet()`/`java.util.Collections.emptyMap()`/`List.of()`/`Set.of()`/`Map.of()` factory methods.
-Since the API must never return `null` for collections it never ames sense to wrap a collection in a `java.util.Optional` in the public API.
+Since the API must never return `null` for collections it never makes sense to wrap a collection in a `java.util.Optional` in the public API.
 
 The public API must always use `java.util.List<TYPE>`, `java.util.Set<TYPE>`, and `java.util.Map<KEY, VALUE>` and never expose concrete implementations.
 Collections must be immutable wherever possible.
 This is not directly related to the `@@immutable` annotation but is a general rule.
-In general the factory methods of the `java.util.Collections` class (`unmodifiableList(...)`/`unmodifiableMap(...)`/`unmodifiableSet(...)`) or the direct factory methods in the collection interfaces (`List.of(...)`, `List.copyOf(...)`, `Set.of(...)`, `Set.copyOf(...)`, `Map.of(...)`, `Map.copyOf(...)`) should be used 
+In general the factory methods of the `java.util.Collections` class (`unmodifiableList(...)`/`unmodifiableMap(...)`/`unmodifiableSet(...)`) or the direct factory methods in the collection interfaces (`List.of(...)`, `List.copyOf(...)`, `Set.of(...)`, `Set.copyOf(...)`, `Map.of(...)`, `Map.copyOf(...)`) should be used.
 The mentioned methods have slightly different functionality since some create a view of the collection while others create a copy of the collection.
 Here it is important to understand the difference between the two and what the correct choice is.
 Currently, the meta-language does not specify if a collection is a view or a copy.
@@ -148,7 +148,7 @@ public class Team {
 }
 ```
 
-If a full collection can be replaced at runtime (no @@immutable annotation defined in meta-language) the collection should newer be recreated but the full content should be replaced.
+If a full collection can be replaced at runtime (no @@immutable annotation defined in meta-language) the collection should never be recreated but the full content should be replaced.
 The following example shows how to do this:
 
 ```java
