@@ -90,7 +90,7 @@ Since the API must never return `null` for collections it never makes sense to w
 The public API must always use `java.util.List<TYPE>`, `java.util.Set<TYPE>`, and `java.util.Map<KEY, VALUE>` and never expose concrete implementations.
 Collections must be immutable wherever possible.
 This is not directly related to the `@@immutable` annotation but is a general rule.
-In general the factory methods of the `java.util.Collections` class (`unmodifiableList(...)`/`unmodifiableMap(...)`/`unmodifiableSet(...)`) or the direct factory methods in the collection interfaces (`List.of(...)`, `List.copyOf(...)`, `Set.of(...)`, `Set.copyOf(...)`, `Map.of(...)`, `Map.copyOf(...)`) should be used 
+In general the factory methods of the `java.util.Collections` class (`unmodifiableList(...)`/`unmodifiableMap(...)`/`unmodifiableSet(...)`) or the direct factory methods in the collection interfaces (`List.of(...)`, `List.copyOf(...)`, `Set.of(...)`, `Set.copyOf(...)`, `Map.of(...)`, `Map.copyOf(...)`) should be used.
 The mentioned methods have slightly different functionality since some create a view of the collection while others create a copy of the collection.
 Here it is important to understand the difference between the two and what the correct choice is.
 Currently, the meta-language does not specify if a collection is a view or a copy.
