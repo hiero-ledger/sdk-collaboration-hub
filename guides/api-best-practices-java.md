@@ -465,6 +465,7 @@ The following example shows how to implement this annotation:
 
 ```java
 import java.time.LocalDate;
+import java.util.Objects;
 
 public class Example {
 
@@ -473,22 +474,23 @@ public class Example {
 
     // example of an attribute that is defined as @@min(0) age:int32
     private int age;
-    
+
     //instead of implementing the checks 2 times the setter method can be called directly in the constructor
-    public Example(final String name, final int age) {
-       setName(name);
-       setAge(age);
+    public Example(@NonNull final String name, final int age) {
+        setName(name);
+        setAge(age);
     }
 
     public void setAge(final int age) {
-        if(age < 0) {
+        if (age < 0) {
             throw new IllegalArgumentException("age must be minimum 0");
         }
         this.age = age;
     }
-    
-    public void setName(final String name) {
-        if(name != null && name.length() < 1) {
+
+    public void setName(@NonNull final String name) {
+        Objects.requireNonNull(name, "name must not be null");
+        if (name.length() < 1) {
             throw new IllegalArgumentException("name must be minimum 1 character long");
         }
         this.name = name;
