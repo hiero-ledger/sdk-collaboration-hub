@@ -469,7 +469,7 @@ import java.time.LocalDate;
 public class Example {
 
     // example of an attribute that is defined as @@minLength(1) name:string
-    private final String name;
+    private String name;
 
     // example of an attribute that is defined as @@min(0) age:int32
     private int age;
@@ -488,7 +488,7 @@ public class Example {
     }
     
     public void setName(final String name) {
-        if(name.length() < 1) {
+        if(name != null && name.length() < 1) {
             throw new IllegalArgumentException("name must be minimum 1 character long");
         }
         this.name = name;
