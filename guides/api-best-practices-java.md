@@ -8,22 +8,22 @@ It aims to keep SDK APIs consistent, ergonomic, and maintainable across modules.
 
 Use the following canonical mappings when turning meta types into Java:
 
-| Generic Type      | Java Type     | Notes                |
-|-------------------|---------------|------------------------------------------------|
-| `string`          | `java.lang.String` | -                                      |
-| `intX`            | `byte`/`short`/`int`/`long`/`java.lang.Byte`/`java.lang.Short`/`java.lang.Integer`/`java.lang.Long` | -                            |
-| `uintX`           | `byte`/`short`/`int`/`long`/`java.lang.Byte`/`java.lang.Short`/`java.lang.Integer`/`java.lang.Long` | -                            |
-| `double`          | `double`/`java.lang.Double` | -        |
-| `decimal`         | `java.math.BigDecimal`         | -                    |
-| `bool`            |  `boolean`/`java.lang.Boolean`        | -                                               |
-| `bytes`           |  `byte[]`       | -                                       |
-| `list<TYPE>`      |  `java.util.List<TYPE>`        | -                         |
-| `set<TYPE>`       |  `java.util.Set<TYPE>`     | -                          |
-| `map<KEY, VALUE>` |  `java.util.Map<KEY, VALUE>`        | -                               |
-| `date`            | `java.time.LocalDate`         | -                       |
-| `time`            |  `java.time.LocalTime`         | -  |
-| `dateTime`        |  `java.time.LocalDateTime`         | - |
-| `zonedDateTime`   |  `java.time.ZonedDateTime`        | -    |
+| Generic Type      | Java Type                                                                                          | Notes                                                                            |
+|-------------------|----------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------|
+| `string`          | `java.lang.String`                                                                                 | -                                                                                |
+| `intX`            | `byte`, `short`, `int`, `long`, `java.lang.Byte`, `java.lang.Short`, `java.lang.Integer`, `java.lang.Long` | For all definitions that are not `@@nullable` the primitive types should be used |
+| `uintX`           | `byte`, `short`, `int`, `long`, `java.lang.Byte`, `java.lang.Short`, `java.lang.Integer`, `java.lang.Long` | For all definitions that are not `@@nullable` the primitive types should be used |
+| `double`          | `double`/`java.lang.Double`                                                                        | For all definitions that are not `@@nullable` the primitive types should be used |
+| `decimal`         | `java.math.BigDecimal`                                                                             | -                                                                                |
+| `bool`            | `boolean`/`java.lang.Boolean`                                                                      | For all definitions that are not `@@nullable` the primitive types should be used |
+| `bytes`           | `byte[]`/`java.lang.Byte[]`                                                                        | For all definitions that are not `@@nullable` the primitive types should be used |
+| `list<TYPE>`      | `java.util.List<TYPE>`                                                                             | lists in the public API should always be immutable                               |
+| `set<TYPE>`       | `java.util.Set<TYPE>`                                                                              | sets in the public API should always be immutable                                |
+| `map<KEY, VALUE>` | `java.util.Map<KEY, VALUE>`                                                                        | maps in the public API should always be immutable                                |
+| `date`            | `java.time.LocalDate`                                                                              | -                                                                                |
+| `time`            | `java.time.LocalTime`                                                                              | -                                                                                |
+| `dateTime`        | `java.time.LocalDateTime`                                                                          | -                                                                                |
+| `zonedDateTime`   | `java.time.ZonedDateTime`                                                                          | -                                                                                |
 
 ## Immutable Objects
 
@@ -266,6 +266,30 @@ public class Example {
 }
 ```
 
+It can make sense to add support of `Optional` in Java.
+In this case an additional getter can be added:
+
+```java
+public class Example {
+    
+    private String name;
+    
+    public void setName(@Nullable final String name) {
+        this.name = name;   
+    }
+    
+    @Nullable
+    public String getName() {
+        return name;
+    }
+    
+    @NonNull
+    public Optional<String> name() {
+        return Optional.ofNullable(name);
+    }
+}
+```
+
 ### Null handling of not nullable fields
 
 If a field parameter is not annotated with `@@nullable` in the language agnostic specification, the Java getter and setter must be annotated with `org.jspecify.annotations.NonNull`.
@@ -497,3 +521,7 @@ public class Example {
     }
 }
 ```
+
+## Questions & Comments
+
+We need to define a naming pattern for the usage of `Optional` in a `record`.
