@@ -12,13 +12,13 @@ The transactions SPI API defines the interface that must be implemented by the c
 ## API Schema
 
 ```
-namespace transactions
+namespace transactions-spi
 requires transactions, grpc, hiero-proto
 
 // TransactionSupport is the interface that must be implemented per custom transaction type
 abstraction TransactionSupport {
 
-    string getTransactionName() // defines the transaction
+    type getTransactionType() // defines the transaction type the concrete TransactionSupport implementation supports
     
     MethodDescriptor getMethodDescriptor() // defines the gRPC method
     
@@ -32,9 +32,15 @@ abstraction TransactionSupport {
     
     Record convert(protoRecord:TransactionRecord) // converts a proto TransactionRecord to a Record
 }
+
+// factory methods that need to be implemented
+
+@@throws(not-found-error) TransactionSupport getTransactionSupport(transactionType:type) // returns the TransactionSupport for the given transaction type
+set<TransactionSupport> getAllTransactionSupports() // returns all TransactionSupport instances
 ```
 
 ## Questions & Comments
 
 - [@hendrikebbers](https://github.com/hendrikebbers): Do we have classes like `TransactionBody.Builder` for every language in the generated proto files?
 - [@hendrikebbers](https://github.com/hendrikebbers): Is `MethodDescriptor` specific for Java or is it the same for all languages?
+- [@hendrikebbers](https://github.com/hendrikebbers): Can we provide all information needed for `MethodDescriptor` in a custom complex type and by doing so remove the dependency to `grpc` in the public API?

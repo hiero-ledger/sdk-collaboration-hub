@@ -15,22 +15,23 @@ The following syntax should be used to document the APIs in a language-agnostic 
 
 The following basic data types should be used in the API documentation.
 
-| Data Type         | Description                                                   |
-|-------------------|---------------------------------------------------------------|
-| `string`          | A sequence of characters                                      |
-| `intX`            | A signed integer of X bits (0 < X <= 256)                     |
-| `uintX`           | An unsigned integer of X bits (0 < X <= 256)                  |
-| `double`          | A native floating-point number in 64-bit base-2 format        |
-| `decimal`         | A decimal number with arbitrary precision                     |
-| `bool`            | A boolean value                                               |
-| `bytes`           | A sequence of bytes                                           |
-| `list<TYPE>`      | A list of elements of type TYPE                               |
-| `set<TYPE>`       | A set of elements of type TYPE                                |
-| `map<KEY, VALUE>` | A map of elements of type TYPE                                |
-| `date`            | A date value (ISO 8601 calendar date)                         |
-| `time`            | A time value without date or timezone (nanosecond precision)  |
-| `dateTime`        | A date and time value without timezone (nanosecond precision) |
-| `zonedDateTime`   | A date and time value with timezone (nanosecond precision)    |
+| Data Type         | Description                                                           |
+|-------------------|-----------------------------------------------------------------------|
+| `string`          | A sequence of characters                                              |
+| `intX`            | A signed integer of X bits (8 <= X <= 256)                             |
+| `uintX`           | An unsigned integer of X bits (8 <= X <= 256)                         |
+| `double`          | A native floating-point number in 64-bit base-2 format                |
+| `decimal`         | A decimal number with arbitrary precision                             |
+| `bool`            | A boolean value                                                       |
+| `bytes`           | A sequence of bytes                                                   |
+| `list<TYPE>`      | A list of elements of type TYPE                                       |
+| `set<TYPE>`       | A set of elements of type TYPE                                        |
+| `map<KEY, VALUE>` | A map of elements of type TYPE                                        |
+| `type`            | A type identity that can be used to specify a complex type at runtime |
+| `date`            | A date value (ISO 8601 calendar date)                                 |
+| `time`            | A time value without date or timezone (nanosecond precision)          |
+| `dateTime`        | A date and time value without timezone (nanosecond precision)         |
+| `zonedDateTime`   | A date and time value with timezone (nanosecond precision)            |
 
 ### Complex Types
 
@@ -224,6 +225,18 @@ requires common, keys
 ...
  ```
 
+### Constants
+
+Constants can be defined within a namespace. A constant has always a fixed value and cannot be changed.
+
+Example of a constant definition:
+
+```
+namespace transactions
+
+constant MAX_TRANSACTIONS:int32 = 100
+```
+
 ### Best practices and antipatterns
 
 The following best practices and antipattern should be followed when defining the API.
@@ -246,6 +259,7 @@ To keep the API surface consistent and predictable, use the following naming rul
 - Enum values: UPPER_SNAKE_CASE (e.g., PENDING, COMPLETED).
 - Namespace names: lowerCamelCase (e.g., transactions).
 - Error identifiers (in `@@throws`): lowercase-kebab-case (e.g., not-found-error, parse-error).
+- Constant names: UPPER_SNAKE_CASE (e.g., MAX_TRANSACTIONS).
 
 ## Questions & Comments
 

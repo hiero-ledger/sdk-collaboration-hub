@@ -4,7 +4,8 @@ This section defines the API for transactions.
 
 ## Description
 
-TODO
+The transactions API defines the basic building blocks for transactions.
+It does not define specific transaction types but everything that is common to all transaction types.
 
 ## API Schema
 
@@ -89,8 +90,29 @@ Record {
 // factory methods of TransactionId that should be added to the namespace in the best language dependent way
 
 TransactionId generateTransactionId(accountId: AccountId)
-TransactionId fromString(transactionId: string)
+@@throws(illegal-format) TransactionId fromString(transactionId: string)
 
+```
+
+## Example
+
+In the given example we assume that a concrete transaction type `FooTransaction` is defined.
+The example shows how to create a new transaction instance and how to send it.
+
+```
+HieroClient client = ...
+KeyPair keyPair = ...
+
+FooTransaction transaction = new FooTransaction();
+transaction.setBar("baz");
+
+Response response = transaction.packTransaction(client)
+           .sign(keyPair)
+           .sendAndWait(30_000);
+
+FooReceipt receipt = response.queryReceiptAndWait(30_000);
+
+FooRecord record = response.queryRecordAndWait(30_000);
 ```
 
 ## Questions & Comments

@@ -4,7 +4,8 @@ This section defines the client API.
 
 ## Description
 
-TODO
+The client API is the API that will be used by the SDK to interact with the network.
+A client defines a concrete network connection to a specific network with a specific operator account.
 
 ## API Schema
 
@@ -28,6 +29,20 @@ HieroClient {
 // factory methods of `HieroClient` that should be added to the namespace in the best language dependent way
 
 HieroClient createClient(networkSettings: NetworkSetting, operatorAccount: OperatorAccount)
+```
+
+## Examples
+
+The following example shows how to create a `HieroClient` instance:
+
+```
+AccountId accountId = ...;
+PrivateKey privateKey = ...;
+OperatorAccount operatorAccount = new OperatorAccount(accountId, privateKey);
+
+NetworkSetting networkSettings = ...;
+
+HieroClient client = HieroClient.createClient(networkSettings, operatorAccount);
 ```
 
 ## Questions & Comments

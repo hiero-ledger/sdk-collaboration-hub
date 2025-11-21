@@ -4,13 +4,16 @@ This section defines the API for configuration.
 
 ## Description
 
-TODO
+The config API provides functions to define and retrieve the configuration of a specific network.
 
 ## API Schema
 
 ```
 namespace config
 requires common
+
+constant HEDERA_MAINNET_IDENTIFIER:string = "hedera-mainnet" // identifier for the Hedera mainnet
+constant HEDERA_TESTNET_IDENTIFIER:string = "hedera-testnet" // identifier for the Hedera testnet
 
 // The full configuration to connect to a specific network
 NetworkSetting {
@@ -25,7 +28,15 @@ NetworkSetting {
 
 // factory methods of `NetworkSetting` that should be added to the namespace in the best language dependent way
 
-@@nullable NetworkSetting getNetworkSetting(String identifier) // returns null if no network with that identifier exists. Network settings can be added as plug and play by external modules.
+@@throws(not-found-error) NetworkSetting getNetworkSetting(String identifier) // throws not-found-error if no network with that identifier exists. Network settings can be added as plug and play by external modules.
+```
+
+## Examples
+
+The following example shows how to load the network configuration for the Hedera testnet:
+
+```
+NetworkSetting setting = NetworkSetting.getNetworkSetting(HEDERA_TESTNET_IDENTIFIER)
 ```
 
 ## Questions & Comments
