@@ -42,4 +42,3 @@ NetworkSetting setting = NetworkSetting.getNetworkSetting(HEDERA_TESTNET_IDENTIF
 ## Questions & Comments
 
 - [@hendrikebbers](https://github.com/hendrikebbers): Do we want to have mirror node information in the configuration at all or should v3 do a concrete split between mirror node and consensus node?
-- [@hendrikebbers](https://github.com/hendrikebbers): We should provide constants for identifiers of the most common networks (like hedera-testnet, hedera-mainnet, etc.)
