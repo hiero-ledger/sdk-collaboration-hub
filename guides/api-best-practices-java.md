@@ -8,22 +8,41 @@ It aims to keep SDK APIs consistent, ergonomic, and maintainable across modules.
 
 Use the following canonical mappings when turning meta types into Java:
 
-| Generic Type      | Java Type                                                                                          | Notes                                                                            |
-|-------------------|----------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------|
-| `string`          | `java.lang.String`                                                                                 | -                                                                                |
-| `intX`            | `byte`, `short`, `int`, `long`, `java.lang.Byte`, `java.lang.Short`, `java.lang.Integer`, `java.lang.Long` | For all definitions that are not `@@nullable` the primitive types should be used |
-| `uintX`           | `byte`, `short`, `int`, `long`, `java.lang.Byte`, `java.lang.Short`, `java.lang.Integer`, `java.lang.Long` | For all definitions that are not `@@nullable` the primitive types should be used |
-| `double`          | `double`/`java.lang.Double`                                                                        | For all definitions that are not `@@nullable` the primitive types should be used |
-| `decimal`         | `java.math.BigDecimal`                                                                             | -                                                                                |
-| `bool`            | `boolean`/`java.lang.Boolean`                                                                      | For all definitions that are not `@@nullable` the primitive types should be used |
-| `bytes`           | `byte[]`/`java.lang.Byte[]`                                                                        | For all definitions that are not `@@nullable` the primitive types should be used |
-| `list<TYPE>`      | `java.util.List<TYPE>`                                                                             | lists in the public API should always be immutable                               |
-| `set<TYPE>`       | `java.util.Set<TYPE>`                                                                              | sets in the public API should always be immutable                                |
-| `map<KEY, VALUE>` | `java.util.Map<KEY, VALUE>`                                                                        | maps in the public API should always be immutable                                |
-| `date`            | `java.time.LocalDate`                                                                              | -                                                                                |
-| `time`            | `java.time.LocalTime`                                                                              | -                                                                                |
-| `dateTime`        | `java.time.LocalDateTime`                                                                          | -                                                                                |
-| `zonedDateTime`   | `java.time.ZonedDateTime`                                                                          | -                                                                                |
+| Generic Type      | Java Type                                                                                                                          | Notes                                                                            |
+|-------------------|------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------|
+| `string`          | `java.lang.String`                                                                                                                 | -                                                                                |
+| `intX`            | `byte`, `short`, `int`, `long`, `java.lang.Byte`, `java.lang.Short`, `java.lang.Integer`, `java.lang.Long`, `java.math.BigInteger` | For all definitions that are not `@@nullable` the primitive types should be used |
+| `uintX`           | `byte`, `short`, `int`, `long`, `java.lang.Byte`, `java.lang.Short`, `java.lang.Integer`, `java.lang.Long`, `java.math.BigInteger` | For all definitions that are not `@@nullable` the primitive types should be used |
+| `double`          | `double`/`java.lang.Double`                                                                                                        | For all definitions that are not `@@nullable` the primitive types should be used |
+| `decimal`         | `java.math.BigDecimal`                                                                                                             | -                                                                                |
+| `bool`            | `boolean`/`java.lang.Boolean`                                                                                                      | For all definitions that are not `@@nullable` the primitive types should be used |
+| `bytes`           | `byte[]`/`java.lang.Byte[]`                                                                                                        | For all definitions that are not `@@nullable` the primitive types should be used |
+| `list<TYPE>`      | `java.util.List<TYPE>`                                                                                                             | lists in the public API should always be immutable                               |
+| `set<TYPE>`       | `java.util.Set<TYPE>`                                                                                                              | sets in the public API should always be immutable                                |
+| `map<KEY, VALUE>` | `java.util.Map<KEY, VALUE>`                                                                                                        | maps in the public API should always be immutable                                |
+| `date`            | `java.time.LocalDate`                                                                                                              | -                                                                                |
+| `time`            | `java.time.LocalTime`                                                                                                              | -                                                                                |
+| `dateTime`        | `java.time.LocalDateTime`                                                                                                          | -                                                                                |
+| `zonedDateTime`   | `java.time.ZonedDateTime`                                                                                                          | -                                                                                |
+
+### Numeric Types
+
+The following table shows the mapping of numeric types between the meta-language and Java.
+For each numeric Java type a maximum numeric type is defined.
+
+| Max Numeric Type | Java Type                  |
+|------------------|----------------------------|
+| `int8`           | `byte`, `java.lang.Byte`   |
+| `int16`          | `short`, `java.lang.Short` |
+| `int32`          | `int`, `java.lang.Integer` |
+| `int64`          | `long`, `java.lang.Long`   |
+| `int256`         | `java.math.BigInteger`     |
+| `uint8`          | `byte`, `java.lang.Byte`   |
+| `uint16`         | `short`, `java.lang.Short` |
+| `uint32`         | `int`, `java.lang.Integer` |
+| `uint64`         | `long`, `java.lang.Long`   |
+| `uint256`        | `java.math.BigInteger`     |
+
 
 ## Immutable Objects
 

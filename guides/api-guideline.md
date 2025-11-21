@@ -18,8 +18,8 @@ The following basic data types should be used in the API documentation.
 | Data Type         | Description                                                   |
 |-------------------|---------------------------------------------------------------|
 | `string`          | A sequence of characters                                      |
-| `intX`            | A signed integer of X bits                                    |
-| `uintX`           | An unsigned integer of X bits                                 |
+| `intX`            | A signed integer of X bits (0 < X <= 256)                     |
+| `uintX`           | An unsigned integer of X bits (0 < X <= 256)                  |
 | `double`          | A native floating-point number in 64-bit base-2 format        |
 | `decimal`         | A decimal number with arbitrary precision                     |
 | `bool`            | A boolean value                                               |
