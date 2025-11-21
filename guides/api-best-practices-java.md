@@ -522,6 +522,43 @@ public class Example {
 }
 ```
 
+## Asynchronous methods
+
+Methods that are annotated with `@@async` in the meta-language must return a `java.util.concurrent.CompletionStage<T>` instead of a concrete type.
+The benefit of `java.util.concurrent.CompletionStage<T>` against `java.util.concurrent.CompletableFuture<T>` is, that it is an interface.
+Implementations can use `java.util.concurrent.CompletableFuture<T>` since it implements the `java.util.concurrent.CompletionStage<T>` interface.
+Against `java.util.concurrent.Future<T>` the `java.util.concurrent.CompletionStage<T>` interface is more flexible and provides more functionality.
+`java.util.concurrent.CompletionStage<T>` contains the `CompletableFuture<T> toCompletableFuture()` method that can be used to transform it to a `java.util.concurrent.CompletableFuture<T>` or `java.util.concurrent.Future<T>`.
+
+Example of an asynchronous method:
+
+```java
+public interface ExampleService {
+    
+    CompletionStage<Example> getExample(final String id);
+
+}
+```
+
+In general an API should provide a synchronous method as alternative to the asynchronous method.
+The synchronous method can be defined and implemented as follows:
+
+```java
+public interface ExampleService {
+    
+    CompletionStage<Example> getExample();
+    
+    default Example getExampleSync(final long timeout, final TimeUnit unit) {
+        return getExample(id).toCompletableFuture().get(timeout, unit);
+    }
+
+}
+```
+
+The sample uses `long timeout, TimeUnit unit` as parameters for the synchronous method.
+That is the best practice in Java to ensure that the synchronous method can be called from multiple threads.
+Instead of just defining a `long timeoutInMs` the usage of `TimeUnit` is recommended.
+
 ## Questions & Comments
 
 We need to define a naming pattern for the usage of `Optional` in a `record`.
@@ -530,11 +567,9 @@ We need to define a naming pattern for the usage of `Optional` in a `record`.
 
 The following list contains some descriptions of problems and missing features based on using an AI to create code based on the documentation.
 
-- `java.util.concurrent.CompletionStage` should be used instead of `java.util.concurrent.CompletableFuture` or `java.util.concurrent.Future` in the public API for async methods.
 - Factory methods should be implemented as static methods in the type that is created by the factory method instead of creating a factory class per namespace.
 - `Objects.requireNonNull(obj, message)` contains as message only the obj name instead of the message "NAME must not be null" (NAME is a placeholder for the actual name of the parameter).
 - Even types that have only immutable fields/attributes are implemented as classes instead of records.
 - `@org.jspecify.annotations.NonNull` and `@org.jspecify.annotations.Nullable` annotations are not used in the public API. They should be added wherever possible.
 - Parameters of methods and constructors should always be defined as `final`.
-- 
 
