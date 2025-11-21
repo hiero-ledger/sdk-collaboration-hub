@@ -4,13 +4,16 @@ This section defines the API for configuration.
 
 ## Description
 
-TODO
+The config API provides functions to define and retrieve the configuration of a specific network.
 
 ## API Schema
 
 ```
 namespace config
 requires common
+
+constant HEDERA_MAINNET_IDENTIFIER:string = "hedera-mainnet" // identifier for the Hedera mainnet
+constant HEDERA_TESTNET_IDENTIFIER:string = "hedera-testnet" // identifier for the Hedera testnet
 
 // The full configuration to connect to a specific network
 NetworkSetting {
@@ -25,9 +28,18 @@ NetworkSetting {
 
 // factory methods of `NetworkSetting` that should be added to the namespace in the best language dependent way
 
-@@nullable NetworkSetting getNetworkSetting(String identifier) // returns null if no network with that identifier exists. Network settings can be added as plug and play by external modules.
+@@throws(not-found-error) NetworkSetting getNetworkSetting(String identifier) // returns null if no network with that identifier exists. Network settings can be added as plug and play by external modules.
+```
+
+## Examples
+
+The following example shows how to load the network configuration for the Hedera testnet:
+
+```
+NetworkSetting setting = NetworkSetting.getNetworkSetting(HEDERA_TESTNET_IDENTIFIER)
 ```
 
 ## Questions & Comments
 
 - [@hendrikebbers](https://github.com/hendrikebbers): Do we want to have mirror node information in the configuration at all or should v3 do a concrete split between mirror node and consensus node?
+- [@hendrikebbers](https://github.com/hendrikebbers): We should provide constants for identifiers of the most common networks (like hedera-testnet, hedera-mainnet, etc.)
