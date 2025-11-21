@@ -2,24 +2,22 @@
 
 This section defines the API for transactions.
 
+## Description
+
+TODO
+
+## API Schema
+
 ```
 namespace transactions
 requires common, keys, client
 
 // Defines the status of a transaction. Since we can have custom transaction types based on custom services in the consensus node we can not use an enum here anymore
-
 abstraction TransactionStatus {
   @@immutable code:int32 // the status code that should be unique based on the consensus node. 
 }
 
-enum BasicTransactionStatus extends TransactionStatus {
-    OK
-    INVALID_TRANSACTION
-    PAYER_ACCOUNT_NOT_FOUND
-    ...          // other status codes should be defined here TO_BE_DEFINED_IN_FUTURE_VERSIONS
-    GRPC_WEB_PROXY_NOT_SUPPORTED
-}
-
+// Defines the status codes that are currently used by services that are part of the consensus node repository
 enum BasicTransactionStatus extends TransactionStatus {
     OK
     INVALID_TRANSACTION
@@ -58,12 +56,10 @@ abstraction PackedTransaction<$$Transaction extends Transaction, $$Response exte
 
   $$Transaction unpack() // returns a new basic transaction instance based on this packed transaction
 
-  // Question: Should we provide another complex type like "SignedTransaction" that is created here and contains the send api? Is there any scenario where we want to send a transaction that is not signed?
   void sign(keyPair:KeyPair) // sign the transaction, if the lang supports it, we should provide a fluent API (return this)
   void sign(publicKey:PublicKey, transactionSigner:TransactionSigner) // sign the transaction, if the lang supports it, we should provide a fluent API (return this)
 
   @@async $$Response send() // send the transaction, we should provide async and sync versions in best case
-  $$Response sendAndWait(long timeout) // send the transaction, in milliseconds, a better lang specific type can be used
 }
 
 // The response of a transaction send request
@@ -71,10 +67,8 @@ Response<$$Receipt extends Receipt, $$Record extends Record> {
   @immutable transactionId:TransactionId // the id of the transaction
 
   @@async $$Receipt queryReceipt() // query for the receipt of the transaction, we should provide async and sync versions in best case
-  $$Receipt queryReceiptAndWait(long timeout) // query for the receipt of the transaction, in milliseconds, a better lang specific type can be used
   
   @async $$Record queryRecord() // query for the record of the transaction, we should provide async and sync versions in best case
-  $$Record queryRecordAndWait(long timeout) // query for the record of the transaction, in milliseconds, a better lang specific type can be used
 }
 
 // The receipt of a transaction
@@ -99,7 +93,7 @@ TransactionId fromString(transactionId: string)
 
 ```
 
-### Comments
+## Questions & Comments
 
 - [@rwalworth](https://github.com/rwalworth): I can see use cases where it would be beneficial to switch the operator for a HieroClient (e.g. testing), as well as the network it connects to. I don't necessarily see a benefit in enforcing @@immutable here for these types.
 - [@rwalworth](https://github.com/rwalworth) / [@0xivanov](https://github.com/0xivanov): Should maxTransactionFee and validDuration have default values?

@@ -8,22 +8,41 @@ It aims to keep SDK APIs consistent, ergonomic, and maintainable across modules.
 
 Use the following canonical mappings when turning meta types into Java:
 
-| Generic Type      | Java Type     | Notes                |
-|-------------------|---------------|------------------------------------------------|
-| `string`          | `java.lang.String` | -                                      |
-| `intX`            | `byte`/`short`/`int`/`long`/`java.lang.Byte`/`java.lang.Short`/`java.lang.Integer`/`java.lang.Long` | -                            |
-| `uintX`           | `byte`/`short`/`int`/`long`/`java.lang.Byte`/`java.lang.Short`/`java.lang.Integer`/`java.lang.Long` | -                            |
-| `double`          | `double`/`java.lang.Double` | -        |
-| `decimal`         | `java.math.BigDecimal`         | -                    |
-| `bool`            |  `boolean`/`java.lang.Boolean`        | -                                               |
-| `bytes`           |  `byte[]`       | -                                       |
-| `list<TYPE>`      |  `java.util.List<TYPE>`        | -                         |
-| `set<TYPE>`       |  `java.util.Set<TYPE>`     | -                          |
-| `map<KEY, VALUE>` |  `java.util.Map<KEY, VALUE>`        | -                               |
-| `date`            | `java.time.LocalDate`         | -                       |
-| `time`            |  `java.time.LocalTime`         | -  |
-| `dateTime`        |  `java.time.LocalDateTime`         | - |
-| `zonedDateTime`   |  `java.time.ZonedDateTime`        | -    |
+| Generic Type      | Java Type                                                                                                                          | Notes                                                                            |
+|-------------------|------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------|
+| `string`          | `java.lang.String`                                                                                                                 | -                                                                                |
+| `intX`            | `byte`, `short`, `int`, `long`, `java.lang.Byte`, `java.lang.Short`, `java.lang.Integer`, `java.lang.Long`, `java.math.BigInteger` | For all definitions that are not `@@nullable` the primitive types should be used |
+| `uintX`           | `byte`, `short`, `int`, `long`, `java.lang.Byte`, `java.lang.Short`, `java.lang.Integer`, `java.lang.Long`, `java.math.BigInteger` | For all definitions that are not `@@nullable` the primitive types should be used |
+| `double`          | `double`/`java.lang.Double`                                                                                                        | For all definitions that are not `@@nullable` the primitive types should be used |
+| `decimal`         | `java.math.BigDecimal`                                                                                                             | -                                                                                |
+| `bool`            | `boolean`/`java.lang.Boolean`                                                                                                      | For all definitions that are not `@@nullable` the primitive types should be used |
+| `bytes`           | `byte[]`/`java.lang.Byte[]`                                                                                                        | For all definitions that are not `@@nullable` the primitive types should be used |
+| `list<TYPE>`      | `java.util.List<TYPE>`                                                                                                             | lists in the public API should always be immutable                               |
+| `set<TYPE>`       | `java.util.Set<TYPE>`                                                                                                              | sets in the public API should always be immutable                                |
+| `map<KEY, VALUE>` | `java.util.Map<KEY, VALUE>`                                                                                                        | maps in the public API should always be immutable                                |
+| `date`            | `java.time.LocalDate`                                                                                                              | -                                                                                |
+| `time`            | `java.time.LocalTime`                                                                                                              | -                                                                                |
+| `dateTime`        | `java.time.LocalDateTime`                                                                                                          | -                                                                                |
+| `zonedDateTime`   | `java.time.ZonedDateTime`                                                                                                          | -                                                                                |
+
+### Numeric Types
+
+The following table shows the mapping of numeric types between the meta-language and Java.
+For each numeric Java type a maximum numeric type is defined.
+
+| Max Numeric Type | Java Type                  |
+|------------------|----------------------------|
+| `int8`           | `byte`, `java.lang.Byte`   |
+| `int16`          | `short`, `java.lang.Short` |
+| `int32`          | `int`, `java.lang.Integer` |
+| `int64`          | `long`, `java.lang.Long`   |
+| `int256`         | `java.math.BigInteger`     |
+| `uint8`          | `byte`, `java.lang.Byte`   |
+| `uint16`         | `short`, `java.lang.Short` |
+| `uint32`         | `int`, `java.lang.Integer` |
+| `uint64`         | `long`, `java.lang.Long`   |
+| `uint256`        | `java.math.BigInteger`     |
+
 
 ## Immutable Objects
 
@@ -81,6 +100,148 @@ public class Person {
 }
 ```
 
+## Collections
+
+The public API must never return `null` for collections. Instead, an empty collection must be returned.
+The most easy way to achieve this is to use one of the static `java.util.Collections.emptyList()`/`java.util.Collections.emptySet()`/`java.util.Collections.emptyMap()`/`List.of()`/`Set.of()`/`Map.of()` factory methods.
+Since the API must never return `null` for collections it never makes sense to wrap a collection in a `java.util.Optional` in the public API.
+
+The public API must always use `java.util.List<TYPE>`, `java.util.Set<TYPE>`, and `java.util.Map<KEY, VALUE>` and never expose concrete implementations.
+Collections must be immutable wherever possible.
+This is not directly related to the `@@immutable` annotation but is a general rule.
+In general the factory methods of the `java.util.Collections` class (`unmodifiableList(...)`/`unmodifiableMap(...)`/`unmodifiableSet(...)`) or the direct factory methods in the collection interfaces (`List.of(...)`, `List.copyOf(...)`, `Set.of(...)`, `Set.copyOf(...)`, `Map.of(...)`, `Map.copyOf(...)`) should be used.
+The mentioned methods have slightly different functionality since some create a view of the collection while others create a copy of the collection.
+Here it is important to understand the difference between the two and what the correct choice is.
+Currently, the meta-language does not specify if a collection is a view or a copy.
+In most cases it makes most sense to return a view.
+
+Examples of how immutable collections can be implemented in Java:
+
+```java
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+public class Team {
+
+    private final List<String> names = new CopyOnWriteArrayList<>();
+
+    // Returning an unmodifiable list
+    public List<String> getSomeNames() {
+        return List.of("John", "Jane");
+    }
+
+    // Returning an unmodifiable view of the inner list
+    public List<String> getNames() {
+        return Collections.unmodifiableList(names);
+    }
+
+    //Returning an unmodifiable copy of the inner list
+    public List<String> getAllNames() {
+        return List.copyOf(names);
+    }
+
+}
+```
+
+If a collection is passed as a parameter to a constructor and stored in a field, it must be copied before being stored.
+The following example shows how to do this:
+
+```java
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
+
+public class Team {
+
+    private final List<String> names;
+
+    public Team(@NonNull final List<String> names) {
+        Objects.requireNonNull(names, "names must not be null");
+        this.names = new CopyOnWriteArrayList<>(names);
+    }
+
+}
+```
+
+If a full collection can be replaced at runtime (no @@immutable annotation defined in meta-language) the collection should never be recreated but the full content should be replaced.
+The following example shows how to do this:
+
+```java
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
+
+public class Team {
+
+    private final List<String> names;
+
+    public Team() {
+        this.names = new CopyOnWriteArrayList<>();
+    }
+    
+    public void setNames(@NonNull final List<String> names) {
+        Objects.requireNonNull(names, "names must not be null");
+        this.names.clear();
+        this.names.addAll(names);
+    }
+
+}
+```
+
+Since we never know how the API will be used, it is important to always consider that functionalities can be called in parallel.
+This means that the collection can be modified while it is being iterated over.
+This can happen if the collection is used in multiple functions that are exposed to the public API (even by sub callers). 
+Therefore, it is important to use `java.util.concurrent.CopyOnWriteArrayList` or `java.util.concurrent.CopyOnWriteArraySet` instead of `java.util.ArrayList` or `java.util.HashSet` for mutable instances of `java.util.List` and `java.util.Set`.
+The copy-on-write functionality ensures that the collection is not modified while it is being iterated over.
+By doing so we can avoid the risk of concurrent modification exceptions at runtime.
+For `java.util.Map`, `java.util.concurrent.ConcurrentHashMap` must be used for mutable instances.
+The following example shows how to do this:
+
+```java
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
+
+public class Team {
+
+    private final List<String> names;
+
+    public Team() {
+        this.names = new CopyOnWriteArrayList<>();
+    }
+    
+    @NonNull
+    public List<String> getNames() {
+        return Collections.unmodifiableList(names);
+    }
+    
+    public void setNames(@NonNull final List<String> names) {
+        Objects.requireNonNull(names, "names must not be null");
+        this.names.clear();
+        this.names.addAll(names);
+    }
+    
+    public void addName(@NonNull final String name) {
+        Objects.requireNonNull(name, "name must not be null");
+        names.add(name);
+    }
+    
+    public void removeName(@NonNull final String name) {
+        Objects.requireNonNull(name, "name must not be null");
+        names.remove(name);
+    }
+
+}
+```
+
 ## Null handling
 
 In Java we use the `org.jspecify:jspecify` library to annotate nullability of types.
@@ -120,6 +281,30 @@ public class Example {
     @Nullable
     public String getName() {
         return name;
+    }
+}
+```
+
+It can make sense to add support of `Optional` in Java.
+In this case an additional getter can be added:
+
+```java
+public class Example {
+    
+    private String name;
+    
+    public void setName(@Nullable final String name) {
+        this.name = name;   
+    }
+    
+    @Nullable
+    public String getName() {
+        return name;
+    }
+    
+    @NonNull
+    public Optional<String> name() {
+        return Optional.ofNullable(name);
     }
 }
 ```
@@ -262,3 +447,148 @@ TODO
 ### Null handling of method return value
 
 TODO
+
+## Implementation of Attribute annotations
+
+Attribute annotations that are defined in the language agnostic specification should be implemented in Java in the following ways.
+
+The handling of `@@immutable` is defined in the ['Immutable Objects' section](#immutable-objects).
+The handling of `@@nullable` is defined in the ['Null handling' section](#null-handling).
+
+The `@@default(value)` annotation defines a default value for a field. In Java that will always be set in the constructor or directly in the field declaration.
+The following example shows how to implement this annotation:
+
+```java
+import java.time.LocalDate;
+
+public class Example {
+
+    // example of an attribute that is defined as @@immutable @@default("John") name:string
+    // note that the default value is set in the constructor
+    private final String name;
+
+    // example of an attribute that is defined as @@immutable @@default(NOW) name:date
+    // note that the default value is set in the field declaration
+    private final LocalDate birthdate = LocalDate.now();
+
+    // example of an attribute that is defined as @@default(20) age:int32
+    // note that the default value is set in the constructor
+    private int age;
+
+    // example of an attribute that is defined as @@default(true) active:bool
+    // note that the default value is set in the constructor
+    private boolean active = true;
+
+    public Example() {
+        name = "John";
+        age = 20;
+    }
+
+    // the @@default(value) does not forbid to initialize the attribute with different values, independent of the @@immutable annotation
+    public Example(final String name, final int age) {
+       this.name = name;
+       this.age = age;
+    }
+
+    // attributes that are not annotated with @@immutable can be modified even if they are specified with @@default(value)
+    public void setAge(final int age) {
+        this.age = age;
+    }
+
+    // attributes that are not annotated with @@immutable can be modified even if they are specified with @@default(value)
+    public void setActive(final boolean active) {
+        this.active = active;
+    }
+}
+```
+
+The `@@min(value)`, `@@max(value)`, `@@minLength(value)`, `@@maxLength(value)`, and `@@pattern(regex)` annotations are all handled in the same way: Checks based on the value must be added to the constructor and setter methods.
+Attributes annotated with any of those annotations must never be set directly in the field declaration.
+The following example shows how to implement this annotation:
+
+```java
+import java.time.LocalDate;
+import java.util.Objects;
+
+public class Example {
+
+    // example of an attribute that is defined as @@minLength(1) name:string
+    private String name;
+
+    // example of an attribute that is defined as @@min(0) age:int32
+    private int age;
+
+    //instead of implementing the checks 2 times the setter method can be called directly in the constructor
+    public Example(@NonNull final String name, final int age) {
+        setName(name);
+        setAge(age);
+    }
+
+    public void setAge(final int age) {
+        if (age < 0) {
+            throw new IllegalArgumentException("age must be minimum 0");
+        }
+        this.age = age;
+    }
+
+    public void setName(@NonNull final String name) {
+        Objects.requireNonNull(name, "name must not be null");
+        if (name.length() < 1) {
+            throw new IllegalArgumentException("name must be minimum 1 character long");
+        }
+        this.name = name;
+    }
+}
+```
+
+## Asynchronous methods
+
+Methods that are annotated with `@@async` in the meta-language must return a `java.util.concurrent.CompletionStage<T>` instead of a concrete type.
+The benefit of `java.util.concurrent.CompletionStage<T>` against `java.util.concurrent.CompletableFuture<T>` is, that it is an interface.
+Implementations can use `java.util.concurrent.CompletableFuture<T>` since it implements the `java.util.concurrent.CompletionStage<T>` interface.
+Against `java.util.concurrent.Future<T>` the `java.util.concurrent.CompletionStage<T>` interface is more flexible and provides more functionality.
+`java.util.concurrent.CompletionStage<T>` contains the `CompletableFuture<T> toCompletableFuture()` method that can be used to transform it to a `java.util.concurrent.CompletableFuture<T>` or `java.util.concurrent.Future<T>`.
+
+Example of an asynchronous method:
+
+```java
+public interface ExampleService {
+    
+    CompletionStage<Example> getExample(final String id);
+
+}
+```
+
+In general an API should provide a synchronous method as alternative to the asynchronous method.
+The synchronous method can be defined and implemented as follows:
+
+```java
+public interface ExampleService {
+    
+    CompletionStage<Example> getExample();
+    
+    default Example getExampleSync(final long timeout, final TimeUnit unit) {
+        return getExample(id).toCompletableFuture().get(timeout, unit);
+    }
+
+}
+```
+
+The sample uses `long timeout, TimeUnit unit` as parameters for the synchronous method.
+That is the best practice in Java to ensure that the synchronous method can be called from multiple threads.
+Instead of just defining a `long timeoutInMs` the usage of `TimeUnit` is recommended.
+
+## Questions & Comments
+
+We need to define a naming pattern for the usage of `Optional` in a `record`.
+
+## Todos based on AI tests for generating Java code
+
+The following list contains some descriptions of problems and missing features based on using an AI to create code based on the documentation.
+
+- Factory methods should be implemented as static methods in the type that is created by the factory method instead of creating a factory class per namespace.
+- `Objects.requireNonNull(obj, message)` contains as message only the obj name instead of the message "NAME must not be null" (NAME is a placeholder for the actual name of the parameter).
+- Even types that have only immutable fields/attributes are implemented as classes instead of records.
+- `@org.jspecify.annotations.NonNull` and `@org.jspecify.annotations.Nullable` annotations are not used in the public API. They should be added wherever possible.
+- Parameters of methods and constructors should always be defined as `final`.
+

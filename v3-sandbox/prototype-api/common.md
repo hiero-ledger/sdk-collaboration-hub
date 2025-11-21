@@ -2,6 +2,14 @@
 
 This section defines the common datatypes that are used in the API.
 
+## Description
+
+This API defines the common datatypes that are used in the API.
+All definitions must not depend on any other API.
+The API defined in this layer can be shared between SDKs for consensus node, mirror node and block node.
+
+## API Schema
+
 ```
 namespace common
 
@@ -25,6 +33,7 @@ Hbar {
     @@immutable unit: HbarUnit // unit of the amount
 }
 
+// Represents the exchange rate of Hbar in USD cents.
 HBarExchangeRate {
     @@immutable expirationTime: zonedDateTime // expiration time of the exchange rate
     @@immutable exchangeRateInUsdCents: double // exchange rate of HBar in USD cents
@@ -38,9 +47,14 @@ Ledger {
 
 // Represents a consensus node on a network.
 ConsensusNode {
-    @@immutable ip: string
-    @@immutable port: int
-    @@immutable Address account
+    @@immutable ip: string // ip address of the node
+    @@immutable port: int // port of the node
+    @@immutable AccountId account // account of the node
+}
+
+// Represents a mirror node on a network.
+MirrorNode {
+    @@immutable restBaseUrl: string // base url of the mirror node REST API (scheme://host[:port]/api/v1)
 }
 
 // Represents the base of an address on a network.
@@ -54,6 +68,7 @@ abstraction Address {
     string toStringWithChecksum() // returns address in format "shard.realm.num-checksum"
 }
 
+// AccountId is the most common type of address on a network.
 AccountId extends Address {
 }
 
@@ -62,7 +77,7 @@ AccountId extends Address {
 AccountId fromString(accountId: string)
 ```
 
-## Questions
+## Questions & Comments
 
 - [@hendrikebbers](https://github.com/hendrikebbers): Should we rename `Ledger` to `Network`?
 - [@hendrikebbers](https://github.com/hendrikebbers): Do we want an abstraction for currency? HBAR is the only one for now and can be seen as Hedera specific.
