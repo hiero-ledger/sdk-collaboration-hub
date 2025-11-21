@@ -4,4 +4,7 @@
 - v3
   - Keys
   - Vanko and Venilin topics
-  - protobufs
+  - Mirror Node
+    - REST APIs
+    - HIP-1261
+  - Protobufs
