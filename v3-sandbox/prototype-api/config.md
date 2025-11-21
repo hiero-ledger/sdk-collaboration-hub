@@ -28,7 +28,7 @@ NetworkSetting {
 
 // factory methods of `NetworkSetting` that should be added to the namespace in the best language dependent way
 
-@@throws(not-found-error) NetworkSetting getNetworkSetting(String identifier) // returns null if no network with that identifier exists. Network settings can be added as plug and play by external modules.
+@@throws(not-found-error) NetworkSetting getNetworkSetting(String identifier) // throws not-found-error if no network with that identifier exists. Network settings can be added as plug and play by external modules.
 ```
 
 ## Examples

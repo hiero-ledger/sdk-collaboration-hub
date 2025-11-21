@@ -52,7 +52,7 @@ abstraction Transaction {
 }
 
 // A packed transaction that can not change any parameters after it was created
-PackedTransaction {
+abstraction PackedTransaction {
   @@immutable transactionId:TransactionId // the id of the transaction
 
   Transaction unpack() // returns a new basic transaction instance based on this packed transaction
