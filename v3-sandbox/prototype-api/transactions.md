@@ -61,7 +61,6 @@ abstraction PackedTransaction {
   void sign(publicKey:PublicKey, transactionSigner:TransactionSigner) // sign the transaction, if the lang supports it, we should provide a fluent API (return this)
 
   @@async Response send() // send the transaction, we should provide async and sync versions in best case
-  @@throws(timeout-error, io-error) Response sendAndWait(long timeout) // send the transaction, in milliseconds, a better lang specific type can be used
 }
 
 // The response of a transaction send request
@@ -69,10 +68,8 @@ Response {
   @immutable transactionId:TransactionId // the id of the transaction
 
   @@async Receipt queryReceipt() // query for the receipt of the transaction, we should provide async and sync versions in best case
-  @@throws(timeout-error, io-error) Receipt queryReceiptAndWait(long timeout) // query for the receipt of the transaction, in milliseconds, a better lang specific type can be used
   
   @async Record queryRecord() // query for the record of the transaction, we should provide async and sync versions in best case
-  @@throws(timeout-error, io-error) Record queryRecordAndWait(long timeout) // query for the record of the transaction, in milliseconds, a better lang specific type can be used
 }
 
 // The receipt of a transaction

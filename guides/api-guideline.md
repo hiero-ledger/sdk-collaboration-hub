@@ -18,8 +18,8 @@ The following basic data types should be used in the API documentation.
 | Data Type         | Description                                                           |
 |-------------------|-----------------------------------------------------------------------|
 | `string`          | A sequence of characters                                              |
-| `intX`            | A signed integer of X bits                                            |
-| `uintX`           | An unsigned integer of X bits                                         |
+| `intX`            | A signed integer of X bits (8 <= X <= 256)                             |
+| `uintX`           | An unsigned integer of X bits (8 <= X <= 256)                         |
 | `double`          | A native floating-point number in 64-bit base-2 format                |
 | `decimal`         | A decimal number with arbitrary precision                             |
 | `bool`            | A boolean value                                                       |
@@ -179,6 +179,8 @@ void resetCache()
 Method annotations can be used to provide additional information about methods.
 The following annotations should be used:
 - `@@async`: Indicates that the method is asynchronous and returns a promise or future.
+  To make APIs easily useable by experts and newcomers, it makes sense to always provide a synchronous version of the method.
+  An API definition in the meta-language does not need to add the synchronous version explicitly.
 - `@@throws(error-type-a[, ...])`: Indicates that the method can throw an exception/error.
   The error-types should be stable identifiers, not transport-specific.
   Use lowercase-kebab for error identifiers (e.g., `not-found-error`, `parse-error`).
@@ -221,7 +223,7 @@ If a namespace depends on other namespaces, use the `requires` keyword to declar
 namespace transactions
 requires common, keys
 ...
-```
+ ```
 
 ### Constants
 
