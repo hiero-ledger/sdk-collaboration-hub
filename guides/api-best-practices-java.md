@@ -525,3 +525,16 @@ public class Example {
 ## Questions & Comments
 
 We need to define a naming pattern for the usage of `Optional` in a `record`.
+
+## Todos based on AI tests for generating Java code
+
+The following list contains some descriptions of problems and missing features based on using an AI to create code based on the documentation.
+
+- `java.util.concurrent.CompletionStage` should be used instead of `java.util.concurrent.CompletableFuture` or `java.util.concurrent.Future` in the public API for async methods.
+- Factory methods should be implemented as static methods in the type that is created by the factory method instead of creating a factory class per namespace.
+- `Objects.requireNonNull(obj, message)` contains as message only the obj name instead of the message "NAME must not be null" (NAME is a placeholder for the actual name of the parameter).
+- Even types that have only immutable fields/attributes are implemented as classes instead of records.
+- `@org.jspecify.annotations.NonNull` and `@org.jspecify.annotations.Nullable` annotations are not used in the public API. They should be added wherever possible.
+- Parameters of methods and constructors should always be defined as `final`.
+- 
+
