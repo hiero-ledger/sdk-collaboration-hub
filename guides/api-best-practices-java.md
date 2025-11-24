@@ -245,7 +245,7 @@ public class Team {
 
 In Java we use the `org.jspecify:jspecify` library to annotate nullability of types.
 The 2 annotations `org.jspecify.annotations.NonNull` and `org.jspecify.annotations.Nullable` are used to annotate nullability of types.
-All non-primitive constructor parameters, method parameters and method return values must be annotated with one of these annotations.
+All non-primitive constructor parameters, method parameters and method return values of the public API must be annotated with one of these annotations.
 The annotations must be used consistently throughout the full implementation.
 
 For the generic types `intX`, `uintX`, `double`, and `bool` wrapper classes
