@@ -280,11 +280,11 @@ public class Example {
         this.nickName = Objects.requireNonNull(nickName, "nickName must not be null");
     }
     
-    public int getNameLenght() {
+    public int getNameLength() {
         return name.length(); //Without early checks the ecxeption will be thrown here what can be long after the creation of the object
     }
 
-    public int getNickNameLenght() {
+    public int getNickNameLength() {
         return nickName.length(); //Without early checks the ecxeption will be thrown here what can be long after the creation of the object
     }
 }
