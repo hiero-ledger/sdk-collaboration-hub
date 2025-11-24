@@ -277,7 +277,7 @@ public class Example {
     }
     
     public void setNickName(@NonNull final String nickName) {
-        this.name = Objects.requireNonNull(nickName, "nickName must not be null");
+        this.nickName = Objects.requireNonNull(nickName, "nickName must not be null");
     }
     
     public int getNameLenght() {
