@@ -43,7 +43,6 @@ For each numeric Java type a maximum numeric type is defined.
 | `uint64`         | `long`, `java.lang.Long`   |
 | `uint256`        | `java.math.BigInteger`     |
 
-
 ## Immutable Objects
 
 If a non-abstract type and all the types it extends only contain fields annotated with `@@immutable`, the type should be declared as a Java `record`.
@@ -247,14 +246,49 @@ public class Team {
 In Java we use the `org.jspecify:jspecify` library to annotate nullability of types.
 The 2 annotations `org.jspecify.annotations.NonNull` and `org.jspecify.annotations.Nullable` are used to annotate nullability of types.
 All non-primitive constructor parameters, method parameters and method return values must be annotated with one of these annotations.
-
-For fields and method parameters that are not annotated with `@@nullable` in the language agnostic specification, a concrete check must be performed in Java to ensure that the parameter is not null.
-Here `java.util.Objects.requireNonNull(param)` or better `java.util.Objects.requireNonNull(param, msg)` must be used.
+The annotations must be used consistently throughout the full implementation.
 
 For the generic types `intX`, `uintX`, `double`, and `bool` wrapper classes
 (`java.lang.Byte`/`java.lang.Short`/`java.lang.Integer`/`java.lang.Long`/`java.lang.Integer`,`java.lang.Double`, and `java.lang.Boolean`)
 must be used if the parameter is annotated with `@@nullable` in the language agnostic specification.
 Otherwise the primitive type must be used.
+
+For fields and method parameters that are not annotated with `@@nullable` in the language agnostic specification, a concrete check must be performed in Java to ensure that the parameter is not null.
+The check must be performed if the value is stored or accessed directly.
+Here `java.util.Objects.requireNonNull(param, msg)` must be used.
+The `msg` parameter must be defined as `NAME must not be null`.
+We know that Java has some better `NullPointerExceptions` that can provide the name of a null parameter dynamically at runtime.
+However, especially if you only set a field in a constructor a check at access time will happen way later.
+We want to avoid this situation and throw a `NullPointerException` as soon as possible.
+Therefore, we defined to use `Objects.requireNonNull(param, msg)` for all fields and parameters that must not be null.
+
+An example looks like this
+
+```java
+public class Example {
+    
+    private String name;
+
+    private String nickName;
+    
+    public void setName(@NonNull final String name) {
+        this.name = Objects.requireNonNull(name, "name must not be null");
+        this.nickName = this.name;
+    }
+    
+    public void setNickName(@NonNull final String nickName) {
+        this.name = Objects.requireNonNull(nickName, "nickName must not be null");
+    }
+    
+    public int getNameLenght() {
+        return name.length(); //Without early checks the ecxeption will be thrown here what can be long after the creation of the object
+    }
+
+    public int getNickNameLenght() {
+        return nickName.length(); //Without early checks the ecxeption will be thrown here what can be long after the creation of the object
+    }
+}
+```
 
 ### Null handling of nullable fields
 
@@ -578,6 +612,16 @@ The sample uses `long timeout, TimeUnit unit` as parameters for the synchronous 
 That is the best practice in Java to ensure that the synchronous method can be called from multiple threads.
 Instead of just defining a `long timeoutInMs` the usage of `TimeUnit` is recommended.
 
+## Usage of final Keyword
+
+The `final` keyword should be used consistently throughout the full implementation.
+Whenever possible, the `final` keyword should be used in the following cases:
+
+- In the declaration of a field.
+- In the declaration of a parameter of a method or constructor.
+- In the declaration of a local variable.
+- In the declaration of a class or record.
+
 ## Questions & Comments
 
 We need to define a naming pattern for the usage of `Optional` in a `record`.
@@ -587,8 +631,5 @@ We need to define a naming pattern for the usage of `Optional` in a `record`.
 The following list contains some descriptions of problems and missing features based on using an AI to create code based on the documentation.
 
 - Factory methods should be implemented as static methods in the type that is created by the factory method instead of creating a factory class per namespace.
-- `Objects.requireNonNull(obj, message)` contains as message only the obj name instead of the message "NAME must not be null" (NAME is a placeholder for the actual name of the parameter).
 - Even types that have only immutable fields/attributes are implemented as classes instead of records.
-- `@org.jspecify.annotations.NonNull` and `@org.jspecify.annotations.Nullable` annotations are not used in the public API. They should be added wherever possible.
-- Parameters of methods and constructors should always be defined as `final`.
 
