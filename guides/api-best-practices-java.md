@@ -281,11 +281,11 @@ public class Example {
     }
     
     public int getNameLength() {
-        return name.length(); //Without early checks the ecxeption will be thrown here what can be long after the creation of the object
+        return name.length(); //Without early checks the exception will be thrown here what can be long after the creation of the object
     }
 
-    public int getNickNameLength() {
-        return nickName.length(); //Without early checks the ecxeption will be thrown here what can be long after the creation of the object
+    public int getNickNameLenght() {
+        return nickName.length(); //Without early checks the exception will be thrown here what can be long after the creation of the object
     }
 }
 ```
