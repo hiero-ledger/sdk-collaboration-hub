@@ -25,9 +25,9 @@ This document provides an example JSON configuration that can be used with `Clie
 
 ### Network Configuration
 
-- **`network`** (object, required): Maps consensus node addresses to their corresponding version numbers
+- **`network`** (object, required): Maps consensus node addresses to their corresponding account IDs
   - **Key format**: `"IP:PORT"` (e.g., `"35.242.233.154:50211"`)
-  - **Value format**: `"MAJOR.MINOR.PATCH"` version string (e.g., `"3.5.10"`)
+  - **Value format**: `"SHARD.REAL.ACCOUNT"` account ID (e.g., `"0.0.3"`)
   - **Purpose**: Defines the consensus nodes that the client will connect to for transaction submission
 
 - **`mirrorNetwork`** (array or string, optional): Mirror node endpoints for query operations
@@ -63,9 +63,9 @@ This document provides an example JSON configuration that can be used with `Clie
 ```json
 {
   "network": {
-    "35.237.200.180:50211": "1.0.16",
-    "35.236.5.219:50211": "1.0.16",
-    "35.185.196.93:50211": "1.0.16"
+    "35.237.200.180:50211": "0.0.1",
+    "35.236.5.219:50211": "0.0.2",
+    "35.185.196.93:50211": "0.0.3"
   },
   "mirrorNetwork": [
     "mainnet-public.mirrornode.hedera.com:443"
@@ -79,9 +79,9 @@ This document provides an example JSON configuration that can be used with `Clie
 ```json
 {
   "network": {
-    "35.242.233.154:50211": "3.5.10",
-    "35.240.118.96:50211": "3.5.11",
-    "34.127.45.23:50211": "3.5.12"
+    "35.242.233.154:50211": "0.0.3",
+    "35.240.118.96:50211": "0.0.4",
+    "34.127.45.23:50211": "0.0.5"
   },
   "mirrorNetwork": [
     "hcs.testnet.mirrornode.hedera.com:443"
@@ -97,8 +97,8 @@ This document provides an example JSON configuration that can be used with `Clie
 ```json
 {
   "network": {
-    "35.236.10.137:50211": "3.6.0",
-    "35.227.193.111:50211": "3.6.0"
+    "35.236.10.137:50211": "0.0.6",
+    "35.227.193.111:50211": "0.0.7"
   },
   "mirrorNetwork": [
     "hcs.previewnet.mirrornode.hedera.com:443"
@@ -116,8 +116,8 @@ import { Client } from '@hashgraph/sdk';
 
 const client = Client.fromConfig({
   network: {
-    "35.242.233.154:50211": "3.5.10",
-    "35.240.118.96:50211": "3.5.11"
+    "35.242.233.154:50211": "0.0.3",
+    "35.240.118.96:50211": "0.0.4"
   },
   mirrorNetwork: ["hcs.testnet.mirrornode.hedera.com:443"],
   shard: 0,
@@ -133,8 +133,8 @@ import com.hedera.hashgraph.sdk.Client;
 import java.util.Map;
 
 Map<String, String> network = Map.of(
-    "35.242.233.154:50211", "3.5.10",
-    "35.240.118.96:50211", "3.5.11"
+    "35.242.233.154:50211", "0.0.3",
+    "35.240.118.96:50211", "0.0.4"
 );
 
 Client client = Client.fromConfig(Map.of(
@@ -153,8 +153,8 @@ import "github.com/hashgraph/hedera-sdk-go/v2"
 
 client, err := hedera.ClientFromConfig(map[string]interface{}{
     "network": map[string]string{
-        "35.242.233.154:50211": "3.5.10",
-        "35.240.118.96:50211": "3.5.11",
+        "35.242.233.154:50211": "0.0.3",
+        "35.240.118.96:50211": "0.0.4",
     },
     "mirrorNetwork": []string{"hcs.testnet.mirrornode.hedera.com:443"},
     "shard": 0,
