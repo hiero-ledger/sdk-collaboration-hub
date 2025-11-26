@@ -99,7 +99,7 @@ public class Person {
 }
 ```
 
-## Complexe Types
+## Complex Types
 
 The meta-language can be used to define complex types. 
 Here the meta-language makes a difference between abstract types and non-abstract types.
