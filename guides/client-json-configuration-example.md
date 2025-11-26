@@ -25,15 +25,16 @@ This document provides an example JSON configuration that can be used with `Clie
 
 ### Network Configuration
 
-- **`network`** (object, required): Maps consensus node addresses to their corresponding account IDs
+- **`network`** (object, optional): Maps consensus node addresses to their corresponding account IDs
   - **Key format**: `"IP:PORT"` (e.g., `"35.242.233.154:50211"`)
   - **Value format**: `"SHARD.REAL.ACCOUNT"` account ID (e.g., `"0.0.3"`)
   - **Purpose**: Defines the consensus nodes that the client will connect to for transaction submission
+  - **Note**: If not provided, the client can query the address book from mirror nodes to discover network nodes
 
-- **`mirrorNetwork`** (array or string, optional): Mirror node endpoints for query operations
-  - **Array format**: `["hcs.testnet.mirrornode.hedera.com:443", "backup.mirror.com:443"]`
-  - **String format**: `"hcs.testnet.mirrornode.hedera.com:443"` (single node)
+- **`mirrorNetwork`** (array, optional): Mirror node endpoints for query operations
+  - **Format**: `["hcs.testnet.mirrornode.hedera.com:443", "backup.mirror.com:443"]`
   - **Purpose**: Defines mirror nodes for account queries, transaction records, and other read operations
+  - **Note**: Always provided as an array, even for single mirror nodes
 
 ### Network Identification
 
@@ -108,6 +109,17 @@ This document provides an example JSON configuration that can be used with `Clie
 }
 ```
 
+### Mirror-Only Configuration
+```json
+{
+  "mirrorNetwork": [
+    "hcs.testnet.mirrornode.hedera.com:443"
+  ],
+  "shard": 0,
+  "realm": 0
+}
+```
+
 ## Usage Examples
 
 ### JavaScript/TypeScript
@@ -164,6 +176,18 @@ client, err := hedera.ClientFromConfig(map[string]interface{}{
 })
 ```
 
+### Mirror-Only Usage (JavaScript/TypeScript)
+```typescript
+import { Client } from '@hashgraph/sdk';
+
+// Client will query address book from mirror node to discover network nodes
+const client = Client.fromConfig({
+  mirrorNetwork: ["hcs.testnet.mirrornode.hedera.com:443"],
+  shard: 0,
+  realm: 0
+});
+```
+
 ## Best Practices
 
 1. **Use multiple consensus nodes** for better reliability and load balancing
@@ -175,7 +199,8 @@ client, err := hedera.ClientFromConfig(map[string]interface{}{
 
 ## Notes
 
-- All parameters are optional except `network`
+- All parameters are optional
 - Default values will be used for optional parameters not specified
 - The SDK assumes shard and realm values are correct when provided
 - Network configurations may change over time, so keep them updated
+- If only `mirrorNetwork` is provided, the client will query the address book to discover consensus nodes
