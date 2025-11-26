@@ -16,21 +16,21 @@ namespace transactions-spi
 requires transactions, grpc, hiero-proto
 
 // TransactionSupport is the interface that must be implemented per custom transaction type
-abstraction TransactionSupport {
+abstraction TransactionSupport<$$Transaction, $$Response, $$Receipt, $$Record> {
 
-    type getTransactionType() // defines the transaction type the concrete TransactionSupport implementation supports
+    type getTransactionType() // defines the transaction type ($$Transaction) the concrete TransactionSupport implementation supports
     
     MethodDescriptor getMethodDescriptor() // defines the gRPC method
     
-    TransactionBody updateBody(transaction:Transaction, protoBody:TransactionBody) // updates a proto TransactionBody with the transaction details
+    TransactionBody updateBody(transaction:$$Transaction, protoBody:TransactionBody) // updates a proto TransactionBody with the transaction details
     
-    Transaction convert(protoBody:TransactionBody) // converts a proto TransactionBody to a Transaction
+    $$Transaction convert(protoBody:TransactionBody) // converts a proto TransactionBody to a Transaction
     
-    Response convert(protoResponse:TransactionResponse) // converts a proto TransactionResponse to a Response
+    $$Response convert(protoResponse:TransactionResponse) // converts a proto TransactionResponse to a Response
     
-    Receipt convert(protoReceipt:TransactionReceipt) // converts a proto TransactionReceipt to a Receipt
+    $$Receipt convert(protoReceipt:TransactionReceipt) // converts a proto TransactionReceipt to a Receipt
     
-    Record convert(protoRecord:TransactionRecord) // converts a proto TransactionRecord to a Record
+    $$Record convert(protoRecord:TransactionRecord) // converts a proto TransactionRecord to a Record
 }
 
 // factory methods that need to be implemented

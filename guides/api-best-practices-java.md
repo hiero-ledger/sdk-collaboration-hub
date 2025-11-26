@@ -99,6 +99,18 @@ public class Person {
 }
 ```
 
+## Complexe Types
+
+The meta-language can be used to define complex types. 
+Here the meta-language makes a difference between abstract types and non-abstract types.
+The meta-language does not define if anything should be an interface or abstract class since some languages do not support this.
+Therefore, there is no fix rule that defines if something must be created as interface or abstract class in Java.
+Especially with default methods, a lot can be done with interfaces.
+Abstract classes will make sense if constructors should be enforced or methods should be defined as final.
+
+Next to that records should be used wherever possible.
+If a non-abstract type in the meta-language only contains attributes annotated with `@@immutable`, the type must be declared as a Java `record`.
+
 ## Collections
 
 The public API must never return `null` for collections. Instead, an empty collection must be returned.
@@ -622,14 +634,29 @@ Whenever possible, the `final` keyword should be used in the following cases:
 - In the declaration of a local variable.
 - In the declaration of a class or record.
 
+## Factories
+
+Often factories are defined in the meta-language to create instances of a type.
+In Java, factories should be implemented as static methods in the type that is created by the factory method instead of creating a factory class per namespace.
+The following example shows how to implement a factory method:
+
+```java
+public class Example {
+
+    private final Address address;
+    
+    public Example(final @NonNull Address address) {
+        this.address = Objects.requireNonNull(address, "address must not be null");
+    }
+    
+    // Definition of the factory method
+    public static Example createExample(final @NonNull String name) {
+        final Address address = Address.createAddress(name); // Here another factory method is called
+        return new Example(address);
+    }
+}
+```
+
 ## Questions & Comments
 
-We need to define a naming pattern for the usage of `Optional` in a `record`.
-
 ## Todos based on AI tests for generating Java code
-
-The following list contains some descriptions of problems and missing features based on using an AI to create code based on the documentation.
-
-- Factory methods should be implemented as static methods in the type that is created by the factory method instead of creating a factory class per namespace.
-- Even types that have only immutable fields/attributes are implemented as classes instead of records.
-
