@@ -488,11 +488,136 @@ public record Example(@NonNull final String name) {
  
 ### Null handling method parameters
 
-TODO
+All public constructor and method parameters of reference types must be explicitly annotated with 
+`org.jspecify.annotations.NonNull` or `org.jspecify.annotations.Nullable`.
+
+Rules:
+- Use `@NonNull` for all parameters that are not annotated with `@@nullable` in the meta-language.
+- Use `@Nullable` only if the corresponding parameter is annotated with `@@nullable` in the meta-language.
+- For numeric and boolean parameters defined as `@@nullable` use wrapper types (`Byte/Short/Integer/Long/Double/Boolean`) instead of primitives. Otherwise, prefer primitives.
+- Always perform early null checks with `Objects.requireNonNull(param, "paramName must not be null")` when the parameter is stored or accessed directly. Prefer performing the check once and reusing the validated value.
+- Collections passed as parameters may be nullable only if the meta-language marks them `@@nullable`. If not nullable, callers must not pass `null` and implementations must check accordingly. Even if a collection parameter is nullable, do not treat `null` and an empty collection as the same value unless explicitly specified by the API contract.
+
+Examples:
+
+```java
+public final class UserService {
+
+    // Not nullable parameter, primitive used for non-nullable numeric types
+    public void updateAge(@NonNull final String userId, final int age) {
+        final String id = Objects.requireNonNull(userId, "userId must not be null");
+        // ... use id and age
+    }
+
+    // Nullable parameter maps to wrapper and is annotated as @Nullable
+    public void setNickname(@NonNull final String userId, @Nullable final String nickname) {
+        final String id = Objects.requireNonNull(userId, "userId must not be null");
+        // nickname can be null; handle accordingly
+    }
+
+    // Collection parameter must not be null unless marked @@nullable in meta-language
+    public void replaceTags(@NonNull final String userId, @NonNull final List<String> tags) {
+        final String id = Objects.requireNonNull(userId, "userId must not be null");
+        Objects.requireNonNull(tags, "tags must not be null");
+        // If stored, copy into a thread-safe collection
+        // this.tags.clear(); this.tags.addAll(tags);
+    }
+
+    // If a collection parameter is nullable in the meta-language
+    public void addTags(@NonNull final String userId, @Nullable final List<String> tagsOrNull) {
+        final String id = Objects.requireNonNull(userId, "userId must not be null");
+        if (tagsOrNull == null) {
+            return; // defined semantics for null (e.g., no-op)
+        }
+        // handle non-null list
+    }
+}
+```
+
+Avoid using `Optional` as a method parameter in the public API. Instead, use `@Nullable` for optional parameters and document the semantics for `null` explicitly.
 
 ### Null handling of method return value
 
-TODO
+Method return types in the public API must also be annotated with `@NonNull` or `@Nullable` according to the meta-language.
+
+Rules:
+- If a method return type is not annotated with `@@nullable` in the meta-language, annotate it with `@NonNull` in Java and never return `null`.
+- If a method return type is annotated with `@@nullable` in the meta-language, annotate it with `@Nullable` in Java and document what `null` means.
+- Collections must never be returned as `null` (even if `@@nullable` was specified in error). Return empty immutable collections instead. Do not use `Optional<List<...>>` in the public API.
+- For asynchronous methods (`@@async`), return `CompletionStage<T>` where the `CompletionStage` itself must be non-null. Apply nullability to `T` following the same rules as for synchronous returns.
+- Optional convenience accessors may be added next to a `@Nullable` return to improve ergonomics, but the canonical method should return the raw annotated type.
+
+Examples:
+
+```java
+public interface UserRepository {
+
+    // Non-null return value
+    @NonNull
+    User getById(@NonNull String id);
+
+    // Nullable return value when entity might not exist
+    @Nullable
+    User findByEmail(@NonNull String email);
+
+    // Never return null for collections – return an immutable empty list
+    @NonNull
+    List<User> listAll();
+
+    // Async variant: CompletionStage itself is never null
+    @NonNull
+    CompletionStage<User> getByIdAsync(@NonNull String id);
+}
+
+public final class InMemoryUserRepository implements UserRepository {
+
+    private final Map<String, User> byId = new ConcurrentHashMap<>();
+
+    @Override
+    public @NonNull User getById(@NonNull final String id) {
+        final String nonNullId = Objects.requireNonNull(id, "id must not be null");
+        final User user = byId.get(nonNullId);
+        if (user == null) {
+            throw new NoSuchElementException("User not found: " + nonNullId);
+        }
+        return user;
+    }
+
+    @Override
+    public @Nullable User findByEmail(@NonNull final String email) {
+        Objects.requireNonNull(email, "email must not be null");
+        // return null when not found (documented by @Nullable)
+        return byId.values().stream().filter(u -> email.equals(u.email())).findFirst().orElse(null);
+    }
+
+    @Override
+    public @NonNull List<User> listAll() {
+        // Return an immutable view/copy, never null
+        return Collections.unmodifiableList(new ArrayList<>(byId.values()));
+    }
+
+    @Override
+    public @NonNull CompletionStage<User> getByIdAsync(@NonNull final String id) {
+        Objects.requireNonNull(id, "id must not be null");
+        return CompletableFuture.supplyAsync(() -> getById(id));
+    }
+}
+```
+
+Optional convenience accessor for a nullable return:
+
+```java
+public interface ProfileService {
+
+    @Nullable
+    Profile findProfile(@NonNull String userId);
+
+    @NonNull
+    default Optional<Profile> findProfileOptional(@NonNull final String userId) {
+        return Optional.ofNullable(findProfile(userId));
+    }
+}
+```
 
 ## Implementation of Attribute annotations
 
