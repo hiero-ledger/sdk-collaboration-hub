@@ -86,3 +86,7 @@ We still believe that we should provide a convenience method that can be used to
 Here we need to define exactly what input is allowed here.
 In the meeting different encodings / algorithms / formats were discussed.
 Here it is still not clear what the final format will be.
+
+[@rwalworth](https://github.com/rwalworth) did a presentation on key handling in our SDKs in a community call: 
+https://zoom.us/rec/play/U0G1BHuOxUng4sDMDIJbSaDyNzlUnMn94EKmqoP8J4YDJNaVnnqTFFX8w-NdDuGvP6IMvAOsb9ACH4cd.xv_0-I8kvoSYx3nY?eagerLoadZvaPages=sidemenu.billing.plan_management&accessLevel=meeting&canPlayFromShare=true&from=share_recording_detail&continueMode=true&componentName=rec-play&originRequestUrl=https%3A%2F%2Fzoom.us%2Frec%2Fshare%2FJyGOh5v4BUuxU3cKyp-fcwJ33m7djPDKlA3Jv6AXIFsL7T8uzsmPtXN3AvS7IBeJ.2XaTBZXvMgCQP4Ec
+Slides can be found here: https://docs.google.com/presentation/d/1ID2__-pkBc6mmE_kFoL1hwKugdzJdnrGq5nMB_QPFos/edit?usp=sharing
