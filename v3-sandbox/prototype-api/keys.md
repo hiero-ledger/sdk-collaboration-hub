@@ -51,7 +51,7 @@ abstraction Key {
     @@immutable type: KeyType //the type of the key
     
     bytes toBytes() // returns the key in the RAW encoding
-    @@throws(not-supported-format) string toString(KeyContainer container, KeyEncoding encoding) // returns the key in the specified container format and encoding or throws an exception if the format is not supported
+    @@throws(illegal-format) string toString(KeyContainer container, KeyEncoding encoding) // returns the key in the specified container format and encoding or throws an exception if the format is not supported
 }
 
 // a key pair
@@ -165,7 +165,7 @@ JWK;
 
 The following examples show the different key formats as String representations.
 
-#### PKSC8 + DER (Private Key)
+#### PKCS#8 + DER (Private Key)
 
 The string is a hex dump of the DER bytes.
 ```
@@ -173,7 +173,7 @@ The string is a hex dump of the DER bytes.
 E1 5D 8F 21 A7 01 73 09 BB 55 88 52 03 9B C7 5C
 ```
 
-#### PKSC8 + PEM (Private Key)
+#### PKCS#8 + PEM (Private Key)
 
 ```
 -----BEGIN PRIVATE KEY-----
