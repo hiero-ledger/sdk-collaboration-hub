@@ -14,6 +14,11 @@ import org.jspecify.annotations.Nullable;
  */
 public record SemanticVersion(int major, int minor, int patch, @Nullable String pre, @Nullable String build) implements Comparable<SemanticVersion> {
 
+    /**
+     * Returns a string representation of this semantic version.
+     *
+     * @return a string in the format "major.minor.patch[-pre][+build]"
+     */
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -27,25 +32,54 @@ public record SemanticVersion(int major, int minor, int patch, @Nullable String 
         return sb.toString();
     }
 
+    /**
+     * Compares this version with another version for order.
+     *
+     * @param o the version to compare to
+     * @return negative if this version is less, positive if greater, zero if equal
+     */
     @Override
     public int compareTo(@NonNull SemanticVersion o) {
         int result = Integer.compare(major, o.major);
-        if (result != 0) return result;
+        if (result != 0) {
+            return result;
+        }
         result = Integer.compare(minor, o.minor);
-        if (result != 0) return result;
+        if (result != 0) {
+            return result;
+        }
         result = Integer.compare(patch, o.patch);
-        if (result != 0) return result;
+        if (result != 0) {
+            return result;
+        }
         
-        // Pre-release versions have a lower precedence than the associated normal version.
-        // A pre-release version is indicated by a non-empty pre string.
-        boolean thisPre = pre != null && !pre.isEmpty();
-        boolean otherPre = o.pre != null && !o.pre.isEmpty();
+        return comparePreRelease(o);
+    }
 
-        if (thisPre && !otherPre) return -1;
-        if (!thisPre && otherPre) return 1;
-        if (!thisPre && !otherPre) return 0;
+    /**
+     * Compares pre-release versions.
+     *
+     * @param other the other version to compare to
+     * @return comparison result for pre-release versions
+     */
+    private int comparePreRelease(@NonNull SemanticVersion other) {
+        boolean thisPre = pre != null && !pre.isEmpty();
+        boolean otherPre = other.pre != null && !other.pre.isEmpty();
+
+        if (thisPre && !otherPre) {
+            return -1;
+        }
+        if (!thisPre && otherPre) {
+            return 1;
+        }
+        if (!thisPre && !otherPre) {
+            return 0;
+        }
 
         // Both are pre-releases, compare lexically
-        return pre.compareTo(o.pre);
+        if (pre == null || other.pre == null) {
+            return 0;
+        }
+        return pre.compareTo(other.pre);
     }
 }
