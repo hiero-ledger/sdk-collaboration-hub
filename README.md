@@ -73,7 +73,6 @@ The Hiero SDK Community Call is a recurring open meeting for developers, maintai
 - For past meeting minutes, see the `hiero-ledger/governance` repository wiki: [Hiero Meeting Minutes](https://github.com/hiero-ledger/governance/wiki)
   - Find the "SDK Community Call" heading on the right side panel to see links to the most recent minutes and the `...` to find older minutes.
 
-
 ## Contributing
 
 To get started as a contributor:
