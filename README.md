@@ -68,7 +68,7 @@ The Hiero SDK Community Call is a recurring open meeting for developers, maintai
 ### When & How to Join
 
 - The call runs on a regular cadence (currently every Monday) and is listed on the project’s community calendar.
-- To register, use the SDK meeting series registration link on the LFX Calendar page: [LFX Calendar – SDK Community Call](https://zoom-lfx.platform.linuxfoundation.org/meeting/94709702244-1762182000000/summaries?password=90c20c92-81b0-4c1e-b37c-2369fdc30cc3).
+- To register, use the SDK meeting series registration link on the LFX Calendar page: [LFX Calendar – SDK Community Call](https://zoom-lfx.platform.linuxfoundation.org/meeting/94695703550?password=e8819002-3f6e-4905-9916-b049f501e866&invite=true).
 - For the latest call times, past recordings, and calendar invites, see the public Hiero project calendar: [Hiero Project Meeting Calendar](https://www.lfdecentralizedtrust.org/meeting-calendar).
 - For past meeting minutes, see the `hiero-ledger/governance` repository wiki: [Hiero Meeting Minutes](https://github.com/hiero-ledger/governance/wiki)
   - Find the "SDK Community Call" heading on the right side panel to see links to the most recent minutes and the `...` to find older minutes.
