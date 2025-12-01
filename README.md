@@ -30,7 +30,6 @@ The Hiero SDK Collaboration Hub exists to:
 | `templates/`  | Reusable templates for proposals, issues, and PRs         |
 | `README.md`   | You're here! Overview of the repo's purpose and structure |
 
-
 ## 🧭 Why This Repo Exists
 
 This repo is **not**:
