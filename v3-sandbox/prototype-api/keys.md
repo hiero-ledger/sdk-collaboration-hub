@@ -5,6 +5,21 @@ This section defines the API for keys.
 ## Description
 
 The keys API provides functionality to create and manage cryptographic keys.
+A cryptographic key is defined by a byte sequence and a cryptographic algorithm.
+Here it is independent if the key is a public or private key.
+A private key can be used to sign messages and a public key can be used to verify signatures.
+A private key is normally generated as a random key for a specific algorithm.
+A public key can be derived from a private key.
+
+To read or write keys different formats are supported.
+The most easy way is to read or write the raw bytes of the key.
+Todo so the algorithm must be known.
+
+To make import and export of keys more convenient, so called key containers exist.
+Like algorithms those containers are well defined and standardized.
+A container normally contains the raw bytes of the key and the algorithm.
+To import and export a key in a container an encoding must be specified.
+Here not all container formats support all encodings by its spec and the encoding can end in a byte array result or a string result.
 
 ## API Schema
 
@@ -33,6 +48,8 @@ enum KeyEncoding {
 enum KeyContainer {
     PKCS8, // PKCS#8 Private Key Specification
     SPKI // Subject Public Key Info
+    
+    boolean supportsType(KeyType type) // returns true if the container format supports the given key type
 }
 
 enum ByteImportEncoding {
@@ -55,7 +72,7 @@ enum EncodedKeyContainer {
     @immutable KeyEncoding encoding // the encoding
     @immutable RawFormate format // the raw format of the import / export
     
-    boolean supportsType(KeyType type) // returns true if the container format supports the given key type
+    boolean supportsType(KeyType type) // returns true if the internal container format supports the given key type
 }
 
 // abstract key definition
@@ -96,8 +113,8 @@ PublicKey generatePublicKey(algorithm: KeyAlgorithm)
 @@throws(illegal-format) PrivateKey createPrivateKey(algorithm: KeyAlgorithm, encoding: ByteImportEncoding, value: string) // calls createPrivateKey(algorithm: KeyAlgorithm, rawBytes: bytes)
 @@throws(illegal-format) PublicKey createPublicKey(algorithm: KeyAlgorithm, encoding: ByteImportEncoding, value: string) // calls createPublicKey(algorithm: KeyAlgorithm, rawBytes: bytes)
 
-@@throws(illegal-format) PrivateKey createPrivateKey(algorithm: KeyAlgorithm, rawBytes: bytes)
-@@throws(illegal-format) PublicKey createPublicKey(algorithm: KeyAlgorithm, rawBytes: bytes)
+@@throws(illegal-format) PrivateKey createPrivateKey(algorithm: KeyAlgorithm, rawBytes: bytes) // reads bytes as raw bytes for the given algorithm
+@@throws(illegal-format) PublicKey createPublicKey(algorithm: KeyAlgorithm, rawBytes: bytes) // reads bytes as raw bytes for the given algorithm
 
 @@throws(illegal-format) PrivateKey createPrivateKey(container: EncodedKeyContainer, value: string) // if container.format is not STRING an illegal format error is thrown
 @@throws(illegal-format) PublicKey createPublicKey(container: EncodedKeyContainer, value: string) // if container.format is not STRING an illegal format error is thrown
