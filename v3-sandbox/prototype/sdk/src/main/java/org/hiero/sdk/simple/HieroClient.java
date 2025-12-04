@@ -92,6 +92,23 @@ public interface HieroClient {
     }
 
     /**
+     * Returns the version information of the network.
+     *
+     * @return the network version information
+     */
+    @NonNull
+    CompletableFuture<NetworkVersionInfo> getNetworkVersionInfo();
+
+    /**
+     * Checks if a specific feature is supported by the current network.
+     *
+     * @param feature the feature to check
+     * @return a future that completes with true if the feature is supported, false otherwise
+     */
+    @NonNull
+    CompletableFuture<Boolean> isFeatureSupported(@NonNull Feature feature);
+
+    /**
      * Creates a new HieroClient instance with the specified operator account and network settings.
      *
      * @param operatorAccount the operator account
