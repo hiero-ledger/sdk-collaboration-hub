@@ -18,6 +18,7 @@ The Hiero SDK Collaboration Hub exists to:
 - 📘 Provide **guidelines and best practices** for contributing to Hiero SDKs
 - ✍️ Offer **onboarding resources** for new contributors
 - 🧰 Collect templates
+- 🧪 Playground for **future SDK features**
 
 ---
 
@@ -28,6 +29,7 @@ The Hiero SDK Collaboration Hub exists to:
 | `proposals/`  | Active and archived Hiero SDK design proposals            |
 | `guides/`     | Contribution guides, best practices, and onboarding docs  |
 | `templates/`  | Reusable templates for proposals, issues, and PRs         |
+| `v3-sandbox/` | Firsts drafts for a possible V3 of the Hiero SDKs         |
 | `README.md`   | You're here! Overview of the repo's purpose and structure |
 
 ## 🧭 Why This Repo Exists
