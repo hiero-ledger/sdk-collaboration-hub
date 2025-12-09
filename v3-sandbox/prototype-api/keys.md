@@ -5,11 +5,32 @@ This section defines the API for keys.
 ## Description
 
 The keys API provides functionality to create and manage cryptographic keys.
+A cryptographic key is defined by a byte sequence and a cryptographic algorithm.
+Here it is independent if the key is a public or private key.
+A private key can be used to sign messages and a public key can be used to verify signatures.
+A private key is normally generated as a random key for a specific algorithm.
+A public key can be derived from a private key.
+
+To read or write keys different formats are supported.
+The most easy way is to read or write the raw bytes of the key.
+Todo so the algorithm must be known.
+
+To make import and export of keys more convenient, so called key containers exist.
+Like algorithms those containers are well defined and standardized.
+A container normally contains the raw bytes of the key and the algorithm.
+To import and export a key in a container an encoding must be specified.
+Here not all container formats support all encodings by its spec and the encoding can end in a byte array result or a string result.
 
 ## API Schema
 
 ```
 namespace keys
+
+// all key types
+enum KeyType {
+    PUBLIC, // a public key
+    PRIVATE // a private key
+}
 
 //all supported algorithms
 enum KeyAlgorithm {
@@ -17,16 +38,54 @@ enum KeyAlgorithm {
     ECDSA // Elliptic Curve Digital Signature Algorithm (secp256k1 curve)
 }
 
-// all supported encodings
+// all supported encodings that can be used to import/export a container format
 enum KeyEncoding {
-    RAW //Hex encoded string (We need to make clear that this must not be algorithm-specific)
-    DER //Distinguished Encoding Rules (X.690) ASN.1 format
+    DER, // Distinguished Encoding Rules
+    PEM // Privacy Enhanced Mail
+}
+
+// all supported container formats
+enum KeyContainer {
+    PKCS8, // PKCS#8 Private Key Specification
+    SPKI // Subject Public Key Info
+    
+    boolean supportsType(KeyType type) // returns true if the container format supports the given key type
+}
+
+enum ByteImportEncoding {
+    HEX, // hex string representation of the bytes
+    BASE64 // base64 string representation of the bytes
+}
+
+enum RawFormate {
+    STRING, // string representation of the bytes in the specified encoding
+    BYTES // raw bytes
+}
+
+enum EncodedKeyContainer {
+    PKCS8_WITH_DER,
+    SPKI_WITH_DER,
+    PKCS8_WITH_PEM,
+    SPKI_WITH_PEM
+    
+    @immutable KeyContainer container // the container format
+    @immutable KeyEncoding encoding // the encoding
+    @immutable RawFormate format // the raw format of the import / export
+    
+    boolean supportsType(KeyType type) // returns true if the internal container format supports the given key type
 }
 
 // abstract key definition
 abstraction Key {
     @@immutable bytes: bytes //the raw bytes of the key
     @@immutable algorithm: KeyAlgorithm //the algorithm of the key
+    @@immutable type: KeyType //the type of the key
+    
+    @@throws(illegal-format) bytes toBytes(container: EncodedKeyContainer) // if container.format is not BYTES an illegal format error is thrown
+
+    @@throws(illegal-format) string toString(container: EncodedKeyContainer) // if container.format is not STRING an illegal format error is thrown
+
+    bytes toRawBytes() // returns the key in the RAW encoding
 }
 
 // a key pair
@@ -50,34 +109,176 @@ PrivateKey extends Key {
 
 PrivateKey generatePrivateKey(algorithm: KeyAlgorithm)
 PublicKey generatePublicKey(algorithm: KeyAlgorithm)
-@@throws(illegal-format) PrivateKey createPrivateKey(algorithm: KeyAlgorithm, bytes: bytes)
-@@throws(illegal-format) PrivateKey createPrivateKey(algorithm: KeyAlgorithm, encoding: KeyEncoding, bytes: string)
-@@throws(illegal-format) PublicKey createPublicKey(algorithm: KeyAlgorithm, bytes: bytes)
-@@throws(illegal-format) PublicKey createPublicKey(algorithm: KeyAlgorithm, encoding: KeyEncoding, bytes: string)
+
+@@throws(illegal-format) PrivateKey createPrivateKey(algorithm: KeyAlgorithm, encoding: ByteImportEncoding, value: string) // calls createPrivateKey(algorithm: KeyAlgorithm, rawBytes: bytes)
+@@throws(illegal-format) PublicKey createPublicKey(algorithm: KeyAlgorithm, encoding: ByteImportEncoding, value: string) // calls createPublicKey(algorithm: KeyAlgorithm, rawBytes: bytes)
+
+@@throws(illegal-format) PrivateKey createPrivateKey(algorithm: KeyAlgorithm, rawBytes: bytes) // reads bytes as raw bytes for the given algorithm
+@@throws(illegal-format) PublicKey createPublicKey(algorithm: KeyAlgorithm, rawBytes: bytes) // reads bytes as raw bytes for the given algorithm
+
+@@throws(illegal-format) PrivateKey createPrivateKey(container: EncodedKeyContainer, value: string) // if container.format is not STRING an illegal format error is thrown
+@@throws(illegal-format) PublicKey createPublicKey(container: EncodedKeyContainer, value: string) // if container.format is not STRING an illegal format error is thrown
+
+@@throws(illegal-format) PrivateKey createPrivateKey(container: EncodedKeyContainer, value: bytes) // if container.format is not BYTES an illegal format error is thrown
+@@throws(illegal-format) PublicKey createPublicKey(container: EncodedKeyContainer, value: bytes) // if container.format is not BYTES an illegal format error is thrown
+
+@@throws(illegal-format) PrivateKey createPrivateKey(value: string) // reads string as PKCS#8 PEM
+@@throws(illegal-format) PublicKey createPublicKey(value: string) // reads string as SPKI PEM
 ```
+
+## KeyContainer rules
+
+Not all combinations of container and encoding are valid.
+For example, a PKCS8 container format can only be used with DER encoding.
+Here you can find the complete list of rules as a basic implementation of the enum:
+
+```
+enum KeyContainer {
+PKCS8, 
+SPKI,  
+MULTICODEC, 
+JWK;        
+
+
+    /**
+     * Returns true if this container format supports the given key type.
+     */
+    boolean supportsType(KeyType type) {
+        switch (this) {
+            case PKCS8:
+                // PKCS#8 is ONLY for private keys
+                return type == KeyType.PRIVATE;
+
+            case SPKI:
+                // SPKI is ONLY for public keys
+                return type == KeyType.PUBLIC;
+
+            case MULTICODEC:
+                // Multicodec (DID-key style) is standardized ONLY for public keys
+                return type == KeyType.PUBLIC;
+
+            case JWK:
+                // JWK can contain:
+                // - public keys only
+                // - private keys only
+                // - both (if "d" is present)
+                return true;
+
+            default:
+                return false;
+        }
+    }
+
+
+    /**
+     * Returns true if this container format supports the given encoding.
+     */
+    boolean supportsEncoding(KeyEncoding encoding) {
+        switch (this) {
+            case PKCS8:
+            case SPKI:
+                // Standard encodings for ASN.1:
+                // - DER (binary)
+                // - PEM (Base64 with header/footer)
+                return encoding == KeyEncoding.DER
+                    || encoding == KeyEncoding.PEM;
+
+            case MULTICODEC:
+                // Multicodec is self-describing, but requires:
+                // - MULTIBASE (Base58btc, Base64url, Hex, etc.)
+                // - BASE64 (optional export without multibase-prefix)
+                return encoding == KeyEncoding.MULTIBASE
+                    || encoding == KeyEncoding.BASE64;
+
+            case JWK:
+                // JWK is always JSON text.
+                return encoding == KeyEncoding.JSON;
+
+            default:
+                return false;
+        }
+    }
+}
+```
+
+### Key examples
+
+The following examples show the different key formats as String representations.
+
+#### PKCS#8 + DER (Private Key)
+
+The string is a hex dump of the DER bytes.
+```
+30 2E 02 01 00 30 05 06 03 2B 65 70 04 22 04 20D3 67 1A 1E 98 BB 22 F0 11 C0 E4 BC F5 12 55 90
+E1 5D 8F 21 A7 01 73 09 BB 55 88 52 03 9B C7 5C
+```
+
+#### PKCS#8 + PEM (Private Key)
+
+```
+-----BEGIN PRIVATE KEY-----
+MC4CAQAwBQYDK2VwBCIEIDNnGh6YuyLwEcDkvPUTVZDhXY8hpwFzCb
+tViFIDm8dc=
+-----END PRIVATE KEY-----
+```
+
+#### SPKI + DER (Public Key)
+
+The string is a hex dump of the DER bytes.
+```
+30 2A 30 05 06 03 2B 65 70 03 21 00
+1D 0F 36 11 67 7D 11 EC 59 85 55 9B
+0A 7C 22 7A D9 88 CB 0B E6 C8 27 67
+E8 96 F6 9E E3
+```
+
+#### SPKI + PEM (Public Key)
+
+```
+-----BEGIN PUBLIC KEY-----
+MCowBQYDK2VwAyEAHQ82EWd9EexZhVWbCnwie
+tmIywvmyCdn6Jb2nuM=
+-----END PUBLIC KEY-----
+```
+
+#### MULTICODEC + MULTIBASE (Public Key)
+
+```
+z6Mksjxie2jA44kVrY8Wj63zqPQAk8SjP2v1tdyASz93Z5mG
+```
+
+#### MULTICODEC + BASE64 (Public Key)
+
+```
+7QESBB0PNhFnfRHsWYVVmwp8Ih62YjLC+bIJ2folv6e4w==
+```
+
+#### JWK + JSON (Public Key)
+
+```
+{
+    "kty": "OKP",
+    "crv": "Ed25519",
+    "x": "HQ82EWd9EexZhVWbCnwie2mIywvmyCdn6Jb2nuM"
+}
+```
+
+#### JWK + JSON (Private Key)
+
+```
+{
+    "kty": "OKP",
+    "crv": "Ed25519",
+    "d": "M2caHpi7IvARwOS89RNVkOFdjynAXMJu1WIUgObx1w"
+}
+```
+
+> [!NOTE]  
+> Private JWKs MAY omit the "x" (public key).
+> SDKs will support it to read a private key from a JWK.
+> When exporting a private key to JWK, the SDK MUST include the "x" property.
 
 ## Questions & Comments
-
-- [@rwalworth](https://github.com/rwalworth): What do you think about only exposing a `KeyPair` API and making `PublicKey` and `PrivateKey` internal?
-This would consolidate all the key processing to one object, users wouldn't have to keep track of two different objects.
-`KeyPair` objects could still be initialized from `PrivateKey` or `PublicKey` bytes/strings and all the same functionality would be kept but just in one object instead of two.
-Thoughts?
-
-We discussed the topic in the SDK Community call. Currently the suggestion is to provide 2 different ways to create a Key:
-
-### Flexible method
-```
-@@throws(illegal-format) Key create(String input, KeyAlgorithm algorithm, KeyEncoding encoding)
-```
-The method provides the most flexible way to create a key by specifying the algorithm and encoding that must be used to interpret the input. If we want to support multiple algorithms and encodings this is the only way that is 100% correct from a technical perspective and supports all edge cases.
-
-### Convenience method
-```
-@@throws(illegal-format) Key create(String input)
-```
-Since the usage of the method is complex (user needs to know about algorithms and encodings) we need to provide a more simple way to create a key. The given method only needs an input string to create a key. Since we can not extract any algorithm and encoding magically based on the string we must define some constraints here. In the community call we agreed that the most common used format is an ECDSA with HEX encoding. That is exactly the format of the basic private key that people will see in the [Hedera portal](https://portal.hedera.com). A check to support input strings that start with or without 0x can easily be added to the method. Today we have the 2 encoding types RAW and DER. Looks like RAW represents exactly the basic HEX encoded input we want to support with this method.
-
-#### Additional comments on keys
 
 The topic has been discussed in the SDK Community call (https://zoom.us/rec/share/oDRfe45YHrQy71lU0RvWs3dnERq2b4KeTRW10emcTXkEb-9gQJUfLa6Lzngm8TRI.ndb4Z4pBanr4DKr0 / https://zoom-lfx.platform.linuxfoundation.org/meeting/94709702244-1763391600000/summaries?password=bf9431fc-3a4d-4e1d-a81a-e44ef16d8abc).
 The current result is that we can not support all possible key formats with a single method that has only a string as input.

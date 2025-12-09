@@ -18,7 +18,6 @@ The Hiero SDK Collaboration Hub exists to:
 - 📘 Provide **guidelines and best practices** for contributing to Hiero SDKs
 - ✍️ Offer **onboarding resources** for new contributors
 - 🧰 Collect templates
-- 📜 Maintain a transparent record of technical discussions and decisions
 
 ---
 
@@ -29,9 +28,7 @@ The Hiero SDK Collaboration Hub exists to:
 | `proposals/`  | Active and archived Hiero SDK design proposals            |
 | `guides/`     | Contribution guides, best practices, and onboarding docs  |
 | `templates/`  | Reusable templates for proposals, issues, and PRs         |
-| `meetings/`   | Notes from technical contributor meetings                 |
 | `README.md`   | You're here! Overview of the repo's purpose and structure |
-
 
 ## 🧭 Why This Repo Exists
 
@@ -49,22 +46,31 @@ Instead, it is a **support system** for Hiero SDK contributors, meant to lower t
 
 This project is maintained by the Hiero organization. For questions or support, open an issue or reach out to a [maintainer](MAINTAINERS.md).
 
-## Hiero SDK Call 
-### What it is
-The SDK Community Call is a bi-weekly (fortnightly) open gathering of developers, maintainers, and contributors working on the Hiero SDKs. It’s the ideal forum to:
-- Share what you’re working on (new features, language-bindings, SDK performance, identity/VC flows etc.)
+---
+
+## 📞 Hiero SDK Community Call
+
+The Hiero SDK Community Call is a recurring open meeting for developers, maintainers, and contributors working on the Hiero SDKs. It’s the main live forum to:
+
+- Share what you’re working on (new features, language bindings, performance work, identity/VC flows, etc.)
 - Raise questions and discuss technical issues or design proposals
-- Align across SDK stacks (Java, JavaScript/TS, Go, Rust, Python) and contribute to cross-cutting topics
-- Build a stronger, more collaborative SDK ecosystem together
-### Why attend
-- Get visibility into what others are doing, avoid duplicate work, and discover opportunities to collaborate
-- Contribute your ideas early and influence design decisions and roadmap priorities
-- Connect with the maintainers and the broader community in a direct and informal setting
-- Catch up on recordings if you miss a live call — they’re archived for reference
-### When & how to join
-- The meeting is scheduled at a regular cadence on Mondays (every two weeks) under the project’s community calendar. 
-- To register for the call, please use the registration link on the LFX Calendar page for the SDK meeting series [here](https://zoom-lfx.platform.linuxfoundation.org/meeting/94709702244-1762182000000/summaries?password=90c20c92-81b0-4c1e-b37c-2369fdc30cc3).
-- For all community call times, past recordings, and calendar invites, refer to the public Hiero project calendar [here](https://www.lfdecentralizedtrust.org/meeting-calendar).
+- Align across SDK stacks (Java, JavaScript/TS, Go, Rust, Python, etc.) on cross-cutting topics
+- Help shape a stronger, more collaborative SDK ecosystem
+
+### Why Join?
+
+- Stay informed about what other teams are building, avoid duplicate work, and spot collaboration opportunities
+- Get early feedback on your ideas and influence design decisions and roadmap priorities
+- Connect directly with maintainers and the broader community in a relaxed, discussion-friendly setting
+- Catch up later via archived recordings if you can’t attend live
+
+### When & How to Join
+
+- The call runs on a regular cadence (currently every Monday) and is listed on the project’s community calendar.
+- To register, use the SDK meeting series registration link on the LFX Calendar page: [LFX Calendar – SDK Community Call](https://zoom-lfx.platform.linuxfoundation.org/meeting/94695703550?password=e8819002-3f6e-4905-9916-b049f501e866&invite=true).
+- For the latest call times, past recordings, and calendar invites, see the public Hiero project calendar: [Hiero Project Meeting Calendar](https://www.lfdecentralizedtrust.org/meeting-calendar).
+- For past meeting minutes, see the `hiero-ledger/governance` repository wiki: [Hiero Meeting Minutes](https://github.com/hiero-ledger/governance/wiki)
+  - Find the "SDK Community Call" heading on the right side panel to see links to the most recent minutes and the `...` to find older minutes.
 
 ## Contributing
 
