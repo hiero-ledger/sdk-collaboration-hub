@@ -10,6 +10,7 @@ import com.hedera.hashgraph.sdk.proto.TransactionGetReceiptResponse;
 import com.hedera.hashgraph.sdk.proto.TransactionReceipt;
 import com.hedera.hashgraph.sdk.proto.TransactionRecord;
 import io.grpc.MethodDescriptor;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
@@ -17,6 +18,8 @@ import java.util.concurrent.Executor;
 import java.util.function.BiFunction;
 import org.hiero.sdk.simple.ExchangeRate;
 import org.hiero.sdk.simple.HieroClient;
+import org.hiero.sdk.simple.Feature;
+import org.hiero.sdk.simple.NetworkVersionInfo;
 import org.hiero.sdk.simple.Receipt;
 import org.hiero.sdk.simple.Record;
 import org.hiero.sdk.simple.TransactionStatus;
@@ -37,6 +40,10 @@ public final class HieroClientImpl implements HieroClient {
     private final Executor executor;
 
     private final NetworkSettings networkSettings;
+
+    private volatile CompletableFuture<NetworkVersionInfo> cachedVersionFuture;
+    private volatile Instant lastVersionFetchTime;
+    private static final Duration VERSION_CACHE_TTL = Duration.ofMinutes(5);
 
     public HieroClientImpl(@NonNull final Account operatorAccount, @NonNull final NetworkSettings networkSettings,
             @NonNull final Executor executor) {
@@ -138,5 +145,89 @@ public final class HieroClientImpl implements HieroClient {
     @Override
     public @NonNull Network getNetwork() {
         return new Network(networkSettings.getNetworkIdentifier(), networkSettings.getNetworkName().orElse(null), networkSettings.getId());
+    }
+
+    @Override
+    public @NonNull CompletableFuture<NetworkVersionInfo> getNetworkVersionInfo() {
+        if (isCacheValid()) {
+            return cachedVersionFuture;
+        }
+
+        synchronized (this) {
+            if (isCacheValid()) {
+                return cachedVersionFuture;
+            }
+
+            cachedVersionFuture = queryNetworkVersion();
+            lastVersionFetchTime = Instant.now();
+            return cachedVersionFuture;
+        }
+    }
+
+    /**
+     * Checks if the cached version information is still valid.
+     *
+     * @return true if cache is valid, false otherwise
+     */
+    private boolean isCacheValid() {
+        return cachedVersionFuture != null && lastVersionFetchTime != null &&
+                Duration.between(lastVersionFetchTime, Instant.now()).compareTo(VERSION_CACHE_TTL) < 0;
+    }
+
+    /**
+     * Queries the network for version information.
+     *
+     * @return a future containing the network version information
+     */
+    private CompletableFuture<NetworkVersionInfo> queryNetworkVersion() {
+        final QueryHeader header = QueryHeader.newBuilder()
+                .setResponseType(ResponseType.ANSWER_ONLY)
+                .build();
+        final com.hedera.hashgraph.sdk.proto.NetworkGetVersionInfoQuery versionQuery = com.hedera.hashgraph.sdk.proto.NetworkGetVersionInfoQuery.newBuilder()
+                .setHeader(header)
+                .build();
+        final Query query = Query.newBuilder()
+                .setNetworkGetVersionInfo(versionQuery)
+                .build();
+        final MethodDescriptor<Query, Response> methodDescriptor = GrpcMethodDescriptorFactory.getOrCreateMethodDescriptor(
+                "proto.NetworkService",
+                "getVersionInfo",
+                com.hedera.hashgraph.sdk.proto.Query::getDefaultInstance,
+                Response::getDefaultInstance);
+
+        return getGrpcClient().call(methodDescriptor, query).handle((response, throwable) -> {
+            if (throwable != null) {
+                throw new IllegalStateException("Network version query failed", throwable);
+            }
+            return processVersionResponse(response);
+        });
+    }
+
+    /**
+     * Processes the network version response.
+     *
+     * @param response the response from the network
+     * @return the network version information
+     */
+    private NetworkVersionInfo processVersionResponse(Response response) {
+        if (response == null) {
+            throw new IllegalStateException("Received null response from the server");
+        }
+        if (!response.hasNetworkGetVersionInfo()) {
+            throw new IllegalStateException("Response does not contain NetworkGetVersionInfo");
+        }
+
+        final var versionInfo = response.getNetworkGetVersionInfo();
+        final var hapiProtoVersion = ProtobufUtil.fromProtobuf(versionInfo.getHapiProtoVersion());
+        final var hederaServicesVersion = ProtobufUtil.fromProtobuf(versionInfo.getHederaServicesVersion());
+
+        return new NetworkVersionInfo(hapiProtoVersion, hederaServicesVersion);
+    }
+
+    @Override
+    public @NonNull CompletableFuture<Boolean> isFeatureSupported(@NonNull Feature feature) {
+        return getNetworkVersionInfo().thenApply(info -> {
+            return info.hederaServicesVersion().compareTo(feature.getMinimumVersion()) >= 0;
+        });
     }
 }

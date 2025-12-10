@@ -155,4 +155,14 @@ public final class ProtobufUtil {
     public static TransactionStatus fromProtobuf(ResponseCodeEnum status) {
         return TransactionStatus.UNDEFINED;
     }
+
+    public static org.hiero.sdk.simple.SemanticVersion fromProtobuf(com.hedera.hashgraph.sdk.proto.SemanticVersion version) {
+        return new org.hiero.sdk.simple.SemanticVersion(
+                version.getMajor(),
+                version.getMinor(),
+                version.getPatch(),
+                version.getPre(),
+                version.getBuild()
+        );
+    }
 }
