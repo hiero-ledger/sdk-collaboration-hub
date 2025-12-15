@@ -280,3 +280,14 @@ z6Mksjxie2jA44kVrY8Wj63zqPQAk8SjP2v1tdyASz93Z5mG
 
 ## Questions & Comments
 
+The topic has been discussed in the SDK Community call (https://zoom.us/rec/share/oDRfe45YHrQy71lU0RvWs3dnERq2b4KeTRW10emcTXkEb-9gQJUfLa6Lzngm8TRI.ndb4Z4pBanr4DKr0 / https://zoom-lfx.platform.linuxfoundation.org/meeting/94709702244-1763391600000/summaries?password=bf9431fc-3a4d-4e1d-a81a-e44ef16d8abc).
+The current result is that we can not support all possible key formats with a single method that has only a string as input.
+Having a more configurable method based on enums must be the way to go.
+We still believe that we should provide a convenience method that can be used to create a key based on a string.
+Here we need to define exactly what input is allowed here.
+In the meeting different encodings / algorithms / formats were discussed.
+Here it is still not clear what the final format will be.
+
+[@rwalworth](https://github.com/rwalworth) did a presentation on key handling in our SDKs in a community call: 
+https://zoom.us/rec/play/U0G1BHuOxUng4sDMDIJbSaDyNzlUnMn94EKmqoP8J4YDJNaVnnqTFFX8w-NdDuGvP6IMvAOsb9ACH4cd.xv_0-I8kvoSYx3nY?eagerLoadZvaPages=sidemenu.billing.plan_management&accessLevel=meeting&canPlayFromShare=true&from=share_recording_detail&continueMode=true&componentName=rec-play&originRequestUrl=https%3A%2F%2Fzoom.us%2Frec%2Fshare%2FJyGOh5v4BUuxU3cKyp-fcwJ33m7djPDKlA3Jv6AXIFsL7T8uzsmPtXN3AvS7IBeJ.2XaTBZXvMgCQP4Ec
+Slides can be found here: https://docs.google.com/presentation/d/1ID2__-pkBc6mmE_kFoL1hwKugdzJdnrGq5nMB_QPFos/edit?usp=sharing
