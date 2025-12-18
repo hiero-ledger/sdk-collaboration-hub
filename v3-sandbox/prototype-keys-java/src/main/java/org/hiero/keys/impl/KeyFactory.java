@@ -82,11 +82,15 @@ public final class KeyFactory {
             throw new IllegalArgumentException("Container not valid for private key: " + container);
         }
 
-        return switch (container) {
-            case PKCS8_WITH_PEM -> parsePkcs8Der(PemUtil.fromPem("PRIVATE KEY", value));
-            case PKCS8_WITH_DER -> parsePkcs8Der(container.decode(value));
-            default -> throw new IllegalArgumentException("Container not supported for private key: " + container);
-        };
+        if(container == EncodedKeyContainer.PKCS8_WITH_PEM) {
+            byte[] pem = PemUtil.fromPem("PRIVATE KEY", value);
+            throw new IllegalStateException("Not yet implemented");
+        } else if(container == EncodedKeyContainer.PKCS8_WITH_DER) {
+            byte[] der = container.decode(value);
+            return parsePkcs8Der(der);
+        } else {
+            throw new IllegalArgumentException("Container not supported for private key: " + container);
+        }
     }
 
     public static PublicKey createPublicKey(final EncodedKeyContainer container, final String value) {

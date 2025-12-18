@@ -1,5 +1,7 @@
 package org.hiero.keys.impl;
 
+import java.util.Objects;
+
 public final class Hex {
     private static final char[] HEX_ARRAY = "0123456789abcdef".toCharArray();
 
@@ -16,6 +18,10 @@ public final class Hex {
     }
 
     public static byte[] decode(final String hex) {
+        Objects.requireNonNull(hex, "hex must not be null");
+        if(hex.startsWith("0x")) {
+            return decode(hex.substring(2));
+        }
         final String s = hex.replace(" ", "").replace("\n", "").replace("\r", "");
         int len = s.length();
         if ((len & 1) != 0) {

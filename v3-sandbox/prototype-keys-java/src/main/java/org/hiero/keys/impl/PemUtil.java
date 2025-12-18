@@ -23,12 +23,34 @@ public final class PemUtil {
     public static byte[] fromPem(final String expectedType, final String pem) {
         final String header = "-----BEGIN " + expectedType + "-----";
         final String footer = "-----END " + expectedType + "-----";
-        final List<String> lines = pem.lines().map(String::trim).filter(s -> !s.isEmpty()).toList();
+
+        // Normalize line endings and trim surrounding whitespace
+        final List<String> lines = pem.replace("\r", "\n").lines()
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .toList();
+
         if (lines.isEmpty() || !lines.get(0).equals(header) || !lines.get(lines.size() - 1).equals(footer)) {
             throw new IllegalArgumentException("Invalid PEM for type " + expectedType);
         }
+
+        // Join payload lines and remove any non-base64 characters just in case (defensive)
         final List<String> payload = new ArrayList<>(lines.subList(1, lines.size() - 1));
-        final String base64 = String.join("", payload);
+        String base64 = String.join("", payload)
+                .replaceAll("[^A-Za-z0-9+/=]", "");
+
+        // Fix padding if necessary (Base64 length must be multiple of 4)
+        final int mod = base64.length() % 4;
+        if (mod == 1) {
+            // impossible to fix, signal invalid data
+            throw new IllegalArgumentException("Invalid Base64 payload in PEM (bad length)");
+        } else if (mod == 2) {
+            base64 = base64 + "==";
+        } else if (mod == 3) {
+            base64 = base64 + "=";
+        }
+
+        // Use MIME decoder to be tolerant, though we already cleaned the payload
         return Base64.getDecoder().decode(base64);
     }
 }
