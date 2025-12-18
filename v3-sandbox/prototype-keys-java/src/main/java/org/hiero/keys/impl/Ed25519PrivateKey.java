@@ -1,0 +1,86 @@
+package org.hiero.keys.impl;
+
+import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.math.ec.rfc8032.Ed25519;
+import org.hiero.keys.*;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Objects;
+
+import static org.hiero.keys.impl.Oids.ID_ED25519;
+
+public final class Ed25519PrivateKey implements PrivateKey {
+    private final byte[] seed32;
+
+    public Ed25519PrivateKey(final byte[] seed32) {
+        this.seed32 = Objects.requireNonNull(seed32, "seed32 must not be null");
+        if (seed32.length != 32) {
+            throw new IllegalArgumentException("Ed25519 private key must be 32 bytes");
+        }
+    }
+
+    @Override
+    public byte[] sign(final byte[] message) {
+        Objects.requireNonNull(message, "message must not be null");
+        final byte[] sig = new byte[Ed25519.SIGNATURE_SIZE];
+        Ed25519.sign(seed32, 0, message, 0, message.length, sig, 0);
+        return sig;
+    }
+
+    @Override
+    public PublicKey createPublicKey() {
+        final byte[] pub = new byte[Ed25519.PUBLIC_KEY_SIZE];
+        Ed25519.generatePublicKey(seed32, 0, pub, 0);
+        return new Ed25519PublicKey(pub);
+    }
+
+    @Override
+    public byte[] toRawBytes() {
+        return Arrays.copyOf(seed32, seed32.length);
+    }
+
+    @Override
+    public KeyAlgorithm algorithm() {
+        return KeyAlgorithm.ED25519;
+    }
+
+    @Override
+    public KeyType type() {
+        return KeyType.PRIVATE;
+    }
+
+    @Override
+    public byte[] toBytes(final EncodedKeyContainer container) {
+        Objects.requireNonNull(container, "container must not be null");
+        if (!container.supportsType(KeyType.PRIVATE)) {
+            throw new IllegalArgumentException("Container does not support private keys: " + container);
+        }
+        if (container.format() != RawFormat.BYTES) {
+            throw new IllegalArgumentException("toBytes requires BYTES format: " + container);
+        }
+        try {
+            if (container.encoding() == KeyEncoding.DER) {
+                final PrivateKeyInfo pki = new PrivateKeyInfo(new AlgorithmIdentifier(ID_ED25519),
+                        new DEROctetString(seed32));
+                return pki.getEncoded("DER");
+            }
+            throw new IllegalArgumentException("Unsupported container/format for Ed25519 private key: " + container);
+        } catch (IOException e) {
+            throw new RuntimeException("Error encoding Ed25519 key", e);
+        }
+    }
+
+    @Override
+    public String toString(final EncodedKeyContainer container) {
+        if (container.format() != RawFormat.STRING) {
+            throw new IllegalArgumentException("Requested String for non-STRING container: " + container);
+        }
+        if (container == EncodedKeyContainer.PKCS8_WITH_PEM) {
+            return PemUtil.toPem("PRIVATE KEY", toBytes(EncodedKeyContainer.PKCS8_WITH_DER));
+        }
+        throw new IllegalArgumentException("Unsupported container for toString: " + container);
+    }
+}
