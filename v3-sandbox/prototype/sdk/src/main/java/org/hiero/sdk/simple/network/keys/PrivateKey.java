@@ -65,10 +65,9 @@ public interface PrivateKey extends Key {
      */
     //TODO: Do we really want to have that method without the definition of the KeyAlgorithm and KeyEncoding?
     @NonNull
-    static PrivateKey from(String privateKey) {
-        final byte[] privateKeyBytes = Hex.decode(
-                privateKey.startsWith("0x") ? privateKey.substring(2) : privateKey);
-        return from(privateKeyBytes);
+    static PrivateKey from(KeyAlgorithm algorithm, KeyEncoding encoding, String privateKey) {
+        final byte[] bytes = KeyFactory.decode(privateKey, encoding);
+        return from(algorithm, bytes);
     }
 
     /**
@@ -79,8 +78,8 @@ public interface PrivateKey extends Key {
      */
     //TODO: Do we really want to have that method without the definition of the KeyAlgorithm and KeyEncoding?
     @NonNull
-    static PrivateKey from(byte[] privateKey) {
-        return KeyFactory.createPrivateKey(privateKey);
+    static PrivateKey from(KeyAlgorithm algorithm, byte[] privateKey) {
+        return KeyFactory.createPrivateKey(algorithm, privateKey);
     }
 
     /**
