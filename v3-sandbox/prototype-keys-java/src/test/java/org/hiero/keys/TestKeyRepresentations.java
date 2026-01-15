@@ -1,0 +1,48 @@
+package org.hiero.keys;
+
+public class TestKeyRepresentations {
+
+    public static final String PKCS8_WITH_DER_VARIANT_1 = "30 2E 02 01 00 30 05 06 03 2B 65 70 04 22 04 20D3 67 1A 1E 98 BB 22 F0 11 C0 E4 BC F5 12 55 90\n" +
+            "E1 5D 8F 21 A7 01 73 09 BB 55 88 52 03 9B C7 5C";
+
+    public static final String PKCS8_WITH_DER_VARIANT_2 = "30 2E 02 01 00 30 05 06 03 2B 65 70 04 22 04 20D3 67 1A 1E 98 BB 22 F0 11 C0 E4 BC F5 12 55 90 E1 5D 8F 21 A7 01 73 09 BB 55 88 52 03 9B C7 5C";
+
+    public static final String PKCS8_WITH_DER_VARIANT_3 = "302E020100300506032B657004220420D3671A1E98BB22F011C0E4BCF5125590E15D8F21A7017309BB558852039BC75C";
+
+    public static final String PKCS8_WITH_DER_VARIANT_4 = "0x302E020100300506032B657004220420D3671A1E98BB22F011C0E4BCF5125590E15D8F21A7017309BB558852039BC75C";
+
+    public static final String PKCS8_WITH_DER_VARIANT_5 = "302e020100300506032b657004220420d3671a1e98bb22f011c0e4bcf5125590e15d8f21a7017309bb558852039bc75c";
+
+    public static final String PKCS8_WITH_DER_VARIANT_6 = "30 2E 02 01 00 30 05 06 03 2B 65 70 04 22 04 20D3 67 1A 1E 98\nBB 22 F0 11 C0 E4 BC F5 12 55 90 E1 5D 8F 21 A7 01 73 09 BB 55 88 52 03 9B C7 5C";
+
+    public static final String PKCS8_WITH_DER_VARIANT_7 = "0x302e020100300506032b657004220420d3671a1e98bb22f011c0e4bcf5125590e15d8f21a7017309bb558852039bc75c";
+
+    public static final String PKCS8_WITH_PEM_VARIANT_1 = "-----BEGIN PRIVATE KEY-----\n" +
+            "MC4CAQAwBQYDK2VwBCIEINNnGh6YuyLwEcDkvPUSVZDhXY8hpwFzCbtViFIDm8dc\n" +
+            "-----END PRIVATE KEY-----";
+
+    public static final String PKCS8_WITH_PEM_VARIANT_2 = "-----BEGIN PRIVATE KEY-----\n" +
+            "MC4CAQAwBQYDK2VwBCIEINNnGh6YuyLwEcDkvPUSVZDhXY8hpwFzCbtViFIDm8dc\n" +
+            "-----END PRIVATE KEY-----\n";
+
+    public static final String PKCS8_WITH_PEM_VARIANT_3 = "-----BEGIN PRIVATE KEY-----\r\n" +
+            "MC4CAQAwBQYDK2VwBCIEINNnGh6YuyLwEcDkvPUSVZDhXY8hpwFzCbtViFIDm8dc\r\n" +
+            "-----END PRIVATE KEY-----";
+
+    public static final String PKCS8_WITH_PEM_VARIANT_4 = "-----BEGIN PRIVATE KEY-----\n" +
+            "MC4CAQAwBQYDK2VwBCIEINNnGh6YuyLwEcDkvPUSVZDhXY8hpwFzCbtViFIDm8dc\n\n" +
+            "-----END PRIVATE KEY-----";
+
+    public static final String PKCS8_WITH_PEM_VARIANT_5 = "-----BEGIN PRIVATE KEY-----\n" +
+            "MC4CAQAwBQYDK2VwBCIEIL+7z6z7l54s8n5p3k5t5y7p9d7j6l3j4p5s3q7c2q1z\n" +
+            "-----END PRIVATE KEY-----\n";
+
+    public static final String PKCS8_WITH_PEM_VARIANT_6 = "-----BEGIN PRIVATE KEY-----\n" +
+            "b3BlbnNzaC1rZXktdjEAAAAACmFlczI1Ni1jdHIAAAAGYmNyeXB0AAAAGAAAABAIpNPTtY\n" +
+            "NTlSO7h07A0ig+AAAAGAAAAAEAAAAzAAAAC3NzaC1lZDI1NTE5AAAAIHGvprIMDfedQzLk\n" +
+            "cZHCfNG7oNUDTBrVn6UW3uYZO/qHAAAAoBUj3Icq/kj5IJJOdYU5NDEKzTT4m91vTvDrQN\n" +
+            "hv7cRuEtggGRq/5GA+VQyR7ADcSOAKp3haySNn8AE7WxmcVBW8DIhl+60aM33D3q6YnFSY\n" +
+            "OVTrPPzHmWLKL7021GNJfBKZqiht1UhfwWRG2rznSPhnwXKajR28cTbMDlULl289Wi0sJb\n" +
+            "HXkE0VVP+Ry5sN09sXjlo9t2KbjfVgOzml9Vk=\n" +
+            "-----END PRIVATE KEY-----\n";
+}
