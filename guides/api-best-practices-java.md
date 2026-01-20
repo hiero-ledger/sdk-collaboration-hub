@@ -782,6 +782,443 @@ public class Example {
 }
 ```
 
+## Builder Pattern
+
+The Builder Pattern is a recommended design pattern for constructing complex objects with many parameters, especiallywhen several parameters are optional. This pattern improves API usability and readability by providing a fluent interface for object construction.
+
+### When to Use Builder Pattern
+
+The Builder Pattern should be used for:
+- **Central domain objects** that users frequently create (e.g., Transactions, Queries, Configuration objects)
+- Classes with **many parameters** (more than 4-5 parameters)
+- Classes with **multiple optional parameters**
+- Classes where **parameter order** might be confusing
+- Classes that require **validation across multiple fields** before construction
+
+The Builder Pattern is **NOT required** for:
+- Simple data classes with few parameters
+- Internal implementation classes not exposed in public API
+- Immutable records with only required fields
+
+### Builder Pattern Implementation
+
+**Example - Transaction with Builder**:
+
+```java
+public final class Transaction {
+
+    private final String transactionId;
+    private final BigDecimal amount;
+    private final String fromAccount;
+    private final String toAccount;
+    private final LocalDateTime timestamp;
+    private final String memo;
+    private final TransactionType type;
+
+    // Constructor with all parameters - allows direct instantiation without builder
+    public Transaction(@NonNull final String transactionId,
+                       @NonNull final BigDecimal amount,
+                       @NonNull final String fromAccount,
+                       @NonNull final String toAccount,
+                       @NonNull final TransactionType type,
+                       @NonNull final LocalDateTime timestamp,
+                       @Nullable final String memo) {
+        // Validate required fields
+        this.transactionId = Objects.requireNonNull(transactionId, "transactionId must not be null");
+        this.amount = Objects.requireNonNull(amount, "amount must not be null");
+        this.fromAccount = Objects.requireNonNull(fromAccount, "fromAccount must not be null");
+        this.toAccount = Objects.requireNonNull(toAccount, "toAccount must not be null");
+        this.type = Objects.requireNonNull(type, "type must not be null");
+        this.timestamp = Objects.requireNonNull(timestamp, "timestamp must not be null");
+        this.memo = memo;
+
+        // Cross-field validation
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("amount must be positive");
+        }
+        if (fromAccount.equals(toAccount)) {
+            throw new IllegalArgumentException("fromAccount and toAccount must be different");
+        }
+    }
+
+    // Private constructor for builder
+    private Transaction(@NonNull final Builder builder) {
+        this(
+            builder.transactionId,
+            builder.amount,
+            builder.fromAccount,
+            builder.toAccount,
+            builder.type,
+            builder.timestamp,
+            builder.memo
+        );
+    }
+
+    @NonNull
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    // Getters
+    @NonNull
+    public String getTransactionId() {
+        return transactionId;
+    }
+
+    @NonNull
+    public BigDecimal getAmount() {
+        return amount;
+    }
+
+    @NonNull
+    public String getFromAccount() {
+        return fromAccount;
+    }
+
+    @NonNull
+    public String getToAccount() {
+        return toAccount;
+    }
+
+    @NonNull
+    public LocalDateTime getTimestamp() {
+        return timestamp;
+    }
+
+    @Nullable
+    public String getMemo() {
+        return memo;
+    }
+
+    @NonNull
+    public TransactionType getType() {
+        return type;
+    }
+
+    public static final class Builder {
+
+        private String transactionId;
+        private BigDecimal amount;
+        private String fromAccount;
+        private String toAccount;
+        private LocalDateTime timestamp = LocalDateTime.now(); // default value
+        private String memo;
+        private TransactionType type;
+
+        private Builder() {
+            // Private constructor - use Transaction.builder()
+        }
+
+        @NonNull
+        public Builder transactionId(@NonNull final String transactionId) {
+            this.transactionId = Objects.requireNonNull(transactionId, "transactionId must not be null");
+            return this;
+        }
+
+        @NonNull
+        public Builder amount(@NonNull final BigDecimal amount) {
+            this.amount = Objects.requireNonNull(amount, "amount must not be null");
+            return this;
+        }
+
+        @NonNull
+        public Builder fromAccount(@NonNull final String fromAccount) {
+            this.fromAccount = Objects.requireNonNull(fromAccount, "fromAccount must not be null");
+            return this;
+        }
+
+        @NonNull
+        public Builder toAccount(@NonNull final String toAccount) {
+            this.toAccount = Objects.requireNonNull(toAccount, "toAccount must not be null");
+            return this;
+        }
+
+        @NonNull
+        public Builder timestamp(@NonNull final LocalDateTime timestamp) {
+            this.timestamp = Objects.requireNonNull(timestamp, "timestamp must not be null");
+            return this;
+        }
+
+        @NonNull
+        public Builder memo(@Nullable final String memo) {
+            this.memo = memo;
+            return this;
+        }
+
+        @NonNull
+        public Builder type(@NonNull final TransactionType type) {
+            this.type = Objects.requireNonNull(type, "type must not be null");
+            return this;
+        }
+
+        @NonNull
+        public Transaction build() {
+            return new Transaction(this);
+        }
+    }
+}
+```
+
+**Usage Example**:
+
+```java
+// Option 1: Creating a transaction with builder - fluent and readable
+Transaction transaction = Transaction.builder()
+    .transactionId("tx-12345")
+    .amount(new BigDecimal("100.50"))
+    .fromAccount("account-a")
+    .toAccount("account-b")
+    .type(TransactionType.TRANSFER)
+    .memo("Payment for services")
+    .build();
+
+// Option 2: Creating a transaction with constructor - direct instantiation
+Transaction directTransaction = new Transaction(
+    "tx-12345",
+    new BigDecimal("100.50"),
+    "account-a",
+    "account-b",
+    TransactionType.TRANSFER,
+    LocalDateTime.now(),
+    "Payment for services"
+);
+
+// Builder with optional parameters omitted
+Transaction simpleTransaction = Transaction.builder()
+    .transactionId("tx-67890")
+    .amount(new BigDecimal("50.00"))
+    .fromAccount("account-c")
+    .toAccount("account-d")
+    .type(TransactionType.TRANSFER)
+    .build(); // timestamp will use default (now), memo is null
+```
+
+### Builder Pattern with Records
+
+For immutable data classes (records), a builder can still be useful when there are many optional parameters:
+
+```java
+public record QueryOptions(
+    @NonNull String query,
+    int limit,
+    int offset,
+    @Nullable String sortField,
+    @NonNull SortOrder sortOrder,
+    boolean includeMetadata
+) {
+    // Compact constructor with validation
+    public QueryOptions {
+        Objects.requireNonNull(query, "query must not be null");
+        Objects.requireNonNull(sortOrder, "sortOrder must not be null");
+        if (limit < 0) {
+            throw new IllegalArgumentException("limit must be non-negative");
+        }
+        if (offset < 0) {
+            throw new IllegalArgumentException("offset must be non-negative");
+        }
+    }
+
+    // Constructor for builder
+    private QueryOptions(Builder builder) {
+        this(
+            builder.query,
+            builder.limit,
+            builder.offset,
+            builder.sortField,
+            builder.sortOrder != null ? builder.sortOrder : SortOrder.ASC,
+            builder.includeMetadata
+        );
+    }
+
+    @NonNull
+    public static Builder builder(@NonNull final String query) {
+        return new Builder(query);
+    }
+
+    public static final class Builder {
+        private final String query;
+        private int limit = 100; // default
+        private int offset = 0; // default
+        private String sortField;
+        private SortOrder sortOrder;
+        private boolean includeMetadata = false; // default
+
+        private Builder(@NonNull final String query) {
+            this.query = Objects.requireNonNull(query, "query must not be null");
+        }
+
+        @NonNull
+        public Builder limit(final int limit) {
+            this.limit = limit;
+            return this;
+        }
+
+        @NonNull
+        public Builder offset(final int offset) {
+            this.offset = offset;
+            return this;
+        }
+
+        @NonNull
+        public Builder sortField(@Nullable final String sortField) {
+            this.sortField = sortField;
+            return this;
+        }
+
+        @NonNull
+        public Builder sortOrder(@NonNull final SortOrder sortOrder) {
+            this.sortOrder = Objects.requireNonNull(sortOrder, "sortOrder must not be null");
+            return this;
+        }
+
+        @NonNull
+        public Builder includeMetadata(final boolean includeMetadata) {
+            this.includeMetadata = includeMetadata;
+            return this;
+        }
+
+        @NonNull
+        public QueryOptions build() {
+            return new QueryOptions(this);
+        }
+    }
+}
+```
+
+**Usage with Record Builder**:
+
+```java
+// Using builder with defaults
+QueryOptions options = QueryOptions.builder("SELECT * FROM users")
+    .limit(50)
+    .sortField("name")
+    .build();
+
+// Direct instantiation with record constructor
+QueryOptions directOptions = new QueryOptions(
+    "SELECT * FROM users",
+    50,
+    0,
+    "name",
+    SortOrder.ASC,
+    false
+);
+```
+
+### Builder Pattern Best Practices
+
+1. **Static factory method**: Provide a static `builder()` method to obtain a Builder instance
+2. **Fluent interface**: All builder methods should return `this` (except `build()`)
+3. **Immutable product**: The constructed object should be immutable
+4. **Public constructor with all parameters**: Provide a public constructor accepting all parameters for direct instantiation without builder
+5. **Private builder constructor**: The builder-specific constructor should be private and delegate to the public constructor
+6. **Initialize defaults in Builder**: Set default values directly in the Builder field declarations (e.g., `private LocalDateTime timestamp = LocalDateTime.now();`), not in the build() method
+7. **Validation in constructor**: Perform all validation in the main class constructor, not in builder methods
+8. **Null checks in builder methods**: Check for null on required parameters in builder setter methods
+9. **Meaningful method names**: Builder methods should have clear, descriptive names matching the field names
+10. **Final Builder class**: Make the Builder class `static final` nested within the product class
+11. **Builder reuse**: Document whether builders can be reused (generally they should not be)
+12. **Thread safety**: Builders are not thread-safe; each thread should use its own builder instance
+
+### Alternative: Factory Methods with Parameters
+
+For simpler cases with fewer optional parameters, consider using factory methods with parameter objects or overloaded factory methods instead of a full builder.
+
+**Factory Methods with Classes**:
+
+```java
+public final class PublicKey {
+
+    // Simple case - factory methods are sufficient
+    @NonNull
+    public static PublicKey create(@NonNull final KeyAlgorithm algorithm, @NonNull final byte[] rawBytes) {
+        return KeyFactory.createPublicKey(algorithm, rawBytes);
+    }
+
+    @NonNull
+    public static PublicKey create(@NonNull final String pemEncoded) {
+        return KeyFactory.createPublicKey(EncodedKeyContainer.SPKI_WITH_PEM, pemEncoded);
+    }
+}
+```
+
+**Factory Methods with Records**:
+
+Records work perfectly with factory methods for common creation patterns:
+
+```java
+public record KeyPair(
+    @NonNull PublicKey publicKey,
+    @NonNull PrivateKey privateKey
+) {
+    // Compact constructor with validation
+    public KeyPair {
+        Objects.requireNonNull(publicKey, "publicKey must not be null");
+        Objects.requireNonNull(privateKey, "privateKey must not be null");
+    }
+
+    // Factory method for generating a new key pair
+    @NonNull
+    public static KeyPair generate(@NonNull final KeyAlgorithm algorithm) {
+        Objects.requireNonNull(algorithm, "algorithm must not be null");
+        final PrivateKey privateKey = PrivateKey.generate(algorithm);
+        final PublicKey publicKey = privateKey.derivePublicKey();
+        return new KeyPair(publicKey, privateKey);
+    }
+
+    // Factory method for importing from bytes
+    @NonNull
+    public static KeyPair fromBytes(@NonNull final KeyAlgorithm algorithm,
+                                     @NonNull final byte[] publicKeyBytes,
+                                     @NonNull final byte[] privateKeyBytes) {
+        Objects.requireNonNull(algorithm, "algorithm must not be null");
+        Objects.requireNonNull(publicKeyBytes, "publicKeyBytes must not be null");
+        Objects.requireNonNull(privateKeyBytes, "privateKeyBytes must not be null");
+
+        final PublicKey publicKey = PublicKey.create(algorithm, publicKeyBytes);
+        final PrivateKey privateKey = PrivateKey.create(algorithm, privateKeyBytes);
+        return new KeyPair(publicKey, privateKey);
+    }
+}
+```
+
+**Usage**:
+
+```java
+// Using factory method - clean and expressive
+KeyPair keyPair = KeyPair.generate(KeyAlgorithm.ED25519);
+
+// Using factory method with parameters
+KeyPair imported = KeyPair.fromBytes(
+    KeyAlgorithm.ED25519,
+    publicKeyBytes,
+    privateKeyBytes
+);
+
+// Direct constructor still available
+KeyPair direct = new KeyPair(publicKey, privateKey);
+```
+
+### Builder vs. Constructor Telescoping
+
+**Avoid constructor telescoping** (multiple constructors with increasing parameter counts):
+
+```java
+// ❌ Bad: Constructor telescoping - hard to read and maintain
+public Transaction(String id, BigDecimal amount, String from, String to) { ... }
+public Transaction(String id, BigDecimal amount, String from, String to, String memo) { ... }
+public Transaction(String id, BigDecimal amount, String from, String to, String memo, LocalDateTime time) { ... }
+
+// ✅ Good: Use Builder Pattern instead
+Transaction tx = Transaction.builder()
+    .transactionId(id)
+    .amount(amount)
+    .fromAccount(from)
+    .toAccount(to)
+    .memo(memo)
+    .timestamp(time)
+    .build();
+```
 
 ## Testing
 
