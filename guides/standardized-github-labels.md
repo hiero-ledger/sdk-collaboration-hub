@@ -50,15 +50,6 @@ These labels provide additional specificity about the **kind of work** involved 
 | `kind: testing` | Adding or improving unit tests, integration tests, or test infrastructure | `#c5def5` |
 | `kind: maintenance` | Updates to CI/CD pipelines, build systems, dependencies, or tooling | `#6a737d` |
 
-**Color Preview:**
-
-![#3e82f7](https://via.placeholder.com/15/3e82f7/3e82f7.png) enhancement
-![#0075ca](https://via.placeholder.com/15/0075ca/0075ca.png) documentation
-![#d4c5f9](https://via.placeholder.com/15/d4c5f9/d4c5f9.png) refactor
-![#e11d21](https://via.placeholder.com/15/e11d21/e11d21.png) security
-![#c5def5](https://via.placeholder.com/15/c5def5/c5def5.png) testing
-![#6a737d](https://via.placeholder.com/15/6a737d/6a737d.png) maintenance
-
 > **Example Usage:**
 > - A GitHub **Bug** issue about a security vulnerability → add `kind: security`
 > - A GitHub **Task** issue to update CI workflows → add `kind: maintenance`
@@ -81,17 +72,6 @@ These labels track the lifecycle of an issue or pull request, helping maintainer
 | `status: needs review` | The pull request is ready for a maintainer to review | `#1d76db` |
 | `status: needs revision` | A pull request that requires changes before it can be merged | `#e99695` |
 
-**Color Preview:**
-
-![#fbca04](https://via.placeholder.com/15/fbca04/fbca04.png) awaiting triage
-![#d876e3](https://via.placeholder.com/15/d876e3/d876e3.png) needs info
-![#d93f0b](https://via.placeholder.com/15/d93f0b/d93f0b.png) needs repro
-![#000000](https://via.placeholder.com/15/000000/000000.png) blocked
-![#fef2c0](https://via.placeholder.com/15/fef2c0/fef2c0.png) in progress
-![#c2e0c6](https://via.placeholder.com/15/c2e0c6/c2e0c6.png) ready for dev
-![#1d76db](https://via.placeholder.com/15/1d76db/1d76db.png) needs review
-![#e99695](https://via.placeholder.com/15/e99695/e99695.png) needs revision
-
 ---
 
 ### 3. Priority Labels
@@ -104,13 +84,6 @@ Priority labels help align development efforts with the project roadmap. Use the
 | `priority: high` | Important issue that should be prioritized in the current sprint/release | `#d93f0b` |
 | `priority: medium` | Normal priority; to be addressed in the standard development cycle | `#fbca04` |
 | `priority: low` | Non-urgent tasks, nice-to-have improvements, or minor issues | `#0e8a16` |
-
-**Color Preview:**
-
-![#b60205](https://via.placeholder.com/15/b60205/b60205.png) critical
-![#d93f0b](https://via.placeholder.com/15/d93f0b/d93f0b.png) high
-![#fbca04](https://via.placeholder.com/15/fbca04/fbca04.png) medium
-![#0e8a16](https://via.placeholder.com/15/0e8a16/0e8a16.png) low
 
 ---
 
@@ -125,14 +98,6 @@ These labels categorize issues by the experience level required to complete them
 | `skill: beginner` | Suitable for contributors who have completed a good first issue and want to build skills | `#9f7be1` |
 | `skill: intermediate` | Requires familiarity with the codebase structure and SDK concepts | `#6f42c1` |
 | `skill: advanced` | Requires deep understanding of the SDK architecture and may span multiple modules | `#4a2c7a` |
-
-**Color Preview:**
-
-![#e6ccff](https://via.placeholder.com/15/e6ccff/e6ccff.png) good first issue candidate
-![#7057ff](https://via.placeholder.com/15/7057ff/7057ff.png) good first issue
-![#9f7be1](https://via.placeholder.com/15/9f7be1/9f7be1.png) beginner
-![#6f42c1](https://via.placeholder.com/15/6f42c1/6f42c1.png) intermediate
-![#4a2c7a](https://via.placeholder.com/15/4a2c7a/4a2c7a.png) advanced
 
 > **Note:** The `skill: good first issue` label corresponds to GitHub's built-in "good first issue" feature, which surfaces these issues in GitHub's contributor-friendly views.
 
@@ -152,16 +117,6 @@ These labels identify which subsystem or area of the repository is affected. The
 | `scope: grpc` | Related to gRPC communication, protobuf definitions, or network layer | `#5319e7` |
 | `scope: crypto` | Related to cryptographic operations, key management, or signing | `#b4a7d6` |
 
-**Color Preview:**
-
-![#bfdadc](https://via.placeholder.com/15/bfdadc/bfdadc.png) api
-![#cfd3d7](https://via.placeholder.com/15/cfd3d7/cfd3d7.png) build
-![#62b0e2](https://via.placeholder.com/15/62b0e2/62b0e2.png) ci
-![#0366d6](https://via.placeholder.com/15/0366d6/0366d6.png) dependencies
-![#bfd4f2](https://via.placeholder.com/15/bfd4f2/bfd4f2.png) examples
-![#5319e7](https://via.placeholder.com/15/5319e7/5319e7.png) grpc
-![#b4a7d6](https://via.placeholder.com/15/b4a7d6/b4a7d6.png) crypto
-
 ---
 
 ### 6. Resolution Labels
@@ -174,13 +129,6 @@ Used when closing issues or PRs without a merge to explain the reason.
 | `resolution: invalid` | This doesn't seem right, is spam, or is based on a misunderstanding | `#e4e669` |
 | `resolution: wontfix` | This will not be worked on; out of scope or intentional behavior | `#ffffff` |
 | `resolution: stale` | Closed due to inactivity without resolution | `#ededed` |
-
-**Color Preview:**
-
-![#cfd3d7](https://via.placeholder.com/15/cfd3d7/cfd3d7.png) duplicate
-![#e4e669](https://via.placeholder.com/15/e4e669/e4e669.png) invalid
-![#ffffff](https://via.placeholder.com/15/ffffff/ffffff.png) wontfix
-![#ededed](https://via.placeholder.com/15/ededed/ededed.png) stale
 
 ---
 
