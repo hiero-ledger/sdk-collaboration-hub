@@ -1538,6 +1538,164 @@ src/
             └── PublicKeyImplTest.java
 ```
 
+## Namespace Mapping
+
+The meta-language uses namespaces to group related types and functionality. In Java, namespaces map to a combination of **packages** and **JPMS modules**.
+
+### Namespace Concept
+
+**Meta-language namespace definition**:
+```
+namespace transactions
+requires common, keys
+
+constant MAX_TRANSACTIONS:int32 = 100
+
+Transaction {
+    @@immutable id: string
+    @@immutable amount: decimal
+}
+
+enum TransactionStatus {
+    PENDING
+    COMPLETED
+    FAILED
+}
+```
+
+### Java Implementation of Namespaces
+
+Namespaces are implemented using:
+1. **Java Package** - for code organization (`org.hiero.transactions`)
+2. **JPMS Module** - for encapsulation and dependency management
+
+**Package Structure**:
+```
+org.hiero.transactions/
+├── Transaction.java
+├── TransactionStatus.java
+├── TransactionConstants.java
+└── impl/
+    └── TransactionImpl.java
+```
+
+**module-info.java** (maps namespace dependencies):
+```java
+module org.hiero.transactions {
+    // Namespace 'requires common, keys' maps to:
+    requires org.hiero.common;
+    requires org.hiero.keys;
+
+    // Compile-time dependencies
+    requires static org.jspecify;
+
+    // Export public API (namespace types)
+    exports org.hiero.transactions;
+
+    // Do NOT export internal implementation
+    // (org.hiero.transactions.impl stays private)
+}
+```
+
+### Namespace to Package Naming Convention
+
+**Rule**: `namespace NAME` → `org.hiero.NAME` package
+
+| Meta-Language Namespace | Java Package                |
+|-------------------------|-----------------------------|
+| `namespace transactions` | `org.hiero.transactions`    |
+| `namespace keys`        | `org.hiero.keys`            |
+| `namespace common`      | `org.hiero.common`          |
+| `namespace client`      | `org.hiero.client`          |
+
+### Namespace Dependencies
+
+Namespace dependencies in the meta-language map directly to JPMS module dependencies:
+
+```
+// Meta-language
+namespace transactions
+requires common, keys
+
+// Java module-info.java
+module org.hiero.transactions {
+    requires org.hiero.common;
+    requires org.hiero.keys;
+}
+```
+
+### Constants in Namespaces
+
+Constants defined at namespace level should be placed in a dedicated constants class:
+
+**Meta-language**:
+```
+namespace transactions
+
+constant MAX_TRANSACTIONS:int32 = 100
+constant DEFAULT_TIMEOUT:int64 = 30000
+```
+
+**Java Implementation**:
+```java
+package org.hiero.transactions;
+
+/**
+ * Constants for the transactions namespace.
+ */
+public final class TransactionConstants {
+
+    /** Maximum number of transactions per batch */
+    public static final int MAX_TRANSACTIONS = 100;
+
+    /** Default timeout in milliseconds */
+    public static final long DEFAULT_TIMEOUT = 30000L;
+
+    private TransactionConstants() {
+        // Prevent instantiation
+        throw new UnsupportedOperationException("Constants class cannot be instantiated");
+    }
+}
+```
+
+### Cross-Namespace References
+
+When types from one namespace reference types from another:
+
+**Meta-language**:
+```
+namespace accounts
+requires transactions
+
+Account {
+    lastTransaction: transactions.Transaction
+}
+```
+
+**Java Implementation**:
+```java
+// module-info.java
+module org.hiero.accounts {
+    requires org.hiero.transactions;
+    exports org.hiero.accounts;
+}
+
+// Account.java
+package org.hiero.accounts;
+
+import org.hiero.transactions.Transaction;
+import org.jspecify.annotations.Nullable;
+
+public record Account(
+    String id,
+    @Nullable Transaction lastTransaction
+) {
+    // ...
+}
+```
+
+**Note**: This creates a dependency, so `org.hiero.transactions` types appear in the public API. Consider whether `requires transitive` is needed (see [JPMS section](#java-platform-module-system-jpms)).
+
 ## Questions & Comments
 
 ## Todos based on AI tests for generating Java code
