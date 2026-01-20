@@ -782,6 +782,87 @@ public class Example {
 }
 ```
 
+
+## Testing
+
+Multiple types of tests must be written for each new feature to ensure quality and correctness.
+Understanding the different test types and their purposes is crucial for contributors.
+In Java JUnit (version 5+) is used for all tests.
+
+**Unit Tests**:
+- Test individual classes and methods in isolation
+- Run quickly without external dependencies
+- Mock or stub external dependencies
+- Must be written for all public API functionality
+
+**Integration Tests**:
+- Test interaction between multiple components
+- May require external services or infrastructure
+- **Status**: TBD - integration test strategy is being defined
+
+**TCK (Technology Compatibility Kit)**:
+- External test suite: [Hiero SDK TCK](https://github.com/hiero-ledger/hiero-sdk-tck)
+- Provides comprehensive functional and integration tests
+- Tests are executed against all SDK implementations via a driver
+- Ensures consistency across SDKs (Java, JavaScript, Go, etc.)
+
+### Unit Test Guidelines
+
+All unit tests must follow the Given-When-Then pattern for clarity and readability.
+
+**Example**:
+```java
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
+class PublicKeyTest {
+
+    @Test
+    void testVerifyValidSignature() {
+        // given
+        final byte[] message = "Hello, World!".getBytes();
+        final PrivateKey privateKey = PrivateKey.create(KeyAlgorithm.ED25519);
+        final PublicKey publicKey = privateKey.getPublicKey();
+        final byte[] signature = privateKey.sign(message);
+
+        // when
+        final boolean result = publicKey.verify(message, signature);
+
+        // then
+        assertTrue(result, "Valid signature should be verified successfully");
+    }
+
+    @Test
+    void testVerifyInvalidSignature() {
+        // given
+        final byte[] message = "Hello, World!".getBytes();
+        final byte[] invalidSignature = new byte[64];
+        final PublicKey publicKey = PublicKey.create(KeyAlgorithm.ED25519);
+
+        // when
+        final boolean result = publicKey.verify(message, invalidSignature);
+
+        // then
+        assertFalse(result, "Invalid signature should not be verified");
+    }
+}
+```
+
+**Best Practices for Unit Tests**:
+1. **Use Given-When-Then structure** - clearly separate test phases with comments
+2. **Test one thing per test** - each test should verify a single behavior
+3. **Descriptive test names** - use `testMethodName_Condition_ExpectedBehavior` pattern
+4. **Clear assertions** - provide meaningful assertion messages
+5. **Test edge cases** - null values, empty collections, boundary values
+6. **Test error conditions** - verify exceptions are thrown when expected
+7. **Independent tests** - tests should not depend on execution order
+8. **Fast execution** - unit tests should run in milliseconds
+
+### Integration Test Guidelines
+
+**Status**: TBD
+
+
 ## Java Platform Module System (JPMS)
 
 All SDK modules must fully support the Java Platform Module System (JPMS) introduced in Java 9.
