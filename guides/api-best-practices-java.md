@@ -24,6 +24,72 @@ Use the following canonical mappings when turning meta types into Java:
 | `time`            | `java.time.LocalTime`                                                                                                              | -                                                                                |
 | `dateTime`        | `java.time.LocalDateTime`                                                                                                          | -                                                                                |
 | `zonedDateTime`   | `java.time.ZonedDateTime`                                                                                                          | -                                                                                |
+| `type`            | `java.lang.Class<?>`                                                                                                               | Used for runtime type information, typically with generics `Class<T>`            |
+
+### Type Parameter for Runtime Type Information
+
+The meta-language defines `type` as a way to specify runtime type information.
+In Java, this maps to `java.lang.Class<?>`.
+
+**Basic Usage**:
+
+```java
+// Meta-language definition
+Container {
+    type getInnerType()
+}
+
+// Java implementation
+public interface Container {
+    @NonNull
+    Class<?> getInnerType();
+}
+```
+
+**Preferred: Generic Type-Safe Usage**:
+
+When possible, use generics to provide type safety:
+
+```java
+// Meta-language definition with generic
+abstraction Container<$$T> {
+    $$T getInnerType()
+}
+
+// Java implementation with generics
+public interface Container<T> {
+    @NonNull
+    T getInnerType();
+}
+```
+
+**Usage Examples**:
+
+```java
+// Basic usage with Class<?>
+Container container = new ServiceContainer();
+Object service = container.create(MyService.class);
+
+// Type-safe usage with generics
+Container<Transaction> txContainer = new TypedServiceContainer<>();
+Transaction tx = txContainer.create(Transaction.class); // Type-safe, no cast needed
+
+// Common pattern: factory with type parameter
+public <T extends Transaction> T createTransaction(@NonNull final Class<T> transactionType) {
+    Objects.requireNonNull(transactionType, "transactionType must not be null");
+    // Create instance based on type
+    return instantiate(transactionType);
+}
+```
+
+**Best Practices for `type` → `Class<?>`**:
+
+1. **Prefer generics**: Use `Class<T>` with generic type parameters when possible for type safety
+2. **Null checks**: Always validate that Class parameters are not null
+3. **Bounded wildcards**: Use `Class<? extends BaseType>` to constrain acceptable types
+4. **Avoid raw types**: Never use raw `Class` without type parameter
+5. **Document constraints**: Clearly document which types are acceptable and any requirements (e.g., must have no-arg constructor)
+6. **Consider alternatives**: For simple cases, consider using enums or sealed types instead of runtime type parameters
 
 ### Numeric Types
 
