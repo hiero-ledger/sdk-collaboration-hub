@@ -782,6 +782,121 @@ public class Example {
 }
 ```
 
+## Java Platform Module System (JPMS)
+
+All SDK modules must fully support the Java Platform Module System (JPMS) introduced in Java 9.
+Each module must provide a `module-info.java` file that clearly defines:
+
+- Exported packages (public API)
+- Required dependencies
+- Provided services (if applicable)
+- Used services (if applicable)
+
+### Public API vs. Internal Implementation
+
+JPMS provides a clear separation between public API and internal implementation:
+
+- **Exported packages**: These contain the public API that external consumers can use. All types in exported packages are accessible to consumers.
+- **Non-exported packages**: These contain internal implementation details that are not part of the public API. Types in non-exported packages are not accessible to external modules, even if they are declared `public` in Java.
+
+This separation allows for a clean distinction between what is part of the public contract and what is an internal implementation detail that can change without affecting consumers.
+
+### Package Structure Convention
+
+To clearly distinguish between public API and internal implementation, use the following package structure:
+
+```
+org.hiero.{module}/              # Public API (exported)
+├── {PublicInterfaces}.java
+├── {PublicClasses}.java
+└── impl/                        # Internal implementation (NOT exported)
+    ├── {InternalImplementations}.java
+    └── {Factories}.java
+```
+
+### Example module-info.java
+
+```java
+module org.hiero.keys {
+    // Export public API packages
+    exports org.hiero.keys;
+
+    // Do NOT export internal implementation packages
+    // (org.hiero.keys.impl is not exported and therefore not accessible from outside)
+
+    // Declare compile-time only dependencies (annotations, etc.)
+    requires static org.jspecify;
+
+    // Declare runtime dependencies
+    requires org.bouncycastle.provider;
+
+    // Optionally provide services
+    provides org.hiero.keys.KeyProvider
+        with org.hiero.keys.impl.DefaultKeyProvider;
+}
+```
+
+### Rules for JPMS
+
+1. **Every module must have a `module-info.java`** at the root of its source directory
+2. **Only export packages that contain public API** - never export `impl` packages
+3. **Use `requires` for all dependencies** - make dependencies explicit
+4. **Use `requires static` for compile-time only dependencies** - annotations (like `org.jspecify`), code generators, or other tools that are not needed at runtime must use `requires static`
+5. **Avoid `requires transitive` whenever possible** - exposing types from dependencies in your public API should be avoided. If unavoidable (e.g., your public API returns or accepts types from another module), you must use `requires transitive` so consumers have access to those types
+6. **Never use unnamed modules** - all production code must be in named modules
+7. **Test code can use the unnamed module** for flexibility during testing
+8. **Document exported packages** in the module-info.java using comments
+
+### Compile-Time vs Runtime Dependencies
+
+Understanding the difference between compile-time and runtime dependencies is crucial for optimal module design:
+
+**Compile-Time Only (`requires static`)**:
+- Annotation libraries (e.g., `org.jspecify`)
+- Code generation tools
+- Build-time processors
+- Any dependency whose types are only referenced in annotations or comments
+
+**Runtime Dependencies (`requires`)**:
+- Libraries whose types are used internally but NOT exposed in the public API
+- Libraries that provide actual functionality at runtime
+- Any dependency needed for the application to run
+
+**Transitive Dependencies (`requires transitive`)** - **AVOID WHENEVER POSSIBLE**:
+- Only use when your public API exposes types from another module (e.g., returning or accepting types from that module in public methods)
+- This creates tight coupling between your module and the dependency
+- **Best practice**: Wrap or adapt external types so your public API only uses your own types
+
+**Example - Good Design (avoiding transitive)**:
+```java
+module org.hiero.keys {
+    // Compile-time only: annotations are erased after compilation
+    requires static org.jspecify;
+
+    // Runtime: BouncyCastle is used internally but NOT exposed in public API
+    requires org.bouncycastle.provider;
+
+    // Export only our own types
+    exports org.hiero.keys;
+}
+```
+
+**Example - When transitive is unavoidable**:
+```java
+module org.hiero.client {
+    requires static org.jspecify;
+
+    // Our public API returns CompletionStage, so we use standard Java types (no transitive needed)
+    requires java.base;
+
+    // Our public API exposes Transaction types from org.hiero.transaction
+    // Consumers MUST have access to these types
+    requires transitive org.hiero.transaction;
+
+    exports org.hiero.client;
+}
+```
+
 ## Questions & Comments
 
 ## Todos based on AI tests for generating Java code
