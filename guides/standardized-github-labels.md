@@ -2,21 +2,6 @@
 
 This document defines a standardized set of GitHub labels to be implemented across all Hiero SDK repositories. Establishing this baseline ensures that contributors and maintainers experience a consistent workflow, regardless of the specific programming language or repository they are working in.
 
-## Applicable Repositories
-
-| Repository | Language |
-| :--------- | :------- |
-| [hiero-sdk-cpp](https://github.com/hiero-ledger/hiero-sdk-cpp) | C++ |
-| [hiero-sdk-swift](https://github.com/hiero-ledger/hiero-sdk-swift) | Swift |
-| [hiero-sdk-js](https://github.com/hiero-ledger/hiero-sdk-js) | JavaScript/TypeScript |
-| [hiero-sdk-java](https://github.com/hiero-ledger/hiero-sdk-java) | Java |
-| [hiero-sdk-go](https://github.com/hiero-ledger/hiero-sdk-go) | Go |
-| [hiero-sdk-rust](https://github.com/hiero-ledger/hiero-sdk-rust) | Rust |
-| [hiero-sdk-python](https://github.com/hiero-ledger/hiero-sdk-python) | Python |
-| [hiero-sdk-tck](https://github.com/hiero-ledger/hiero-sdk-tck) | TCK (Test Compatibility Kit) |
-
-> **Note:** While these labels are mandatory for cross-SDK consistency, maintainers are encouraged to add **repo-specific labels** as needed for their specific ecosystem (e.g., `swift-6`, `wasm`, `crates.io`, `npm`, `gradle`).
-
 ---
 
 ## GitHub Issue Types vs. Labels
