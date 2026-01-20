@@ -839,13 +839,15 @@ module org.hiero.keys {
 ### Rules for JPMS
 
 1. **Every module must have a `module-info.java`** at the root of its source directory
-2. **Only export packages that contain public API** - never export `impl` packages
+2. **Only export packages that contain public API** - never export `impl` packages to consumers
 3. **Use `requires` for all dependencies** - make dependencies explicit
 4. **Use `requires static` for compile-time only dependencies** - annotations (like `org.jspecify`), code generators, or other tools that are not needed at runtime must use `requires static`
 5. **Avoid `requires transitive` whenever possible** - exposing types from dependencies in your public API should be avoided. If unavoidable (e.g., your public API returns or accepts types from another module), you must use `requires transitive` so consumers have access to those types
 6. **Never use unnamed modules** - all production code must be in named modules
-7. **Test code can use the unnamed module** for flexibility during testing
-8. **Document exported packages** in the module-info.java using comments
+7. **Tests must run on the module path** - test code should also use named modules to ensure JPMS compatibility
+8. **Use `exports ... to` for test-only access** - to test internal implementation packages (like `impl`), use qualified exports to make them accessible only to test modules
+9. **Test modules should use `open module`** - declare test modules as `open module` to allow reflection access for test frameworks without needing individual `opens` declarations
+10. **Document exported packages** in the module-info.java using comments
 
 ### Compile-Time vs Runtime Dependencies
 
@@ -895,6 +897,61 @@ module org.hiero.client {
 
     exports org.hiero.client;
 }
+```
+
+### Testing with JPMS
+
+Tests should run on the module path to ensure full JPMS compatibility. To test internal implementation packages that are not exported to consumers, use qualified exports with `exports ... to`.
+
+**module-info.java** (in `src/main/java/module-info.java`):
+```java
+module org.hiero.keys {
+    // Export public API to everyone
+    exports org.hiero.keys;
+
+    // Export internal implementation ONLY to test module
+    exports org.hiero.keys.impl to org.hiero.keys.test;
+
+    requires static org.jspecify;
+    requires org.bouncycastle.provider;
+}
+```
+
+**module-info.java** (in `src/test/java/module-info.java`):
+```java
+open module org.hiero.keys.test {
+    // Require the module under test
+    requires org.hiero.keys;
+
+    // Test frameworks
+    requires org.junit.jupiter.api;
+
+    // Note: 'open module' makes all packages accessible for reflection
+    // No need for individual 'opens' declarations
+}
+```
+
+**Key Points**:
+- The production module uses `exports ... to` to selectively expose `impl` packages only to the test module
+- The test module should be declared as `open module` to allow reflection access for test frameworks (JUnit, Mockito, etc.)
+- Using `open module` eliminates the need for individual `opens` declarations for each test package
+- This approach ensures that `impl` packages remain inaccessible to consumers while being fully testable
+
+**Directory Structure**:
+```
+src/
+├── main/
+│   └── java/
+│       ├── module-info.java
+│       └── org/hiero/keys/
+│           ├── PublicKey.java
+│           └── impl/
+│               └── PublicKeyImpl.java
+└── test/
+    └── java/
+        ├── module-info.java
+        └── org/hiero/keys/impl/test/
+            └── PublicKeyImplTest.java
 ```
 
 ## Questions & Comments
