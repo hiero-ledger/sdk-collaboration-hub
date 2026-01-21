@@ -216,7 +216,6 @@ These repo-specific labels should **not** replace the standardized labels but ra
 
 - [GitHub Documentation: Managing Labels](https://docs.github.com/en/issues/using-labels-and-milestones-to-track-work/managing-labels)
 - [Python Developer's Guide: GitHub Labels](https://devguide.python.org/triage/labels/)
-- [CNCF: Issue Labels for New Contributors](https://contribute.cncf.io/maintainers/templates/issue-labels)
 - [StandardIssueLabels Repository](https://github.com/wagenet/StandardIssueLabels)
 - [Creative Commons: Repository Labels](https://opensource.creativecommons.org/contributing-code/repo-labels)
 
