@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 
 import static org.hiero.keys.TestKeyRepresentations.*;
 
-public class PublicKeyReadingTests {
+public class PublicKeyCreationTests {
 
 
     private static Stream<Arguments> spkiVariants() {
