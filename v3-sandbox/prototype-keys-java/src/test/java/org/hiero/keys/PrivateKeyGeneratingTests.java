@@ -3,6 +3,7 @@ package org.hiero.keys;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.stream.Stream;
@@ -41,5 +42,31 @@ public class PrivateKeyGeneratingTests {
         Assertions.assertTrue(verified);
         Assertions.assertFalse(shouldNotVerified1);
         Assertions.assertFalse(shouldNotVerified2);
+    }
+
+    @ParameterizedTest(name = "generate() mit Algorithmus {0}")
+    @EnumSource(KeyAlgorithm.class)
+    void testGenerateForAllAlgorithms(KeyAlgorithm keyAlgorithm) {
+        //when
+        final PrivateKey privateKey = PrivateKey.generate(keyAlgorithm);
+
+        //then
+        Assertions.assertNotNull(privateKey, "PrivateKey darf nicht null sein");
+    }
+
+    @ParameterizedTest(name = "create(algorithm, rawBytes) mit Algorithmus {0}")
+    @EnumSource(KeyAlgorithm.class)
+    void testCreateFromBytesForAllAlgorithms(KeyAlgorithm keyAlgorithm) {
+
+        //given
+        final PrivateKey original = PrivateKey.generate(keyAlgorithm);
+        final byte[] rawBytes = original.toRawBytes();
+
+        //when
+        final PrivateKey recreated = PrivateKey.create(keyAlgorithm, rawBytes);
+
+        //then
+        Assertions.assertNotNull(recreated, "Wiederhergestellter PrivateKey darf nicht null sein");
+        Assertions.assertNotNull(recreated.createPublicKey(), "PublicKey des wiederhergestellten Schlüssels darf nicht null sein");
     }
 }

@@ -13,10 +13,4 @@ public enum KeyContainer {
             case SPKI -> type == KeyType.PUBLIC;
         };
     }
-
-    public boolean supportsEncoding(final KeyEncoding encoding) {
-        return switch (this) {
-            case PKCS8, SPKI -> encoding == KeyEncoding.DER || encoding == KeyEncoding.PEM;
-        };
-    }
 }
