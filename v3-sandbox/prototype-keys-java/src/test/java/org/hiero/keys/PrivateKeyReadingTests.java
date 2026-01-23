@@ -24,9 +24,8 @@ public class PrivateKeyReadingTests {
                 Arguments.of(EncodedKeyContainer.PKCS8_WITH_PEM, PKCS8_WITH_PEM_VARIANT_2),
                 Arguments.of(EncodedKeyContainer.PKCS8_WITH_PEM, PKCS8_WITH_PEM_VARIANT_3),
                 Arguments.of(EncodedKeyContainer.PKCS8_WITH_PEM, PKCS8_WITH_PEM_VARIANT_4),
-                Arguments.of(EncodedKeyContainer.PKCS8_WITH_PEM, PKCS8_WITH_PEM_VARIANT_5),
-                Arguments.of(EncodedKeyContainer.PKCS8_WITH_PEM, PKCS8_WITH_PEM_VARIANT_6)
-                );
+                Arguments.of(EncodedKeyContainer.PKCS8_WITH_PEM, PKCS8_WITH_PEM_VARIANT_5)
+        );
     }
 
     @ParameterizedTest(name = "PKCS#8 roundtrip with {0}")

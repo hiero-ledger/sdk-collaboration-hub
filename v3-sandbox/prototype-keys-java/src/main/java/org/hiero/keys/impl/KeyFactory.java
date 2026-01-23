@@ -9,7 +9,8 @@ import java.util.Objects;
 
 public final class KeyFactory {
 
-    private KeyFactory() {}
+    private KeyFactory() {
+    }
 
     // Generation
     public static PrivateKey generatePrivateKey(final KeyAlgorithm algorithm) {
@@ -57,7 +58,8 @@ public final class KeyFactory {
         }
         return switch (container) {
             case PKCS8_WITH_DER -> parsePkcs8Der(value);
-            case PKCS8_WITH_PEM, SPKI_WITH_DER, SPKI_WITH_PEM -> throw new IllegalArgumentException("Container not valid for private key: " + container);
+            case PKCS8_WITH_PEM, SPKI_WITH_DER, SPKI_WITH_PEM ->
+                    throw new IllegalArgumentException("Container not valid for private key: " + container);
         };
     }
 
@@ -69,7 +71,8 @@ public final class KeyFactory {
         }
         return switch (container) {
             case SPKI_WITH_DER -> parseSpkiDer(value);
-            case SPKI_WITH_PEM, PKCS8_WITH_DER, PKCS8_WITH_PEM -> throw new IllegalArgumentException("Container not valid for public key: " + container);
+            case SPKI_WITH_PEM, PKCS8_WITH_DER, PKCS8_WITH_PEM ->
+                    throw new IllegalArgumentException("Container not valid for public key: " + container);
         };
     }
 
@@ -78,14 +81,14 @@ public final class KeyFactory {
         Objects.requireNonNull(container, "container must not be null");
         Objects.requireNonNull(value, "value must not be null");
 
-        if(!container.supportsType(KeyType.PRIVATE)) {
+        if (!container.supportsType(KeyType.PRIVATE)) {
             throw new IllegalArgumentException("Container not valid for private key: " + container);
         }
 
-        if(container == EncodedKeyContainer.PKCS8_WITH_PEM) {
-            byte[] pem = PemUtil.fromPem("PRIVATE KEY", value);
-            throw new IllegalStateException("Not yet implemented");
-        } else if(container == EncodedKeyContainer.PKCS8_WITH_DER) {
+        if (container == EncodedKeyContainer.PKCS8_WITH_PEM) {
+            byte[] der = PemUtil.fromPem("PRIVATE KEY", value);
+            return parsePkcs8Der(der);
+        } else if (container == EncodedKeyContainer.PKCS8_WITH_DER) {
             byte[] der = container.decode(value);
             return parsePkcs8Der(der);
         } else {
@@ -101,7 +104,8 @@ public final class KeyFactory {
         }
         return switch (container) {
             case SPKI_WITH_PEM -> parseSpkiDer(PemUtil.fromPem("PUBLIC KEY", value));
-            case PKCS8_WITH_PEM, PKCS8_WITH_DER, SPKI_WITH_DER -> throw new IllegalArgumentException("Container not valid for public key: " + container);
+            case PKCS8_WITH_PEM, PKCS8_WITH_DER, SPKI_WITH_DER ->
+                    throw new IllegalArgumentException("Container not valid for public key: " + container);
         };
     }
 

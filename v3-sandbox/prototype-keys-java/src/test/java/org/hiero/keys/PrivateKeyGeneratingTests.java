@@ -1,24 +1,11 @@
 package org.hiero.keys;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.stream.Stream;
-
-import static org.hiero.keys.TestKeyRepresentations.*;
-import static org.hiero.keys.TestKeyRepresentations.PKCS8_WITH_DER_VARIANT_4;
-import static org.hiero.keys.TestKeyRepresentations.PKCS8_WITH_DER_VARIANT_5;
-import static org.hiero.keys.TestKeyRepresentations.PKCS8_WITH_DER_VARIANT_6;
-import static org.hiero.keys.TestKeyRepresentations.PKCS8_WITH_DER_VARIANT_7;
-import static org.hiero.keys.TestKeyRepresentations.PKCS8_WITH_PEM_VARIANT_1;
-import static org.hiero.keys.TestKeyRepresentations.PKCS8_WITH_PEM_VARIANT_2;
-import static org.hiero.keys.TestKeyRepresentations.PKCS8_WITH_PEM_VARIANT_3;
-import static org.hiero.keys.TestKeyRepresentations.PKCS8_WITH_PEM_VARIANT_4;
-import static org.hiero.keys.TestKeyRepresentations.PKCS8_WITH_PEM_VARIANT_5;
-import static org.hiero.keys.TestKeyRepresentations.PKCS8_WITH_PEM_VARIANT_6;
 
 public class PrivateKeyGeneratingTests {
 
@@ -29,7 +16,6 @@ public class PrivateKeyGeneratingTests {
                 Arguments.of(KeyAlgorithm.ECDSA)
         );
     }
-
 
 
     @ParameterizedTest(name = "PrivateKey generation with {0}")
