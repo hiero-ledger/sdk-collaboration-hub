@@ -5,5 +5,12 @@ package org.hiero.keys;
  */
 public enum ByteImportEncoding {
     HEX,
-    BASE64
+    BASE64;
+
+    public byte[] decode(final String value) {
+        return switch (this) {
+            case HEX -> org.hiero.keys.impl.Hex.decode(value);
+            case BASE64 -> java.util.Base64.getDecoder().decode(value);
+        };
+    }
 }

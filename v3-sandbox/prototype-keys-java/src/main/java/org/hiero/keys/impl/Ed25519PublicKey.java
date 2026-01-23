@@ -49,7 +49,7 @@ public final class Ed25519PublicKey implements PublicKey {
         if (!container.supportsType(KeyType.PUBLIC)) {
             throw new IllegalArgumentException("Container does not support public keys: " + container);
         }
-        if (container.format() != RawFormat.BYTES) {
+        if (container.encoding().getFormat() != RawFormat.BYTES) {
             throw new IllegalArgumentException("toBytes requires BYTES format: " + container);
         }
         try {
@@ -65,7 +65,7 @@ public final class Ed25519PublicKey implements PublicKey {
 
     @Override
     public String toString(final EncodedKeyContainer container) {
-        if (container.format() != RawFormat.STRING) {
+        if (container.encoding().getFormat() != RawFormat.STRING) {
             throw new IllegalArgumentException("Requested String for non-STRING container: " + container);
         }
         if (container == EncodedKeyContainer.SPKI_WITH_PEM) {

@@ -78,10 +78,14 @@ public final class EcdsaPrivateKey implements PrivateKey {
     }
 
     @Override
-    public KeyAlgorithm algorithm() { return KeyAlgorithm.ECDSA; }
+    public KeyAlgorithm algorithm() {
+        return KeyAlgorithm.ECDSA;
+    }
 
     @Override
-    public KeyType type() { return KeyType.PRIVATE; }
+    public KeyType type() {
+        return KeyType.PRIVATE;
+    }
 
     @Override
     public byte[] toBytes(final EncodedKeyContainer container) {
@@ -89,7 +93,7 @@ public final class EcdsaPrivateKey implements PrivateKey {
         if (!container.supportsType(KeyType.PRIVATE)) {
             throw new IllegalArgumentException("Container does not support private keys: " + container);
         }
-        if (container.format() != RawFormat.BYTES) {
+        if (container.encoding().getFormat() != RawFormat.BYTES) {
             throw new IllegalArgumentException("toBytes requires BYTES format: " + container);
         }
         if (container.encoding() != KeyEncoding.DER) {
@@ -107,7 +111,7 @@ public final class EcdsaPrivateKey implements PrivateKey {
 
     @Override
     public String toString(final EncodedKeyContainer container) {
-        if (container.format() != RawFormat.STRING) {
+        if (container.encoding().getFormat() != RawFormat.STRING) {
             throw new IllegalArgumentException("Requested String for non-STRING container: " + container);
         }
         if (container != EncodedKeyContainer.PKCS8_WITH_PEM) {

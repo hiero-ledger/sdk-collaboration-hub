@@ -1,12 +1,17 @@
 package org.hiero.keys.impl;
 
+import org.hiero.keys.ByteImportEncoding;
+import org.hiero.keys.KeyType;
+
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Objects;
 
 public final class PemUtil {
 
-    private PemUtil() {}
+    private PemUtil() {
+    }
 
     public static String toPem(final String type, final byte[] der) {
         final String base64 = Base64.getEncoder().encodeToString(der);
@@ -20,9 +25,12 @@ public final class PemUtil {
         return sb.toString();
     }
 
-    public static byte[] fromPem(final String expectedType, final String pem) {
-        final String header = "-----BEGIN " + expectedType + "-----";
-        final String footer = "-----END " + expectedType + "-----";
+    public static byte[] fromPem(final KeyType keyType, final String pem) {
+        Objects.requireNonNull(keyType, "keyType must not be null");
+        Objects.requireNonNull(pem, "pem must not be null");
+
+        final String header = "-----BEGIN " + keyType.getPemLabel() + "-----";
+        final String footer = "-----END " + keyType.getPemLabel() + "-----";
 
         // Normalize line endings and trim surrounding whitespace
         final List<String> lines = pem.replace("\r", "\n").lines()
@@ -31,7 +39,7 @@ public final class PemUtil {
                 .toList();
 
         if (lines.isEmpty() || !lines.get(0).equals(header) || !lines.get(lines.size() - 1).equals(footer)) {
-            throw new IllegalArgumentException("Invalid PEM for type " + expectedType);
+            throw new IllegalArgumentException("Invalid PEM for type " + keyType);
         }
 
         // Join payload lines and remove any non-base64 characters just in case (defensive)
@@ -51,6 +59,6 @@ public final class PemUtil {
         }
 
         // Use MIME decoder to be tolerant, though we already cleaned the payload
-        return Base64.getDecoder().decode(base64);
+        return ByteImportEncoding.BASE64.decode(base64);
     }
 }

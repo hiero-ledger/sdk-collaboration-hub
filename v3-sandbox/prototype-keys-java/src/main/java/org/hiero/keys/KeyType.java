@@ -5,5 +5,12 @@ package org.hiero.keys;
  */
 public enum KeyType {
     PUBLIC,
-    PRIVATE
+    PRIVATE;
+
+    public String getPemLabel() {
+        return switch (this) {
+            case PUBLIC -> "PUBLIC KEY";
+            case PRIVATE -> "PRIVATE KEY";
+        };
+    }
 }

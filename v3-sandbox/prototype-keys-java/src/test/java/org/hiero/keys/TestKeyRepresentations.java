@@ -133,14 +133,14 @@ public class TestKeyRepresentations {
     @ParameterizedTest
     @MethodSource("Pkcs8WithPemVariants")
     public void checkPkcs8WithPem(String input) throws Exception {
-        byte[] der = PemUtil.fromPem("PRIVATE KEY", input);
+        byte[] der = PemUtil.fromPem(KeyType.PRIVATE, input);
         checkLowLevelASN1ForPrivateKey(der);
     }
 
     @ParameterizedTest
     @MethodSource("spkiPemVariants")
     public void checkSpkiWithPem(String input) throws Exception {
-        byte[] der = PemUtil.fromPem("PUBLIC KEY", input);
+        byte[] der = PemUtil.fromPem(KeyType.PUBLIC, input);
         checkLowLevelASN1ForPublicKey(der);
     }
 
