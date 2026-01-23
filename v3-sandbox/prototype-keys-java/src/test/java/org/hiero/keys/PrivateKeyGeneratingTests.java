@@ -59,14 +59,16 @@ public class PrivateKeyGeneratingTests {
     void testCreateFromBytesForAllAlgorithms(KeyAlgorithm keyAlgorithm) {
 
         //given
+        final byte[] message = "I'm a test message".getBytes();
         final PrivateKey original = PrivateKey.generate(keyAlgorithm);
-        final byte[] rawBytes = original.toRawBytes();
+        final byte[] signed = original.sign(message);
 
         //when
-        final PrivateKey recreated = PrivateKey.create(keyAlgorithm, rawBytes);
+        final PrivateKey recreated = PrivateKey.create(keyAlgorithm, original.toRawBytes());
 
         //then
         Assertions.assertNotNull(recreated, "Wiederhergestellter PrivateKey darf nicht null sein");
         Assertions.assertNotNull(recreated.createPublicKey(), "PublicKey des wiederhergestellten Schlüssels darf nicht null sein");
+        Assertions.assertArrayEquals(signed, recreated.sign(message), "Signaturen müssen übereinstimmen");
     }
 }
