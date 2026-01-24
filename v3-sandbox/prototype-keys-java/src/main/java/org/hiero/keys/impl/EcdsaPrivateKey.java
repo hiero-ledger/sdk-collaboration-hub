@@ -157,4 +157,20 @@ public final class EcdsaPrivateKey implements PrivateKey {
         final int copy = Math.min(32, tmp.length);
         System.arraycopy(tmp, tmp.length - copy, out, off + 32 - copy, copy);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null) return false;
+        if (o instanceof Key k) {
+            if (type() != k.type()) return false;
+            if (algorithm() != k.algorithm()) return false;
+            return Objects.deepEquals(toRawBytes(), k.toRawBytes());
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(type(), algorithm(), toRawBytes());
+    }
 }

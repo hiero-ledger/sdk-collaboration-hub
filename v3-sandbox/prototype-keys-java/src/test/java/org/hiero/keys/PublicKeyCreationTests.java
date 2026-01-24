@@ -10,8 +10,7 @@ import java.util.stream.Stream;
 import static org.hiero.keys.TestKeyRepresentations.*;
 
 public class PublicKeyCreationTests {
-
-
+    
     private static Stream<Arguments> spkiVariants() {
         return Stream.of(
                 Arguments.of(KeyFormat.SPKI_WITH_DER, SPKI_WITH_DER_VARIANT_1),

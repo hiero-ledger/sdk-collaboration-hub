@@ -83,4 +83,20 @@ public final class Ed25519PrivateKey implements PrivateKey {
         }
         throw new IllegalArgumentException("Unsupported container for toString: " + container);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null) return false;
+        if (o instanceof Key k) {
+            if (type() != k.type()) return false;
+            if (algorithm() != k.algorithm()) return false;
+            return Objects.deepEquals(toRawBytes(), k.toRawBytes());
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(type(), algorithm(), toRawBytes());
+    }
 }

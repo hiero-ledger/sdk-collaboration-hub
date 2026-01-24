@@ -67,24 +67,24 @@ public class TestKeyRepresentations {
     public static final String SPKI_WITH_DER_VARIANT_7 = "0x302a300506032b6570032100d3671a1e98bb22f011c0e4bcf5125590e15d8f21a7017309bb558852039bc75c";
 
     public static final String SPKI_WITH_PEM_VARIANT_1 = "-----BEGIN PUBLIC KEY-----\n" +
-            "MCowBQYDK2VwAyEAINNnGh6YuyLwEcDkvPUJVZDhXY8hpwBzCbtViFIDm8dc\n" +
+            "MCowBQYDK2VwAyEAIdVcmss8AtVjHcwdYv0Krssl6awkmpgjq+sIJXbk/KU=\n" +
             "-----END PUBLIC KEY-----";
 
     public static final String SPKI_WITH_PEM_VARIANT_2 = "-----BEGIN PUBLIC KEY-----\n" +
-            "MCowBQYDK2VwAyEAINNnGh6YuyLwEcDkvPUJVZDhXY8hpwBzCbtViFIDm8dc\n" +
+            "MCowBQYDK2VwAyEAV7jXfVtFIY2wsZO0X2QSHOnF0hUF+WIqtuck62RxiGQ=\n" +
             "-----END PUBLIC KEY-----\n";
 
     public static final String SPKI_WITH_PEM_VARIANT_3 = "-----BEGIN PUBLIC KEY-----\r\n" +
-            "MCowBQYDK2VwAyEAINNnGh6YuyLwEcDkvPUJVZDhXY8hpwBzCbtViFIDm8dc\r\n" +
+            "MCowBQYDK2VwAyEAV7jXfVtFIY2wsZO0X2QSHOnF0hUF+WIqtuck62RxiGQ=\r\n" +
             "-----END PUBLIC KEY-----";
 
     public static final String SPKI_WITH_PEM_VARIANT_4 = "-----BEGIN PUBLIC KEY-----\n" +
-            "MCowBQYDK2VwAyEAINNnGh6YuyLwEcDkvPUJVZDhXY8hpwBzCbtViFIDm8dc\n\n" +
+            "MCowBQYDK2VwAyEAV7jXfVtFIY2wsZO0X2QSHOnF0hUF+WIqtuck62RxiGQ=\r\n" +
             "-----END PUBLIC KEY-----";
 
-    public static final String SPKI_WITH_PEM_VARIANT_5 = "-----BEGIN PUBLIC KEY-----\n" +
-            "MCowBQYDK2VwAyEAIL+7z6z7l54s8n5p3k5t5y7p9d7j6l3j4p5s3q7c2q1z\n" +
-            "-----END PUBLIC KEY-----\n";
+    public static final String SPKI_WITH_PEM_VARIANT_5 = "-----BEGIN PUBLIC KEY-----\r" +
+            "MCowBQYDK2VwAyEAV7jXfVtFIY2wsZO0X2QSHOnF0hUF+WIqtuck62RxiGQ=\r" +
+            "-----END PUBLIC KEY-----";
 
     private static Stream<Arguments> Pkcs8WithPemVariants() {
         return Stream.of(
