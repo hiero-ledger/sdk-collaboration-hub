@@ -14,18 +14,18 @@ public class PrivateKeyCreationTests {
 
     private static Stream<Arguments> pkcs8Variants() {
         return Stream.of(
-                Arguments.of(EncodedKeyContainer.PKCS8_WITH_DER, PKCS8_WITH_DER_VARIANT_1),
-                Arguments.of(EncodedKeyContainer.PKCS8_WITH_DER, PKCS8_WITH_DER_VARIANT_2),
-                Arguments.of(EncodedKeyContainer.PKCS8_WITH_DER, PKCS8_WITH_DER_VARIANT_3),
-                Arguments.of(EncodedKeyContainer.PKCS8_WITH_DER, PKCS8_WITH_DER_VARIANT_4),
-                Arguments.of(EncodedKeyContainer.PKCS8_WITH_DER, PKCS8_WITH_DER_VARIANT_5),
-                Arguments.of(EncodedKeyContainer.PKCS8_WITH_DER, PKCS8_WITH_DER_VARIANT_6),
-                Arguments.of(EncodedKeyContainer.PKCS8_WITH_DER, PKCS8_WITH_DER_VARIANT_7),
-                Arguments.of(EncodedKeyContainer.PKCS8_WITH_PEM, PKCS8_WITH_PEM_VARIANT_1),
-                Arguments.of(EncodedKeyContainer.PKCS8_WITH_PEM, PKCS8_WITH_PEM_VARIANT_2),
-                Arguments.of(EncodedKeyContainer.PKCS8_WITH_PEM, PKCS8_WITH_PEM_VARIANT_3),
-                Arguments.of(EncodedKeyContainer.PKCS8_WITH_PEM, PKCS8_WITH_PEM_VARIANT_4),
-                Arguments.of(EncodedKeyContainer.PKCS8_WITH_PEM, PKCS8_WITH_PEM_VARIANT_5)
+                Arguments.of(KeyFormat.PKCS8_WITH_DER, PKCS8_WITH_DER_VARIANT_1),
+                Arguments.of(KeyFormat.PKCS8_WITH_DER, PKCS8_WITH_DER_VARIANT_2),
+                Arguments.of(KeyFormat.PKCS8_WITH_DER, PKCS8_WITH_DER_VARIANT_3),
+                Arguments.of(KeyFormat.PKCS8_WITH_DER, PKCS8_WITH_DER_VARIANT_4),
+                Arguments.of(KeyFormat.PKCS8_WITH_DER, PKCS8_WITH_DER_VARIANT_5),
+                Arguments.of(KeyFormat.PKCS8_WITH_DER, PKCS8_WITH_DER_VARIANT_6),
+                Arguments.of(KeyFormat.PKCS8_WITH_DER, PKCS8_WITH_DER_VARIANT_7),
+                Arguments.of(KeyFormat.PKCS8_WITH_PEM, PKCS8_WITH_PEM_VARIANT_1),
+                Arguments.of(KeyFormat.PKCS8_WITH_PEM, PKCS8_WITH_PEM_VARIANT_2),
+                Arguments.of(KeyFormat.PKCS8_WITH_PEM, PKCS8_WITH_PEM_VARIANT_3),
+                Arguments.of(KeyFormat.PKCS8_WITH_PEM, PKCS8_WITH_PEM_VARIANT_4),
+                Arguments.of(KeyFormat.PKCS8_WITH_PEM, PKCS8_WITH_PEM_VARIANT_5)
         );
     }
 
@@ -83,7 +83,7 @@ public class PrivateKeyCreationTests {
 
     @ParameterizedTest(name = "PKCS#8 roundtrip with {0}")
     @MethodSource("pkcs8Variants")
-    void testPrivateKeyGenerationByContainerAndString(final EncodedKeyContainer container, final String input) {
+    void testPrivateKeyGenerationByContainerAndString(final KeyFormat container, final String input) {
         // given
         final String message = "I'm a test message";
         final byte[] messageBytes = message.getBytes();

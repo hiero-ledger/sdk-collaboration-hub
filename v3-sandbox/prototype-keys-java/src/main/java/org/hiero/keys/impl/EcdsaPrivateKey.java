@@ -88,7 +88,7 @@ public final class EcdsaPrivateKey implements PrivateKey {
     }
 
     @Override
-    public byte[] toBytes(final EncodedKeyContainer container) {
+    public byte[] toBytes(final KeyFormat container) {
         Objects.requireNonNull(container, "container must not be null");
         if (!container.supportsType(KeyType.PRIVATE)) {
             throw new IllegalArgumentException("Container does not support private keys: " + container);
@@ -110,14 +110,14 @@ public final class EcdsaPrivateKey implements PrivateKey {
     }
 
     @Override
-    public String toString(final EncodedKeyContainer container) {
+    public String toString(final KeyFormat container) {
         if (container.encoding().getFormat() != RawFormat.STRING) {
             throw new IllegalArgumentException("Requested String for non-STRING container: " + container);
         }
-        if (container != EncodedKeyContainer.PKCS8_WITH_PEM) {
+        if (container != KeyFormat.PKCS8_WITH_PEM) {
             throw new IllegalArgumentException("Unsupported container for toString: " + container);
         }
-        return PemUtil.toPem("PRIVATE KEY", toBytes(EncodedKeyContainer.PKCS8_WITH_DER));
+        return PemUtil.toPem("PRIVATE KEY", toBytes(KeyFormat.PKCS8_WITH_DER));
     }
 
     public static EcdsaPrivateKey fromRaw(final byte[] raw32) {

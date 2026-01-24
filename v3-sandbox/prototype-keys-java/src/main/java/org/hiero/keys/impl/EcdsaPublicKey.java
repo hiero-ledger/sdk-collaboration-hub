@@ -72,7 +72,7 @@ public final class EcdsaPublicKey implements PublicKey {
     }
 
     @Override
-    public byte[] toBytes(final EncodedKeyContainer container) {
+    public byte[] toBytes(final KeyFormat container) {
         Objects.requireNonNull(container, "container must not be null");
         if (!container.supportsType(KeyType.PUBLIC)) {
             throw new IllegalArgumentException("Container does not support public keys: " + container);
@@ -92,14 +92,14 @@ public final class EcdsaPublicKey implements PublicKey {
     }
 
     @Override
-    public String toString(final EncodedKeyContainer container) {
+    public String toString(final KeyFormat container) {
         if (container.encoding().getFormat() != RawFormat.STRING) {
             throw new IllegalArgumentException("Requested String for non-STRING container: " + container);
         }
-        if (container != EncodedKeyContainer.SPKI_WITH_PEM) {
+        if (container != KeyFormat.SPKI_WITH_PEM) {
             throw new IllegalArgumentException("Unsupported container for toString: " + container);
         }
-        return PemUtil.toPem("PUBLIC KEY", toBytes(EncodedKeyContainer.SPKI_WITH_DER));
+        return PemUtil.toPem("PUBLIC KEY", toBytes(KeyFormat.SPKI_WITH_DER));
     }
 
     public static EcdsaPublicKey fromSpkiDer(final byte[] der) {

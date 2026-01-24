@@ -8,7 +8,7 @@ public interface Key {
 
     KeyType type();
 
-    byte[] toBytes(EncodedKeyContainer container);
+    byte[] toBytes(KeyFormat container);
 
-    String toString(EncodedKeyContainer container);
+    String toString(KeyFormat container);
 }

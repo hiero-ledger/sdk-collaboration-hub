@@ -2,7 +2,7 @@ package org.hiero.keys;
 
 import org.hiero.keys.impl.KeyFactory;
 
-import static org.hiero.keys.EncodedKeyContainer.SPKI_WITH_PEM;
+import static org.hiero.keys.KeyFormat.SPKI_WITH_PEM;
 
 public interface PublicKey extends Key {
 
@@ -16,11 +16,11 @@ public interface PublicKey extends Key {
         return KeyFactory.createPublicKey(algorithm, encoding, value);
     }
 
-    static PublicKey create(final EncodedKeyContainer container, final byte[] value) {
+    static PublicKey create(final KeyFormat container, final byte[] value) {
         return KeyFactory.createPublicKey(container, value);
     }
 
-    static PublicKey create(final EncodedKeyContainer container, final String value) {
+    static PublicKey create(final KeyFormat container, final String value) {
         return KeyFactory.createPublicKey(container, value);
     }
 

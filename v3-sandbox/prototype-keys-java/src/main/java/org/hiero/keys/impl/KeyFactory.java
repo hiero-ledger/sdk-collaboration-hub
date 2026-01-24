@@ -42,89 +42,91 @@ public final class KeyFactory {
 
     // Create from algorithm + string (HEX/BASE64)
     public static PrivateKey createPrivateKey(final KeyAlgorithm algorithm, final ByteImportEncoding encoding, final String value) {
+        Objects.requireNonNull(encoding, "encoding must not be null");
         return createPrivateKey(algorithm, encoding.decode(value));
     }
 
     public static PublicKey createPublicKey(final KeyAlgorithm algorithm, final ByteImportEncoding encoding, final String value) {
+        Objects.requireNonNull(encoding, "encoding must not be null");
         return createPublicKey(algorithm, encoding.decode(value));
     }
 
     // Create from container + bytes
-    public static PrivateKey createPrivateKey(final EncodedKeyContainer container, final byte[] value) {
-        Objects.requireNonNull(container, "container must not be null");
+    public static PrivateKey createPrivateKey(final KeyFormat format, final byte[] value) {
+        Objects.requireNonNull(format, "format must not be null");
         Objects.requireNonNull(value, "value must not be null");
 
-        if (!container.supportsType(KeyType.PRIVATE)) {
-            throw new IllegalArgumentException("Container not valid for private key: " + container);
+        if (!format.supportsType(KeyType.PRIVATE)) {
+            throw new IllegalArgumentException("Format not valid for private key: " + format);
         }
 
-        final KeyEncoding encoding = container.encoding();
+        final KeyEncoding encoding = format.encoding();
         if (encoding.getFormat() != RawFormat.BYTES) {
             // UTF-8 as best guess
             final String strValue = new String(value);
-            return createPrivateKey(container, strValue);
+            return createPrivateKey(format, strValue);
         }
-        if (container == EncodedKeyContainer.PKCS8_WITH_DER) {
+        if (format == KeyFormat.PKCS8_WITH_DER) {
             return parsePkcs8Der(value);
         }
-        throw new IllegalArgumentException("Container not supported for private key: " + container);
+        throw new IllegalArgumentException("Format not supported for private key: " + format);
     }
 
-    public static PublicKey createPublicKey(final EncodedKeyContainer container, final byte[] value) {
-        Objects.requireNonNull(container, "container must not be null");
+    public static PublicKey createPublicKey(final KeyFormat format, final byte[] value) {
+        Objects.requireNonNull(format, "format must not be null");
         Objects.requireNonNull(value, "value must not be null");
 
-        if (!container.supportsType(KeyType.PUBLIC)) {
-            throw new IllegalArgumentException("Container not valid for public key: " + container);
+        if (!format.supportsType(KeyType.PUBLIC)) {
+            throw new IllegalArgumentException("Format not valid for public key: " + format);
         }
 
-        final KeyEncoding encoding = container.encoding();
+        final KeyEncoding encoding = format.encoding();
         if (encoding.getFormat() != RawFormat.BYTES) {
             // UTF-8 as best guess
             final String strValue = new String(value);
-            return createPublicKey(container, strValue);
+            return createPublicKey(format, strValue);
         }
-        if (container == EncodedKeyContainer.SPKI_WITH_DER) {
+        if (format == KeyFormat.SPKI_WITH_DER) {
             return parseSpkiDer(value);
         }
-        throw new IllegalArgumentException("Container not supported for public key: " + container);
+        throw new IllegalArgumentException("Format not supported for public key: " + format);
     }
 
-    public static PrivateKey createPrivateKey(final EncodedKeyContainer container, final String value) {
-        Objects.requireNonNull(container, "container must not be null");
+    public static PrivateKey createPrivateKey(final KeyFormat format, final String value) {
+        Objects.requireNonNull(format, "format must not be null");
         Objects.requireNonNull(value, "value must not be null");
 
-        if (!container.supportsType(KeyType.PRIVATE)) {
-            throw new IllegalArgumentException("Container not valid for private key: " + container);
+        if (!format.supportsType(KeyType.PRIVATE)) {
+            throw new IllegalArgumentException("Format not valid for private key: " + format);
         }
-        final KeyEncoding encoding = container.encoding();
+        final KeyEncoding encoding = format.encoding();
         if (encoding.getFormat() != RawFormat.STRING) {
-            return createPrivateKey(container, container.decode(KeyType.PRIVATE, value));
+            return createPrivateKey(format, format.decode(KeyType.PRIVATE, value));
         }
-        if (container == EncodedKeyContainer.PKCS8_WITH_PEM) {
+        if (format == KeyFormat.PKCS8_WITH_PEM) {
             byte[] der = PemUtil.fromPem(KeyType.PRIVATE, value);
             return parsePkcs8Der(der);
         }
-        throw new IllegalArgumentException("Container not supported for private key: " + container);
+        throw new IllegalArgumentException("Format not supported for private key: " + format);
     }
 
-    public static PublicKey createPublicKey(final EncodedKeyContainer container, final String value) {
-        Objects.requireNonNull(container, "container must not be null");
+    public static PublicKey createPublicKey(final KeyFormat format, final String value) {
+        Objects.requireNonNull(format, "format must not be null");
         Objects.requireNonNull(value, "value must not be null");
 
-        if (!container.supportsType(KeyType.PUBLIC)) {
-            throw new IllegalArgumentException("Container not supported for public key: " + container);
+        if (!format.supportsType(KeyType.PUBLIC)) {
+            throw new IllegalArgumentException("Format not supported for public key: " + format);
         }
-        final KeyEncoding encoding = container.encoding();
+        final KeyEncoding encoding = format.encoding();
         if (encoding.getFormat() != RawFormat.STRING) {
-            return createPublicKey(container, container.decode(KeyType.PUBLIC, value));
+            return createPublicKey(format, format.decode(KeyType.PUBLIC, value));
         }
 
-        if (container == EncodedKeyContainer.SPKI_WITH_PEM) {
+        if (format == KeyFormat.SPKI_WITH_PEM) {
             byte[] der = PemUtil.fromPem(KeyType.PUBLIC, value);
             return parseSpkiDer(der);
         }
-        throw new IllegalArgumentException("Container not supported for public key: " + container);
+        throw new IllegalArgumentException("Format not supported for public key: " + format);
     }
 
     // Helpers
