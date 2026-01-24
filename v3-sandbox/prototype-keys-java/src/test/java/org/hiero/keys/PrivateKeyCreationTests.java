@@ -12,14 +12,6 @@ import static org.hiero.keys.TestKeyRepresentations.*;
 
 public class PrivateKeyCreationTests {
 
-
-    private static Stream<Arguments> keyAlgorithms() {
-        return Stream.of(
-                Arguments.of(KeyAlgorithm.ED25519),
-                Arguments.of(KeyAlgorithm.ECDSA)
-        );
-    }
-
     private static Stream<Arguments> pkcs8Variants() {
         return Stream.of(
                 Arguments.of(EncodedKeyContainer.PKCS8_WITH_DER, PKCS8_WITH_DER_VARIANT_1),
@@ -37,9 +29,8 @@ public class PrivateKeyCreationTests {
         );
     }
 
-
     @ParameterizedTest(name = "PrivateKey generation with {0}")
-    @MethodSource("keyAlgorithms")
+    @EnumSource(KeyAlgorithm.class)
     void testPrivateKeyGeneration(KeyAlgorithm keyAlgorithm) {
         // given
         final PrivateKey privateKey = PrivateKey.generate(keyAlgorithm);
