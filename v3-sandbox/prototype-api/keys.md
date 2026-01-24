@@ -19,7 +19,8 @@ To make import and export of keys more convenient, so called key containers exis
 Like algorithms those containers are well defined and standardized.
 A container normally contains the raw bytes of the key and the algorithm.
 To import and export a key in a container an encoding must be specified.
-Here not all container formats support all encodings by its spec and the encoding can end in a byte array result or a string result.
+Here not all container formats support all encodings by its spec and the encoding can end in a byte array result or a
+string result.
 
 ## API Schema
 
@@ -48,13 +49,13 @@ enum KeyEncoding {
 enum KeyContainer {
     PKCS8, // PKCS#8 Private Key Specification
     SPKI // Subject Public Key Info
-    
-    boolean supportsType(KeyType type) // returns true if the container format supports the given key type
 }
 
 enum ByteImportEncoding {
     HEX, // hex string representation of the bytes
     BASE64 // base64 string representation of the bytes
+    
+    byte[] decode(value : string)
 }
 
 enum RawFormate {
@@ -62,7 +63,7 @@ enum RawFormate {
     BYTES // raw bytes
 }
 
-enum EncodedKeyContainer {
+enum KeyFormat {
     PKCS8_WITH_DER,
     SPKI_WITH_DER,
     PKCS8_WITH_PEM,
@@ -70,9 +71,11 @@ enum EncodedKeyContainer {
     
     @immutable KeyContainer container // the container format
     @immutable KeyEncoding encoding // the encoding
-    @immutable RawFormate format // the raw format of the import / export
+    @immutable RawFormate rawFormat // the raw format of the import / export
     
     boolean supportsType(KeyType type) // returns true if the internal container format supports the given key type
+    byte[] decode(keyType : KeyType, value : string) // decodes the given string value into raw bytes for the given key type
+    
 }
 
 // abstract key definition
@@ -208,6 +211,7 @@ The following examples show the different key formats as String representations.
 #### PKCS#8 + DER (Private Key)
 
 The string is a hex dump of the DER bytes.
+
 ```
 30 2E 02 01 00 30 05 06 03 2B 65 70 04 22 04 20D3 67 1A 1E 98 BB 22 F0 11 C0 E4 BC F5 12 55 90
 E1 5D 8F 21 A7 01 73 09 BB 55 88 52 03 9B C7 5C
@@ -224,6 +228,7 @@ MC4CAQAwBQYDK2VwBCIEINNnGh6YuyLwEcDkvPUSVZDhXY8hpwFzCbtViFIDm8dc
 #### SPKI + DER (Public Key)
 
 The string is a hex dump of the DER bytes.
+
 ```
 30 2A 30 05 06 03 2B 65 70 03 21 00
 1D 0F 36 11 67 7D 11 EC 59 85 55 9B
@@ -279,14 +284,17 @@ z6Mksjxie2jA44kVrY8Wj63zqPQAk8SjP2v1tdyASz93Z5mG
 
 ## Questions & Comments
 
-The topic has been discussed in the SDK Community call (https://zoom.us/rec/share/oDRfe45YHrQy71lU0RvWs3dnERq2b4KeTRW10emcTXkEb-9gQJUfLa6Lzngm8TRI.ndb4Z4pBanr4DKr0 / https://zoom-lfx.platform.linuxfoundation.org/meeting/94709702244-1763391600000/summaries?password=bf9431fc-3a4d-4e1d-a81a-e44ef16d8abc).
-The current result is that we can not support all possible key formats with a single method that has only a string as input.
+The topic has been discussed in the SDK Community
+call (https://zoom.us/rec/share/oDRfe45YHrQy71lU0RvWs3dnERq2b4KeTRW10emcTXkEb-9gQJUfLa6Lzngm8TRI.ndb4Z4pBanr4DKr0 / https://zoom-lfx.platform.linuxfoundation.org/meeting/94709702244-1763391600000/summaries?password=bf9431fc-3a4d-4e1d-a81a-e44ef16d8abc).
+The current result is that we can not support all possible key formats with a single method that has only a string as
+input.
 Having a more configurable method based on enums must be the way to go.
 We still believe that we should provide a convenience method that can be used to create a key based on a string.
 Here we need to define exactly what input is allowed here.
 In the meeting different encodings / algorithms / formats were discussed.
 Here it is still not clear what the final format will be.
 
-[@rwalworth](https://github.com/rwalworth) did a presentation on key handling in our SDKs in a community call: 
+[@rwalworth](https://github.com/rwalworth) did a presentation on key handling in our SDKs in a community call:
 https://zoom.us/rec/play/U0G1BHuOxUng4sDMDIJbSaDyNzlUnMn94EKmqoP8J4YDJNaVnnqTFFX8w-NdDuGvP6IMvAOsb9ACH4cd.xv_0-I8kvoSYx3nY?eagerLoadZvaPages=sidemenu.billing.plan_management&accessLevel=meeting&canPlayFromShare=true&from=share_recording_detail&continueMode=true&componentName=rec-play&originRequestUrl=https%3A%2F%2Fzoom.us%2Frec%2Fshare%2FJyGOh5v4BUuxU3cKyp-fcwJ33m7djPDKlA3Jv6AXIFsL7T8uzsmPtXN3AvS7IBeJ.2XaTBZXvMgCQP4Ec
-Slides can be found here: https://docs.google.com/presentation/d/1ID2__-pkBc6mmE_kFoL1hwKugdzJdnrGq5nMB_QPFos/edit?usp=sharing
+Slides can be found
+here: https://docs.google.com/presentation/d/1ID2__-pkBc6mmE_kFoL1hwKugdzJdnrGq5nMB_QPFos/edit?usp=sharing

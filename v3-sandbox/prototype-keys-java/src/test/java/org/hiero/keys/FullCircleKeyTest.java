@@ -63,6 +63,7 @@ public class FullCircleKeyTest {
         //then
         Assertions.assertEquals(privateKey, recreatedPrivateKey);
         Assertions.assertEquals(publicKey, recreatedPublicKey);
+        Assertions.assertEquals(publicKey, PublicKey.create(keyAlgorithm, publicKey.toRawBytes()));
         Assertions.assertArrayEquals(signed, recreatedSigned);
         Assertions.assertTrue(publicKey.verify(message, signed));
         Assertions.assertTrue(recreatedPublicKey.verify(message, signed));
