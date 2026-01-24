@@ -77,7 +77,7 @@ public final class EcdsaPublicKey implements PublicKey {
         if (!container.supportsType(KeyType.PUBLIC)) {
             throw new IllegalArgumentException("Container does not support public keys: " + container);
         }
-        if (container.encoding().getFormat() != RawFormat.BYTES) {
+        if (container.getRawFormat() != RawFormat.BYTES) {
             throw new IllegalArgumentException("toBytes requires BYTES format: " + container);
         }
         if (container.encoding() != KeyEncoding.DER) {
@@ -93,7 +93,7 @@ public final class EcdsaPublicKey implements PublicKey {
 
     @Override
     public String toString(final KeyFormat container) {
-        if (container.encoding().getFormat() != RawFormat.STRING) {
+        if (container.getRawFormat() != RawFormat.STRING) {
             throw new IllegalArgumentException("Requested String for non-STRING container: " + container);
         }
         if (container != KeyFormat.SPKI_WITH_PEM) {

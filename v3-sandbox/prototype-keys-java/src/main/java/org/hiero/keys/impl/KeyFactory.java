@@ -60,8 +60,7 @@ public final class KeyFactory {
             throw new IllegalArgumentException("Format not valid for private key: " + format);
         }
 
-        final KeyEncoding encoding = format.encoding();
-        if (encoding.getFormat() != RawFormat.BYTES) {
+        if (format.getRawFormat() != RawFormat.BYTES) {
             // UTF-8 as best guess
             final String strValue = new String(value);
             return createPrivateKey(format, strValue);
@@ -80,8 +79,7 @@ public final class KeyFactory {
             throw new IllegalArgumentException("Format not valid for public key: " + format);
         }
 
-        final KeyEncoding encoding = format.encoding();
-        if (encoding.getFormat() != RawFormat.BYTES) {
+        if (format.getRawFormat() != RawFormat.BYTES) {
             // UTF-8 as best guess
             final String strValue = new String(value);
             return createPublicKey(format, strValue);
@@ -99,8 +97,7 @@ public final class KeyFactory {
         if (!format.supportsType(KeyType.PRIVATE)) {
             throw new IllegalArgumentException("Format not valid for private key: " + format);
         }
-        final KeyEncoding encoding = format.encoding();
-        if (encoding.getFormat() != RawFormat.STRING) {
+        if (format.getRawFormat() != RawFormat.STRING) {
             return createPrivateKey(format, format.decode(KeyType.PRIVATE, value));
         }
         if (format == KeyFormat.PKCS8_WITH_PEM) {
@@ -117,8 +114,7 @@ public final class KeyFactory {
         if (!format.supportsType(KeyType.PUBLIC)) {
             throw new IllegalArgumentException("Format not supported for public key: " + format);
         }
-        final KeyEncoding encoding = format.encoding();
-        if (encoding.getFormat() != RawFormat.STRING) {
+        if (format.getRawFormat() != RawFormat.STRING) {
             return createPublicKey(format, format.decode(KeyType.PUBLIC, value));
         }
 

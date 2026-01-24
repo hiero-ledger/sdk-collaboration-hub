@@ -58,7 +58,7 @@ public final class Ed25519PrivateKey implements PrivateKey {
         if (!container.supportsType(KeyType.PRIVATE)) {
             throw new IllegalArgumentException("Container does not support private keys: " + container);
         }
-        if (container.encoding().getFormat() != RawFormat.BYTES) {
+        if (container.getRawFormat() != RawFormat.BYTES) {
             throw new IllegalArgumentException("toBytes requires BYTES format: " + container);
         }
         try {
@@ -75,7 +75,7 @@ public final class Ed25519PrivateKey implements PrivateKey {
 
     @Override
     public String toString(final KeyFormat container) {
-        if (container.encoding().getFormat() != RawFormat.STRING) {
+        if (container.getRawFormat() != RawFormat.STRING) {
             throw new IllegalArgumentException("Requested String for non-STRING container: " + container);
         }
         if (container == KeyFormat.PKCS8_WITH_PEM) {

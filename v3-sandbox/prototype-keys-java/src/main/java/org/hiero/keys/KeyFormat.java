@@ -12,6 +12,7 @@ public enum KeyFormat {
     SPKI_WITH_PEM(KeyContainer.SPKI, KeyEncoding.PEM);
 
     private final KeyContainer container;
+
     private final KeyEncoding encoding;
 
     KeyFormat(final KeyContainer container, final KeyEncoding encoding) {
@@ -19,12 +20,12 @@ public enum KeyFormat {
         this.encoding = Objects.requireNonNull(encoding, "encoding must not be null");
     }
 
-    public KeyContainer container() {
-        return container;
-    }
-
     public KeyEncoding encoding() {
         return encoding;
+    }
+
+    public RawFormat getRawFormat() {
+        return encoding.getFormat();
     }
 
     public byte[] decode(final KeyType keyType, final String value) {
