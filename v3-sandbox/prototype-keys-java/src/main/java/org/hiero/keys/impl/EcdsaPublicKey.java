@@ -120,6 +120,7 @@ public final class EcdsaPublicKey implements PublicKey {
 
     @Override
     public boolean equals(Object o) {
+        if (this == o) return true;
         if (o == null) return false;
         if (o instanceof Key k) {
             if (type() != k.type()) return false;
@@ -131,6 +132,9 @@ public final class EcdsaPublicKey implements PublicKey {
 
     @Override
     public int hashCode() {
-        return Objects.hash(type(), algorithm(), toRawBytes());
+        int result = type().hashCode();
+        result = 31 * result + algorithm().hashCode();
+        result = 31 * result + Arrays.hashCode(toRawBytes());
+        return result;
     }
 }
