@@ -1,7 +1,7 @@
 package org.hiero.keys.impl;
 
-import org.hiero.keys.ByteImportEncoding;
 import org.hiero.keys.KeyType;
+import org.hiero.keys.io.ByteImportEncoding;
 
 import java.util.ArrayList;
 import java.util.Base64;

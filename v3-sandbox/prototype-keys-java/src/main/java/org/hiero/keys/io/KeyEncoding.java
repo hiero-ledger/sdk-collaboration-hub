@@ -1,5 +1,6 @@
-package org.hiero.keys;
+package org.hiero.keys.io;
 
+import org.hiero.keys.KeyType;
 import org.hiero.keys.impl.DerUtil;
 import org.hiero.keys.impl.PemUtil;
 

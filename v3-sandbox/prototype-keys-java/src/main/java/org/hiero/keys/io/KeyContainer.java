@@ -1,4 +1,6 @@
-package org.hiero.keys;
+package org.hiero.keys.io;
+
+import org.hiero.keys.KeyType;
 
 /**
  * Supported container formats.

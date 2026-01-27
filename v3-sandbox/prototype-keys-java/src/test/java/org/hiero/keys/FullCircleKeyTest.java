@@ -1,6 +1,8 @@
 package org.hiero.keys;
 
 import org.hiero.keys.impl.Hex;
+import org.hiero.keys.io.KeyFormat;
+import org.hiero.keys.io.RawFormat;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;

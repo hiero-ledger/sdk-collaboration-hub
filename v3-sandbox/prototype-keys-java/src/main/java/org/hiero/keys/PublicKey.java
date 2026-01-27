@@ -1,8 +1,10 @@
 package org.hiero.keys;
 
 import org.hiero.keys.impl.KeyFactory;
+import org.hiero.keys.io.ByteImportEncoding;
+import org.hiero.keys.io.KeyFormat;
 
-import static org.hiero.keys.KeyFormat.SPKI_WITH_PEM;
+import static org.hiero.keys.io.KeyFormat.SPKI_WITH_PEM;
 
 public interface PublicKey extends Key {
 

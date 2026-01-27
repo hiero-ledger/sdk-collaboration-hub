@@ -14,6 +14,9 @@ import org.bouncycastle.crypto.signers.ECDSASigner;
 import org.bouncycastle.crypto.signers.HMacDSAKCalculator;
 import org.bouncycastle.math.ec.ECPoint;
 import org.hiero.keys.*;
+import org.hiero.keys.io.KeyEncoding;
+import org.hiero.keys.io.KeyFormat;
+import org.hiero.keys.io.RawFormat;
 
 import java.io.IOException;
 import java.math.BigInteger;

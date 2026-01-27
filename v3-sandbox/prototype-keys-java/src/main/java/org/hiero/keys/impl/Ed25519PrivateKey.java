@@ -5,6 +5,9 @@ import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.math.ec.rfc8032.Ed25519;
 import org.hiero.keys.*;
+import org.hiero.keys.io.KeyEncoding;
+import org.hiero.keys.io.KeyFormat;
+import org.hiero.keys.io.RawFormat;
 
 import java.io.IOException;
 import java.util.Arrays;

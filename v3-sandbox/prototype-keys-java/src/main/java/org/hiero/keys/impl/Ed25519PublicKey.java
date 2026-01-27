@@ -3,7 +3,13 @@ package org.hiero.keys.impl;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.math.ec.rfc8032.Ed25519;
-import org.hiero.keys.*;
+import org.hiero.keys.Key;
+import org.hiero.keys.KeyAlgorithm;
+import org.hiero.keys.KeyType;
+import org.hiero.keys.PublicKey;
+import org.hiero.keys.io.KeyEncoding;
+import org.hiero.keys.io.KeyFormat;
+import org.hiero.keys.io.RawFormat;
 
 import java.io.IOException;
 import java.util.Arrays;

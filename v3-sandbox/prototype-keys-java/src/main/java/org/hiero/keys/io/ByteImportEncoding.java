@@ -1,4 +1,4 @@
-package org.hiero.keys;
+package org.hiero.keys.io;
 
 /**
  * Import encodings for string representations of bytes.

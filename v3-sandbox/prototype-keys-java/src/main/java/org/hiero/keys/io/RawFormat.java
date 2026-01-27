@@ -1,4 +1,4 @@
-package org.hiero.keys;
+package org.hiero.keys.io;
 
 /**
  * Raw format of import/export value.
