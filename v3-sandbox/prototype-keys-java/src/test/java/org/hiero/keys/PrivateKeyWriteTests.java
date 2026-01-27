@@ -22,7 +22,7 @@ public class PrivateKeyWriteTests {
         Assertions.assertTrue(pkcs8PemKey.startsWith("-----BEGIN PRIVATE KEY-----\n"));
         Assertions.assertTrue(pkcs8PemKey.endsWith("-----END PRIVATE KEY-----\n"));
         Assertions.assertNotNull(pkcs8DerKey);
-        Assertions.assertTrue(pkcs8DerKey.length != 0);
+        Assertions.assertTrue(pkcs8DerKey.length > 0);
     }
 
 }
