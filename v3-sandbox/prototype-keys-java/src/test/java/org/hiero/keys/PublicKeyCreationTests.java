@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 import static org.hiero.keys.TestKeyRepresentations.*;
 
 public class PublicKeyCreationTests {
-    
+
     private static Stream<Arguments> spkiVariants() {
         return Stream.of(
                 Arguments.of(KeyFormat.SPKI_WITH_DER, SPKI_WITH_DER_VARIANT_1),
@@ -35,7 +35,7 @@ public class PublicKeyCreationTests {
         final PublicKey publicKey = PublicKey.create(container, input);
 
         // then
-        Assertions.assertNotNull(publicKey, "PublicKey darf nicht null sein für Container: " + container);
+        Assertions.assertNotNull(publicKey, "PublicKey must not be null for container: " + container);
     }
 
 }

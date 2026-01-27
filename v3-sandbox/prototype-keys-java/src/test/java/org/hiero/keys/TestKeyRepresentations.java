@@ -86,7 +86,7 @@ public class TestKeyRepresentations {
             "MCowBQYDK2VwAyEAV7jXfVtFIY2wsZO0X2QSHOnF0hUF+WIqtuck62RxiGQ=\r" +
             "-----END PUBLIC KEY-----";
 
-    private static Stream<Arguments> Pkcs8WithPemVariants() {
+    private static Stream<Arguments> pkcs8WithPemVariants() {
         return Stream.of(
                 Arguments.of(PKCS8_WITH_PEM_VARIANT_1),
                 Arguments.of(PKCS8_WITH_PEM_VARIANT_2),
@@ -96,7 +96,7 @@ public class TestKeyRepresentations {
         );
     }
 
-    private static Stream<Arguments> Pkcs8WithDerVariants() {
+    private static Stream<Arguments> pkcs8WithDerVariants() {
         return Stream.of(
                 Arguments.of(PKCS8_WITH_DER_VARIANT_1),
                 Arguments.of(PKCS8_WITH_DER_VARIANT_2),
@@ -131,7 +131,7 @@ public class TestKeyRepresentations {
     }
 
     @ParameterizedTest
-    @MethodSource("Pkcs8WithPemVariants")
+    @MethodSource("pkcs8WithPemVariants")
     public void checkPkcs8WithPem(String input) throws Exception {
         byte[] der = PemUtil.fromPem(KeyType.PRIVATE, input);
         checkLowLevelASN1ForPrivateKey(der);
@@ -145,7 +145,7 @@ public class TestKeyRepresentations {
     }
 
     @ParameterizedTest
-    @MethodSource("Pkcs8WithDerVariants")
+    @MethodSource("pkcs8WithDerVariants")
     public void checkPkcs8WithDer(String input) throws Exception {
         byte[] der = Hex.decode(input);
         checkLowLevelASN1ForPrivateKey(der);

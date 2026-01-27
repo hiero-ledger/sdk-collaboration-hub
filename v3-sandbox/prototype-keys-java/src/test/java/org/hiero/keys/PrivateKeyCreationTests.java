@@ -54,17 +54,17 @@ public class PrivateKeyCreationTests {
         Assertions.assertFalse(shouldNotVerified2);
     }
 
-    @ParameterizedTest(name = "generate() mit Algorithmus {0}")
+    @ParameterizedTest(name = "generate() with Algorithm {0}")
     @EnumSource(KeyAlgorithm.class)
     void testGenerateForAllAlgorithms(KeyAlgorithm keyAlgorithm) {
         //when
         final PrivateKey privateKey = PrivateKey.generate(keyAlgorithm);
 
         //then
-        Assertions.assertNotNull(privateKey, "PrivateKey darf nicht null sein");
+        Assertions.assertNotNull(privateKey, "PrivateKey must not be null");
     }
 
-    @ParameterizedTest(name = "create(algorithm, rawBytes) mit Algorithmus {0}")
+    @ParameterizedTest(name = "create(algorithm, rawBytes) with Algorithm {0}")
     @EnumSource(KeyAlgorithm.class)
     void testCreateFromBytesForAllAlgorithms(KeyAlgorithm keyAlgorithm) {
         //given
@@ -76,9 +76,9 @@ public class PrivateKeyCreationTests {
         final PrivateKey recreated = PrivateKey.create(keyAlgorithm, original.toRawBytes());
 
         //then
-        Assertions.assertNotNull(recreated, "Wiederhergestellter PrivateKey darf nicht null sein");
-        Assertions.assertNotNull(recreated.createPublicKey(), "PublicKey des wiederhergestellten Schlüssels darf nicht null sein");
-        Assertions.assertArrayEquals(signed, recreated.sign(message), "Signaturen müssen übereinstimmen");
+        Assertions.assertNotNull(recreated, "PrivateKey must not be null");
+        Assertions.assertNotNull(recreated.createPublicKey(), "PublicKey must not be null");
+        Assertions.assertArrayEquals(signed, recreated.sign(message), "created signatures must be the same");
     }
 
     @ParameterizedTest(name = "PKCS#8 roundtrip with {0}")
