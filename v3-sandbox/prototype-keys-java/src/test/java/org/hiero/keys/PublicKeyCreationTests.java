@@ -31,7 +31,7 @@ public class PublicKeyCreationTests {
 
     @ParameterizedTest(name = "SPKI creation with {0}")
     @MethodSource("spkiVariants")
-    void testPublicKeyReadingByContainerAndString(final KeyFormat container, final String input) {
+    void testPublicKeyCreationFromString(final KeyFormat container, final String input) {
         // when
         final PublicKey publicKey = PublicKey.create(container, input);
 
