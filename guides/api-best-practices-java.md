@@ -905,7 +905,7 @@ public class Example {
 ## Builder Pattern
 
 The Builder Pattern is a recommended design pattern for constructing complex objects with many parameters,
-especiallywhen several parameters are optional. This pattern improves API usability and readability by providing a
+especially when several parameters are optional. This pattern improves API usability and readability by providing a
 fluent interface for object construction.
 
 ### When to Use Builder Pattern
