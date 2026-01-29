@@ -84,7 +84,7 @@ public class PrivateKeyCreationTests {
 
     @ParameterizedTest(name = "PKCS#8 roundtrip with {0}")
     @MethodSource("pkcs8Variants")
-    void testPrivateKeyGenerationByContainerAndString(final KeyFormat container, final String input) {
+    void testPrivateKeyImportAndRoundtrip(final KeyFormat container, final String input) {
         // given
         final String message = "I'm a test message";
         final byte[] messageBytes = message.getBytes();
