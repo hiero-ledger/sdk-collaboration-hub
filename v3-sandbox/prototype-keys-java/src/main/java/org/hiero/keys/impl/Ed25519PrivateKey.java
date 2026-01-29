@@ -94,7 +94,7 @@ public final class Ed25519PrivateKey implements PrivateKey {
         if (o instanceof Key k) {
             if (type() != k.type()) return false;
             if (algorithm() != k.algorithm()) return false;
-            return Objects.deepEquals(toRawBytes(), k.toRawBytes());
+            return Arrays.equals(toRawBytes(), k.toRawBytes());
         }
         return false;
     }
