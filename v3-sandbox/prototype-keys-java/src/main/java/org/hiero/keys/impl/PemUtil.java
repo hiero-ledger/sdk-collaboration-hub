@@ -51,7 +51,7 @@ public final class PemUtil {
         final int mod = base64.length() % 4;
         if (mod == 1) {
             // impossible to fix, signal invalid data
-            throw new IllegalArgumentException("Invalid Base64 payload in PEM (bad length)");
+            throw new IllegalArgumentException("Invalid Base64 payload in PEM (corrupted data - impossible length)");
         } else if (mod == 2) {
             base64 = base64 + "==";
         } else if (mod == 3) {
