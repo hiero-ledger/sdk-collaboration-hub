@@ -1401,7 +1401,7 @@ class PublicKeyTest {
 
 1. **Use Given-When-Then structure** - clearly separate test phases with comments
 2. **Test one thing per test** - each test should verify a single behavior
-4. **Clear assertions** - provide meaningful assertion messages
+3. **Clear assertions** - provide meaningful assertion messages
 5. **Test edge cases** - null values, empty collections, boundary values
 6. **Test error conditions** - verify exceptions are thrown when expected
 7. **Independent tests** - tests should not depend on execution order
