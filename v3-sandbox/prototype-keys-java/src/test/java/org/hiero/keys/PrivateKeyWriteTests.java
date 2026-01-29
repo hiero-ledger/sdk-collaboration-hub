@@ -9,7 +9,7 @@ public class PrivateKeyWriteTests {
 
     @ParameterizedTest(name = "Writing key with algorithm {0}")
     @EnumSource(KeyAlgorithm.class)
-    void testPrivateKeyGenerationByContainerAndString(KeyAlgorithm keyAlgorithm) {
+    void testPrivateKeySerialization(KeyAlgorithm keyAlgorithm) {
         // given
         final PrivateKey privateKey = PrivateKey.generate(keyAlgorithm);
 
