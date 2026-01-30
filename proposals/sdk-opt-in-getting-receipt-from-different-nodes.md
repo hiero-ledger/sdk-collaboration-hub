@@ -74,12 +74,15 @@ TransactionResponse {
 - When `client.allowReceiptNodeFailover == true`:
   - Receipt query may iterate across multiple nodes.
   - The submitting node is always tried first.
-  - Additional nodes are appended based on transaction-specific nodes or client network nodes.
-  - No duplicate nodes are included.
+  - Additional nodes are appended based on transaction-specific nodes `([submittingNode, ...remainingTransactionNodes])` or client network nodes `(([submittingNode, ...clientNetworkNodes))`, where duplicates are removed by preserving the first occurrence.
 
 **Updated Method: `getReceipt(client)`**
 
 - Delegates to `getReceiptQuery(client)` and applies the same node selection and failover semantics.
+
+**Notes:**
+
+- This is a backwards-compatible change. Existing calls to getReceiptQuery() without arguments will continue to work with the current pinned behavior.
 
 ---
 
@@ -132,31 +135,52 @@ Corresponding TCK issues should be created to cover:
 
 ## SDK Example
 
-```js
-// Enable receipt node failover
-client.setAllowReceiptNodeFailover(true);
+```
+// Default behavior (failover disabled)
 
-// Scenario 1: Transaction with specific nodes
-const tx1 = new AccountCreateTransaction()
-  .setNodeAccountIds([node3, node4, node5])
-  .freezeWith(client);
+client.allowReceiptNodeFailover = false   // default
 
-const response1 = await tx1.execute(client);
-const receipt1 = await response1.getReceipt(client);
+transaction = new AccountCreateTransaction()
+transaction.freezeWith(client)
 
-// Receipt query uses:
-// [submittingNode (e.g. node3), node4, node5]
+response = transaction.execute(client)
+receipt = response.getReceipt(client)
 
-// Scenario 2: Transaction with default client nodes
-const tx2 = new AccountCreateTransaction().freezeWith(client);
+// Receipt query behavior:
+// - Uses submittingNode only
+// - Retries against the same submittingNode on failure
+// - Does NOT advance to other nodes
 
-const response2 = await tx2.execute(client);
-const receipt2 = await response2.getReceipt(client);
 
-// Receipt query uses:
-// [submittingNode, ...allClientNetworkNodes]
+// With receipt failover enabled (opt-in)
 
-// Scenario 3: Get query directly
-const receiptQuery = response2.getReceiptQuery(client);
-// Configured for failover and can be further customized if needed
+client.allowReceiptNodeFailover = true
+
+transaction2 = new AccountCreateTransaction()
+transaction2.freezeWith(client)
+
+response2 = transaction2.execute(client)
+receipt2 = response2.getReceipt(client)
+
+// Receipt query behavior:
+// - Starts with submittingNode
+// - On failure/unavailable, may advance to other eligible nodes
+// - Node order: [submittingNode, ...otherClientNetworkNodes]
+
+
+// With transaction-specific nodes configured
+
+client.allowReceiptNodeFailover = true
+
+transaction3 = new AccountCreateTransaction()
+transaction3.setNodeAccountIds([txNodeA, txNodeB, txNodeC])
+transaction3.freezeWith(client)
+
+response3 = transaction3.execute(client)
+receipt3 = response3.getReceipt(client)
+
+// Receipt query behavior:
+// - Starts with submittingNode (e.g., nodeA)
+// - Then tries remaining transaction nodes
+// - Node order: [submittingTxNode, ...restOfTxNodes]
 ```
