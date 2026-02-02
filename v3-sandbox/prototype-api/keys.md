@@ -35,47 +35,8 @@ enum KeyType {
 
 //all supported algorithms
 enum KeyAlgorithm {
-    ED25519 // Edwards-curve Digital Signature Algorithm 
+    ED25519, // Edwards-curve Digital Signature Algorithm 
     ECDSA // Elliptic Curve Digital Signature Algorithm (secp256k1 curve)
-}
-
-// all supported encodings that can be used to import/export a container format
-enum KeyEncoding {
-    DER, // Distinguished Encoding Rules
-    PEM // Privacy Enhanced Mail
-}
-
-// all supported container formats
-enum KeyContainer {
-    PKCS8, // PKCS#8 Private Key Specification
-    SPKI // Subject Public Key Info
-}
-
-enum ByteImportEncoding {
-    HEX, // hex string representation of the bytes
-    BASE64 // base64 string representation of the bytes
-    
-    byte[] decode(value : string)
-}
-
-enum RawFormate {
-    STRING, // string representation of the bytes in the specified encoding
-    BYTES // raw bytes
-}
-
-enum KeyFormat {
-    PKCS8_WITH_DER,
-    SPKI_WITH_DER,
-    PKCS8_WITH_PEM,
-    SPKI_WITH_PEM
-    
-    @immutable KeyContainer container // the container format
-    @immutable KeyEncoding encoding // the encoding
-    @immutable RawFormate rawFormat // the raw format of the import / export
-    
-    boolean supportsType(KeyType type) // returns true if the internal container format supports the given key type
-    byte[] decode(keyType : KeyType, value : string) // decodes the given string value into raw bytes for the given key type
-    
 }
 
 // abstract key definition
@@ -84,9 +45,9 @@ abstraction Key {
     @@immutable algorithm: KeyAlgorithm //the algorithm of the key
     @@immutable type: KeyType //the type of the key
     
-    @@throws(illegal-format) bytes toBytes(container: EncodedKeyContainer) // if container.format is not BYTES an illegal format error is thrown
+    @@throws(illegal-format) bytes toBytes(container: keys.io.EncodedKeyContainer) // if container.format is not BYTES an illegal format error is thrown
 
-    @@throws(illegal-format) string toString(container: EncodedKeyContainer) // if container.format is not STRING an illegal format error is thrown
+    @@throws(illegal-format) string toString(container: keys.io.EncodedKeyContainer) // if container.format is not STRING an illegal format error is thrown
 
     bytes toRawBytes() // returns the key in the RAW encoding
 }
@@ -113,20 +74,68 @@ PrivateKey extends Key {
 PrivateKey generatePrivateKey(algorithm: KeyAlgorithm)
 PublicKey generatePublicKey(algorithm: KeyAlgorithm)
 
-@@throws(illegal-format) PrivateKey createPrivateKey(algorithm: KeyAlgorithm, encoding: ByteImportEncoding, value: string) // calls createPrivateKey(algorithm: KeyAlgorithm, rawBytes: bytes)
-@@throws(illegal-format) PublicKey createPublicKey(algorithm: KeyAlgorithm, encoding: ByteImportEncoding, value: string) // calls createPublicKey(algorithm: KeyAlgorithm, rawBytes: bytes)
+@@throws(illegal-format) PrivateKey createPrivateKey(algorithm: KeyAlgorithm, encoding: keys.io.ByteImportEncoding, value: string) // calls createPrivateKey(algorithm: KeyAlgorithm, rawBytes: bytes)
+@@throws(illegal-format) PublicKey createPublicKey(algorithm: KeyAlgorithm, encoding: keys.io.ByteImportEncoding, value: string) // calls createPublicKey(algorithm: KeyAlgorithm, rawBytes: bytes)
 
 @@throws(illegal-format) PrivateKey createPrivateKey(algorithm: KeyAlgorithm, rawBytes: bytes) // reads bytes as raw bytes for the given algorithm
 @@throws(illegal-format) PublicKey createPublicKey(algorithm: KeyAlgorithm, rawBytes: bytes) // reads bytes as raw bytes for the given algorithm
 
-@@throws(illegal-format) PrivateKey createPrivateKey(container: EncodedKeyContainer, value: string) // if container.format is not STRING an illegal format error is thrown
-@@throws(illegal-format) PublicKey createPublicKey(container: EncodedKeyContainer, value: string) // if container.format is not STRING an illegal format error is thrown
+@@throws(illegal-format) PrivateKey createPrivateKey(container: keys.io.EncodedKeyContainer, value: string) // if container.format is not STRING an illegal format error is thrown
+@@throws(illegal-format) PublicKey createPublicKey(container: keys.io.EncodedKeyContainer, value: string) // if container.format is not STRING an illegal format error is thrown
 
-@@throws(illegal-format) PrivateKey createPrivateKey(container: EncodedKeyContainer, value: bytes) // if container.format is not BYTES an illegal format error is thrown
-@@throws(illegal-format) PublicKey createPublicKey(container: EncodedKeyContainer, value: bytes) // if container.format is not BYTES an illegal format error is thrown
+@@throws(illegal-format) PrivateKey createPrivateKey(container: keys.io.EncodedKeyContainer, value: bytes) // if container.format is not BYTES an illegal format error is thrown
+@@throws(illegal-format) PublicKey createPublicKey(container: keys.io.EncodedKeyContainer, value: bytes) // if container.format is not BYTES an illegal format error is thrown
 
 @@throws(illegal-format) PrivateKey createPrivateKey(value: string) // reads string as PKCS#8 PEM
 @@throws(illegal-format) PublicKey createPublicKey(value: string) // reads string as SPKI PEM
+
+namespace keys.io
+
+enum RawFormate {
+    STRING, // string representation of the bytes in the specified encoding
+    BYTES // raw bytes
+}
+
+// all supported encodings that can be used to import/export a container format
+enum KeyEncoding {
+    DER, // Distinguished Encoding Rules
+    PEM // Privacy Enhanced Mail
+    
+    @immutable RawFormate rawFormat // the raw format of the import / export
+    byte[] decode(keyType : keys.KeyType, value : string)
+}
+
+// all supported container formats
+enum KeyContainer {
+    PKCS8, // PKCS#8 Private Key Specification
+    SPKI // Subject Public Key Info
+    
+    boolean supportsType(keys.KeyType type) // returns true if the container format supports the given key type
+}
+
+// encoding information for import / export
+enum ByteImportEncoding {
+    HEX, // hex string representation of the bytes
+    BASE64 // base64 string representation of the bytes
+    
+    byte[] decode(value : string)
+}
+
+// combined container format and encoding
+enum KeyFormat {
+    PKCS8_WITH_DER,
+    SPKI_WITH_DER,
+    PKCS8_WITH_PEM,
+    SPKI_WITH_PEM
+    
+    @immutable KeyContainer container // the container format
+    @immutable KeyEncoding encoding // the encoding
+    
+    boolean supportsType(KeyType type) // returns true if the internal container format supports the given key type
+    byte[] decode(keyType : KeyType, value : string) // decodes the given string value into raw bytes for the given key type
+  
+}
+
 ```
 
 ## KeyContainer rules

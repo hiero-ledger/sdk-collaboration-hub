@@ -30,5 +30,4 @@ public interface PublicKey extends Key {
         return create(SPKI_WITH_PEM, value);
     }
 
-
 }
