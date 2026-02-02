@@ -8,10 +8,7 @@ import org.bouncycastle.crypto.params.ECDomainParameters;
 import org.bouncycastle.crypto.params.ECPublicKeyParameters;
 import org.bouncycastle.crypto.signers.ECDSASigner;
 import org.bouncycastle.math.ec.ECPoint;
-import org.hiero.keys.Key;
-import org.hiero.keys.KeyAlgorithm;
-import org.hiero.keys.KeyType;
-import org.hiero.keys.PublicKey;
+import org.hiero.keys.*;
 import org.hiero.keys.io.KeyEncoding;
 import org.hiero.keys.io.KeyFormat;
 import org.hiero.keys.io.RawFormat;
@@ -36,7 +33,7 @@ public final class EcdsaPublicKey implements PublicKey {
     private final byte[] qCompressed; // 33 bytes
 
     public EcdsaPublicKey(final byte[] qBytes) {
-        if (qBytes == null) throw new NullPointerException("qBytes must not be null");
+        Objects.requireNonNull(qBytes, "qBytes must not be null");
         if (qBytes.length == 33) {
             this.qCompressed = Arrays.copyOf(qBytes, qBytes.length);
         } else if (qBytes.length == 65) {
@@ -93,7 +90,7 @@ public final class EcdsaPublicKey implements PublicKey {
             final AlgorithmIdentifier alg = new AlgorithmIdentifier(ID_EC_PUBLIC_KEY, ID_SECP256K1);
             return new SubjectPublicKeyInfo(alg, qCompressed).getEncoded("DER");
         } catch (IOException e) {
-            throw new RuntimeException("Error encoding ECDSA public key", e);
+            throw new KeyEncodingException("Error encoding ECDSA public key", e);
         }
     }
 

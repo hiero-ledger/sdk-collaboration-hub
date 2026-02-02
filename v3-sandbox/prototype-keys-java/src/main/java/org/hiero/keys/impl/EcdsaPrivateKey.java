@@ -40,8 +40,7 @@ public final class EcdsaPrivateKey implements PrivateKey {
     private final BigInteger d; // private scalar
 
     public EcdsaPrivateKey(final BigInteger d) {
-        if (d == null) throw new NullPointerException("d must not be null");
-        this.d = d;
+        this.d = Objects.requireNonNull(d);
     }
 
     public static EcdsaPrivateKey generate() {
@@ -108,7 +107,7 @@ public final class EcdsaPrivateKey implements PrivateKey {
             final AlgorithmIdentifier alg = new AlgorithmIdentifier(ID_EC_PUBLIC_KEY, ID_SECP256K1);
             return new PrivateKeyInfo(alg, ecPrivate).getEncoded("DER");
         } catch (IOException e) {
-            throw new RuntimeException("Error encoding ECDSA private key", e);
+            throw new KeyEncodingException("Error encoding ECDSA private key", e);
         }
     }
 
@@ -124,7 +123,7 @@ public final class EcdsaPrivateKey implements PrivateKey {
     }
 
     public static EcdsaPrivateKey fromRaw(final byte[] raw32) {
-        if (raw32 == null) throw new NullPointerException("raw32 must not be null");
+        Objects.requireNonNull(raw32, "raw32 must not be null");
         if (raw32.length != 32) throw new IllegalArgumentException("ECDSA private key must be 32 bytes");
         return new EcdsaPrivateKey(new BigInteger(1, raw32));
     }

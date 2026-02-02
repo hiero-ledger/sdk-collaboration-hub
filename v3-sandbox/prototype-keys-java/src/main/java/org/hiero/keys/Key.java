@@ -10,7 +10,7 @@ public interface Key {
 
     KeyType type();
 
-    byte[] toBytes(KeyFormat container);
+    byte[] toBytes(KeyFormat container) throws IllegalArgumentException, KeyEncodingException;
 
     String toString(KeyFormat container);
 }

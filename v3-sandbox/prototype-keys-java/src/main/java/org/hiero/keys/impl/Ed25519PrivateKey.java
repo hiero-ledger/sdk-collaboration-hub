@@ -72,7 +72,7 @@ public final class Ed25519PrivateKey implements PrivateKey {
             }
             throw new IllegalArgumentException("Unsupported container/format for Ed25519 private key: " + container);
         } catch (IOException e) {
-            throw new RuntimeException("Error encoding Ed25519 key", e);
+            throw new IllegalArgumentException("Error encoding Ed25519 key", e);
         }
     }
 
