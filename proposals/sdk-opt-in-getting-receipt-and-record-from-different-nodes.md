@@ -14,7 +14,9 @@ Other SDKs (e.g., Python and Rust) do not currently pin receipt/record queries t
 
 This proposal therefore needs to explicitly define the intended baseline behavior per SDK (or align SDKs to a shared baseline) and then introduce an opt-in mechanism to allow receipt/record queries to iterate across additional nodes while still starting from the submitting node when applicable.
 
-The network’s primary protection mechanism is billability: only transactions that can be paid for (i.e., have a valid payer balance and payer signature) are propagated and sent to consensus. Non-billable transactions are rejected locally and are never propagated, so only the submitting node will ever have visibility into those failures. This is a deliberate design to prevent denial-of-service vectors.
+The network's primary protection mechanism is billability: only requests with a valid payer and signature are propagated to consensus. Non-billable requests are rejected locally by the submitting node and never propagated, so only the submitting node has visibility into those failures. This is why receipt queries are pinned to the submitting node by default.
+
+However, for billable requests that successfully reach consensus, all nodes eventually have the receipt. If the submitting node becomes unhealthy after submission, other nodes can serve the receipt. This is where opt-in failover provides value.
 
 This proposal introduces a client-level configuration flag that allows advanced users (e.g., relay providers and high-throughput workloads) to explicitly opt into receipt/record failover behavior. When enabled, receipt/record queries will still start with the submitting node first but may advance to other available nodes if the submitting node is unresponsive. This preserves strict correctness by default while giving users a controlled way to trade strict correctness for improved availability and reduced timeouts when appropriate.
 
@@ -56,13 +58,11 @@ Client {
 // Represents the response returned after submitting a transaction
 TransactionResponse {
 
-    @@async
     TransactionReceiptQuery getReceiptQuery(@@nullable client: Client)
 
     @@async
     TransactionReceipt getReceipt(@@nullable client: Client)
 
-    @@async
     TransactionRecordQuery getRecordQuery(@@nullable client: Client)
 
     @@async
