@@ -71,21 +71,27 @@ PrivateKey extends Key {
 
 // factory methods of keys that should be added to the namespace in the best language dependent way
 
+//Generate a new key based on a specific algorithm
 PrivateKey generatePrivateKey(algorithm: KeyAlgorithm)
 PublicKey generatePublicKey(algorithm: KeyAlgorithm)
 
+//Read a key based on a specific algorithm from a string
 @@throws(illegal-format) PrivateKey createPrivateKey(algorithm: KeyAlgorithm, encoding: keys.io.ByteImportEncoding, value: string) // calls createPrivateKey(algorithm: KeyAlgorithm, rawBytes: bytes)
 @@throws(illegal-format) PublicKey createPublicKey(algorithm: KeyAlgorithm, encoding: keys.io.ByteImportEncoding, value: string) // calls createPublicKey(algorithm: KeyAlgorithm, rawBytes: bytes)
 
+//Read a key based on a specific algorithm from a byte array
 @@throws(illegal-format) PrivateKey createPrivateKey(algorithm: KeyAlgorithm, rawBytes: bytes) // reads bytes as raw bytes for the given algorithm
 @@throws(illegal-format) PublicKey createPublicKey(algorithm: KeyAlgorithm, rawBytes: bytes) // reads bytes as raw bytes for the given algorithm
 
-@@throws(illegal-format) PrivateKey createPrivateKey(container: keys.io.EncodedKeyContainer, value: string) // if container.format is not STRING an illegal format error is thrown
-@@throws(illegal-format) PublicKey createPublicKey(container: keys.io.EncodedKeyContainer, value: string) // if container.format is not STRING an illegal format error is thrown
+//Read a key based on a specific format (container & encoding) from a string
+@@throws(illegal-format) PrivateKey createPrivateKey(container: keys.io.KeyFormat, value: string) // if container.format is not STRING an illegal format error is thrown
+@@throws(illegal-format) PublicKey createPublicKey(container: keys.io.KeyFormat, value: string) // if container.format is not STRING an illegal format error is thrown
 
-@@throws(illegal-format) PrivateKey createPrivateKey(container: keys.io.EncodedKeyContainer, value: bytes) // if container.format is not BYTES an illegal format error is thrown
-@@throws(illegal-format) PublicKey createPublicKey(container: keys.io.EncodedKeyContainer, value: bytes) // if container.format is not BYTES an illegal format error is thrown
+//Read a key based on a specific format (container & encoding) from a byte array
+@@throws(illegal-format) PrivateKey createPrivateKey(container: keys.io.KeyFormat, value: bytes) // if container.format is not BYTES an illegal format error is thrown
+@@throws(illegal-format) PublicKey createPublicKey(container: keys.io.KeyFormat, value: bytes) // if container.format is not BYTES an illegal format error is thrown
 
+//Read a key based on our prefered format (container & encoding) from a string
 @@throws(illegal-format) PrivateKey createPrivateKey(value: string) // reads string as PKCS#8 PEM
 @@throws(illegal-format) PublicKey createPublicKey(value: string) // reads string as SPKI PEM
 
