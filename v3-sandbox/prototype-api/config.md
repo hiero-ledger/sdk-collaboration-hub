@@ -20,15 +20,24 @@ NetworkSetting {
  
     @@immutable ledger: Ledger // the definition of the ledger
    
-    @@immutable Set<ConsensusNode> getConsensusNodes() // set of all consensus nodes
+    // Returns an immutable set of consensus nodes
+    // Modifications to the returned set do not affect the original
+    @immutable Set<ConsensusNode> getConsensusNodes()
     
-    @@immutable Set<MirrorNode> getMirrorNodes() // set of all mirror nodes
+    // Returns an immutable set of mirror nodes
+    // Modifications to the returned set do not affect the original
+    @immutable Set<MirrorNode> getMirrorNodes()
 
 }
 
 // factory methods of `NetworkSetting` that should be added to the namespace in the best language dependent way
 
-@@throws(not-found-error) NetworkSetting getNetworkSetting(String identifier) // throws not-found-error if no network with that identifier exists. Network settings can be added as plug and play by external modules.
+// Method to register a network configuration
+void registerNetworkSetting(identifier: string, setting: NetworkSetting)
+
+// throws not-found-error if no network with that identifier exists
+// Network settings can be added as plug and play by external modules
+@@throws(not-found-error) NetworkSetting getNetworkSetting(String identifier) 
 ```
 
 ## Examples
@@ -41,4 +50,5 @@ NetworkSetting setting = NetworkSetting.getNetworkSetting(HEDERA_TESTNET_IDENTIF
 
 ## Questions & Comments
 
-- [@hendrikebbers](https://github.com/hendrikebbers): Do we want to have mirror node information in the configuration at all or should v3 do a concrete split between mirror node and consensus node?
+- [@hendrikebbers](https://github.com/hendrikebbers): Do we want to have mirror node information in the configuration at
+  all or should v3 do a concrete split between mirror node and consensus node?
