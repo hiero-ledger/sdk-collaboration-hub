@@ -19,7 +19,8 @@ To make import and export of keys more convenient, so called key containers exis
 Like algorithms those containers are well defined and standardized.
 A container normally contains the raw bytes of the key and the algorithm.
 To import and export a key in a container an encoding must be specified.
-Here not all container formats support all encodings by its spec and the encoding can end in a byte array result or a string result.
+Here not all container formats support all encodings by its spec and the encoding can end in a byte array result or a
+string result.
 
 ## API Schema
 
@@ -49,7 +50,13 @@ enum KeyContainer {
     PKCS8, // PKCS#8 Private Key Specification
     SPKI // Subject Public Key Info
     
-    boolean supportsType(KeyType type) // returns true if the container format supports the given key type
+    // returns true if the container format supports the given key type
+    boolean supportsType(KeyType type) 
+    
+    // returns true if the container format supports the given encoding
+    // PKCS8 and SPKI support DER and PEM encodings
+    boolean supportsEncoding(KeyEncoding encoding) 
+                                                   
 }
 
 enum ByteImportEncoding {
@@ -72,7 +79,16 @@ enum EncodedKeyContainer {
     @immutable KeyEncoding encoding // the encoding
     @immutable RawFormate format // the raw format of the import / export
     
-    boolean supportsType(KeyType type) // returns true if the internal container format supports the given key type
+    // Constructor with validation
+    // Throws invalid-format if container doesn't support the specified encoding
+    @@throws(invalid-format) new EncodedKeyContainer(
+        container: KeyContainer,
+        encoding: KeyEncoding,
+        format: RawFormate
+    )
+    
+    // returns true if the internal container format supports the given key type
+    boolean supportsType(KeyType type) 
 }
 
 // abstract key definition
@@ -81,11 +97,16 @@ abstraction Key {
     @@immutable algorithm: KeyAlgorithm //the algorithm of the key
     @@immutable type: KeyType //the type of the key
     
-    @@throws(illegal-format) bytes toBytes(container: EncodedKeyContainer) // if container.format is not BYTES an illegal format error is thrown
-
-    @@throws(illegal-format) string toString(container: EncodedKeyContainer) // if container.format is not STRING an illegal format error is thrown
-
+    // Get raw bytes of the key
     bytes toRawBytes() // returns the key in the RAW encoding
+    
+    // Convert to bytes using specified container format
+    // Throws illegal-format if container.format is not BYTES or doesn't support this key type
+    @@throws(illegal-format) bytes toBytes(container: EncodedKeyContainer) 
+    
+    // Convert to string using specified container format
+    // Throws illegal-format if container.format is not STRING or doesn't support this key type
+    @@throws(illegal-format) string toString(container: EncodedKeyContainer) 
 }
 
 // a key pair
@@ -96,13 +117,22 @@ KeyPair {
 
 // public key definition
 PublicKey extends Key {
-    boolean verify(message: bytes, signature: bytes) // returns true if the signature is valid for the message and the public key
+    
+    // Verify a signature using this public key
+    // returns true if the signature is valid for the message and the public key
+    boolean verify(message: bytes, signature: bytes)
 }
 
 // private key definition
 PrivateKey extends Key {
-    bytes sign(message: bytes) // returns the signature for the message
-    PublicKey createPublicKey() // always returns a new PublicKey instance
+    
+    // Sign a message with this private key
+    // returns the signature for the message
+    bytes sign(message: bytes) 
+    
+    // Derive the corresponding public key
+    // always returns a new PublicKey instance
+    PublicKey createPublicKey() 
 }
 
 // factory methods of keys that should be added to the namespace in the best language dependent way
@@ -110,18 +140,22 @@ PrivateKey extends Key {
 PrivateKey generatePrivateKey(algorithm: KeyAlgorithm)
 PublicKey generatePublicKey(algorithm: KeyAlgorithm)
 
-@@throws(illegal-format) PrivateKey createPrivateKey(algorithm: KeyAlgorithm, encoding: ByteImportEncoding, value: string) // calls createPrivateKey(algorithm: KeyAlgorithm, rawBytes: bytes)
-@@throws(illegal-format) PublicKey createPublicKey(algorithm: KeyAlgorithm, encoding: ByteImportEncoding, value: string) // calls createPublicKey(algorithm: KeyAlgorithm, rawBytes: bytes)
+// Factory methods for key creation from raw bytes
+@@throws(illegal-format) PrivateKey createPrivateKey(algorithm: KeyAlgorithm, rawBytes: bytes)
+@@throws(illegal-format) PublicKey createPublicKey(algorithm: KeyAlgorithm, rawBytes: bytes)
 
-@@throws(illegal-format) PrivateKey createPrivateKey(algorithm: KeyAlgorithm, rawBytes: bytes) // reads bytes as raw bytes for the given algorithm
-@@throws(illegal-format) PublicKey createPublicKey(algorithm: KeyAlgorithm, rawBytes: bytes) // reads bytes as raw bytes for the given algorithm
+// Factory methods for key creation from encoded strings
+@@throws(illegal-format) PrivateKey createPrivateKey(algorithm: KeyAlgorithm, encoding: ByteImportEncoding, value: string)
+@@throws(illegal-format) PublicKey createPublicKey(algorithm: KeyAlgorithm, encoding: ByteImportEncoding, value: string)
 
+// Factory methods for key creation from encoded containers
 @@throws(illegal-format) PrivateKey createPrivateKey(container: EncodedKeyContainer, value: string) // if container.format is not STRING an illegal format error is thrown
 @@throws(illegal-format) PublicKey createPublicKey(container: EncodedKeyContainer, value: string) // if container.format is not STRING an illegal format error is thrown
 
 @@throws(illegal-format) PrivateKey createPrivateKey(container: EncodedKeyContainer, value: bytes) // if container.format is not BYTES an illegal format error is thrown
 @@throws(illegal-format) PublicKey createPublicKey(container: EncodedKeyContainer, value: bytes) // if container.format is not BYTES an illegal format error is thrown
 
+// Convenience methods for PEM format
 @@throws(illegal-format) PrivateKey createPrivateKey(value: string) // reads string as PKCS#8 PEM
 @@throws(illegal-format) PublicKey createPublicKey(value: string) // reads string as SPKI PEM
 ```
@@ -208,6 +242,7 @@ The following examples show the different key formats as String representations.
 #### PKCS#8 + DER (Private Key)
 
 The string is a hex dump of the DER bytes.
+
 ```
 30 2E 02 01 00 30 05 06 03 2B 65 70 04 22 04 20D3 67 1A 1E 98 BB 22 F0 11 C0 E4 BC F5 12 55 90
 E1 5D 8F 21 A7 01 73 09 BB 55 88 52 03 9B C7 5C
@@ -225,6 +260,7 @@ tViFIDm8dc=
 #### SPKI + DER (Public Key)
 
 The string is a hex dump of the DER bytes.
+
 ```
 30 2A 30 05 06 03 2B 65 70 03 21 00
 1D 0F 36 11 67 7D 11 EC 59 85 55 9B
@@ -280,14 +316,17 @@ z6Mksjxie2jA44kVrY8Wj63zqPQAk8SjP2v1tdyASz93Z5mG
 
 ## Questions & Comments
 
-The topic has been discussed in the SDK Community call (https://zoom.us/rec/share/oDRfe45YHrQy71lU0RvWs3dnERq2b4KeTRW10emcTXkEb-9gQJUfLa6Lzngm8TRI.ndb4Z4pBanr4DKr0 / https://zoom-lfx.platform.linuxfoundation.org/meeting/94709702244-1763391600000/summaries?password=bf9431fc-3a4d-4e1d-a81a-e44ef16d8abc).
-The current result is that we can not support all possible key formats with a single method that has only a string as input.
+The topic has been discussed in the SDK Community
+call (https://zoom.us/rec/share/oDRfe45YHrQy71lU0RvWs3dnERq2b4KeTRW10emcTXkEb-9gQJUfLa6Lzngm8TRI.ndb4Z4pBanr4DKr0 / https://zoom-lfx.platform.linuxfoundation.org/meeting/94709702244-1763391600000/summaries?password=bf9431fc-3a4d-4e1d-a81a-e44ef16d8abc).
+The current result is that we can not support all possible key formats with a single method that has only a string as
+input.
 Having a more configurable method based on enums must be the way to go.
 We still believe that we should provide a convenience method that can be used to create a key based on a string.
 Here we need to define exactly what input is allowed here.
 In the meeting different encodings / algorithms / formats were discussed.
 Here it is still not clear what the final format will be.
 
-[@rwalworth](https://github.com/rwalworth) did a presentation on key handling in our SDKs in a community call: 
+[@rwalworth](https://github.com/rwalworth) did a presentation on key handling in our SDKs in a community call:
 https://zoom.us/rec/play/U0G1BHuOxUng4sDMDIJbSaDyNzlUnMn94EKmqoP8J4YDJNaVnnqTFFX8w-NdDuGvP6IMvAOsb9ACH4cd.xv_0-I8kvoSYx3nY?eagerLoadZvaPages=sidemenu.billing.plan_management&accessLevel=meeting&canPlayFromShare=true&from=share_recording_detail&continueMode=true&componentName=rec-play&originRequestUrl=https%3A%2F%2Fzoom.us%2Frec%2Fshare%2FJyGOh5v4BUuxU3cKyp-fcwJ33m7djPDKlA3Jv6AXIFsL7T8uzsmPtXN3AvS7IBeJ.2XaTBZXvMgCQP4Ec
-Slides can be found here: https://docs.google.com/presentation/d/1ID2__-pkBc6mmE_kFoL1hwKugdzJdnrGq5nMB_QPFos/edit?usp=sharing
+Slides can be found
+here: https://docs.google.com/presentation/d/1ID2__-pkBc6mmE_kFoL1hwKugdzJdnrGq5nMB_QPFos/edit?usp=sharing
