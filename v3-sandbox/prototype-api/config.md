@@ -37,7 +37,7 @@ void registerNetworkSetting(identifier: string, setting: NetworkSetting)
 
 // throws not-found-error if no network with that identifier exists
 // Network settings can be added as plug and play by external modules
-@@throws(not-found-error) NetworkSetting getNetworkSetting(String identifier) 
+@@throws(not-found-error) NetworkSetting getNetworkSetting(identifier: String) 
 ```
 
 ## Examples
