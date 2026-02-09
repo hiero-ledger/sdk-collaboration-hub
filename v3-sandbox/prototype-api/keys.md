@@ -88,7 +88,7 @@ enum EncodedKeyContainer {
     )
     
     // returns true if the internal container format supports the given key type
-    boolean supportsType(KeyType type) 
+    bool supportsType(type: KeyType) 
 }
 
 // abstract key definition
