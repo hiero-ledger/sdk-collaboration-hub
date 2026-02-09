@@ -26,7 +26,7 @@ enum HbarUnit {
     @@immutable symbol: String // symbol of the unit
     @@immutable tinybars: int64  // number of tinybars in one unit
     
-    static HbarUnit[] values()  // returns all HbarUnit values
+    static list<HbarUnit> values()  // returns all HbarUnit values
 }
 
 // Hbar is a wrapper around int64 that represents a amount of Hbar based on a given unit.
