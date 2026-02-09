@@ -84,7 +84,7 @@ enum EncodedKeyContainer {
     @@throws(invalid-format) new EncodedKeyContainer(
         container: KeyContainer,
         encoding: KeyEncoding,
-        format: RawFormate
+        format: RawFormat
     )
     
     // returns true if the internal container format supports the given key type
