@@ -60,7 +60,7 @@ Ledger {
 // Represents a consensus node on a network.
 ConsensusNode {
     @@immutable ip: string // ip address of the node
-    @@immutable @min(0) @max(65535) port: int // port of the node
+    @@immutable port: uint16 // port of the node
     @@immutable AccountId account // account of the node
 }
 
