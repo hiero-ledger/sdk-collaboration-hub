@@ -55,7 +55,7 @@ enum KeyContainer {
     
     // returns true if the container format supports the given encoding
     // PKCS8 and SPKI support DER and PEM encodings
-    boolean supportsEncoding(KeyEncoding encoding) 
+    bool supportsEncoding(encoding: KeyEncoding) 
                                                    
 }
 
