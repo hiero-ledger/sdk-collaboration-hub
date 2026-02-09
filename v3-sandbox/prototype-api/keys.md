@@ -120,7 +120,7 @@ PublicKey extends Key {
     
     // Verify a signature using this public key
     // returns true if the signature is valid for the message and the public key
-    boolean verify(message: bytes, signature: bytes)
+    bool verify(message: bytes, signature: bytes)
 }
 
 // private key definition
