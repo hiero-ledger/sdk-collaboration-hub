@@ -51,7 +51,7 @@ enum KeyContainer {
     SPKI // Subject Public Key Info
     
     // returns true if the container format supports the given key type
-    boolean supportsType(KeyType type) 
+    bool supportsType(type: KeyType) 
     
     // returns true if the container format supports the given encoding
     // PKCS8 and SPKI support DER and PEM encodings
