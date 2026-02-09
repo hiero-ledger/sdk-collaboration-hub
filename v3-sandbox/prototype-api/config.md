@@ -26,7 +26,7 @@ NetworkSetting {
     
     // Returns an immutable set of mirror nodes
     // Modifications to the returned set do not affect the original
-    @immutable Set<MirrorNode> getMirrorNodes()
+    @@immutable Set<MirrorNode> getMirrorNodes()
 
 }
 
