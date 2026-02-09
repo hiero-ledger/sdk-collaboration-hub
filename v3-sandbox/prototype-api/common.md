@@ -77,7 +77,7 @@ abstraction Address {
     @@immutable checksum: string // checksum of the address
     
     // Validates the checksum of the address
-    boolean validateChecksum(ledger: Ledger)
+    bool validateChecksum(ledger: Ledger)
     
     // returns address in format "shard.realm.num"
     string toString()
