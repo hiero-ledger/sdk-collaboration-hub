@@ -81,7 +81,7 @@ enum EncodedKeyContainer {
     
     // Constructor with validation
     // Throws invalid-format if container doesn't support the specified encoding
-    @@throws(invalid-format) new EncodedKeyContainer(
+    @@throws(invalid-format) EncodedKeyContainer(
         container: KeyContainer,
         encoding: KeyEncoding,
         format: RawFormat
