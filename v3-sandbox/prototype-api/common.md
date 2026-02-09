@@ -48,7 +48,7 @@ HBarExchangeRate {
     
     // Check if this exchange rate has expired
     // returns true if current time is past expirationTime
-    boolean isExpired()
+    bool isExpired()
 }
 
 // Represents a specific ledger instance
