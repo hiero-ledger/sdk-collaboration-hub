@@ -93,7 +93,7 @@ AccountId extends Address {
 // factory methods of AccountId that should be added to the namespace in the best language dependent way
 
 // Parses AccountId from string format: "shard.realm.num" or "shard.realm.num-checksum"
-// @throws(illegal-format) if format is invalid, values are negative, or parsing fails
+// @@throws(illegal-format) if format is invalid, values are negative, or parsing fails
 // Supports optional checksum suffix after dash
 @@throws(illegal-format) AccountId fromString(accountId: string)
 ```
