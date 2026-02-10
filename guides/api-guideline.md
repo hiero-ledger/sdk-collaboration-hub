@@ -5,7 +5,21 @@ Following these guidelines will help ensure that APIs are consistent, easy to us
 Next to that the guidelines define a syntax for documenting the APIs in a language-agnostic way for proposals.
 
 The [proposals](../proposals) folder contains design documents of new features or changes for our SDKs.
-Each proposal should include a section that documents the API in a language-agnostic way by using the guidelines defined in this document.
+Each proposal should include a section that documents the API in a language-agnostic way by using the guidelines defined
+in this document.
+
+## Concrete implementations
+
+We provide concrete implementation guidelines for the following programming languages:
+
+- [Rust API Implementation Guideline](api-best-practices-rust.md)
+- [C++ API Implementation Guideline](api-best-practices-cpp.md)
+- [TypeScript API Implementation Guideline](api-best-practices-ts.md)
+- [Python API Implementation Guideline](api-best-practices-python.md)
+- [Java API Implementation Guideline](api-best-practices-java.md)
+- [Go API Implementation Guideline](api-best-practices-go.md)
+- [JavaScript API Implementation Guideline](api-best-practices-js.md)
+- [Swift API Implementation Guideline](api-best-practices-swift.md)
 
 ## Syntax
 
@@ -18,7 +32,7 @@ The following basic data types should be used in the API documentation.
 | Data Type         | Description                                                           |
 |-------------------|-----------------------------------------------------------------------|
 | `string`          | A sequence of characters                                              |
-| `intX`            | A signed integer of X bits (8 <= X <= 256)                             |
+| `intX`            | A signed integer of X bits (8 <= X <= 256)                            |
 | `uintX`           | An unsigned integer of X bits (8 <= X <= 256)                         |
 | `double`          | A native floating-point number in 64-bit base-2 format                |
 | `decimal`         | A decimal number with arbitrary precision                             |
@@ -38,6 +52,7 @@ The following basic data types should be used in the API documentation.
 Complex data types can be defined using the basic data types and other complex data types.
 A complex data type definition can contain [attributes](#attributes) and [methods](#methods).
 The following syntax should be used to define complex data types:
+
 ```
 DataTypeName {
     fieldName1: DataType1
@@ -50,25 +65,32 @@ DataTypeName {
 
 Type annotations apply to a complex data type as a whole (as opposed to a single attribute or a method).
 The following annotations should be used:
-- `@@oneOf(field1, field2[, ...])`: Exactly one of the referenced fields can be non-null/non-undefined at any given time.
-- `@@oneOrNoneOf(field1, field2[, ...])`: Exactly one of the referenced fields can be non-null/non-undefined at any given time or all fields are null/undefined.
+
+- `@@oneOf(field1, field2[, ...])`: Exactly one of the referenced fields can be non-null/non-undefined at any given
+  time.
+- `@@oneOrNoneOf(field1, field2[, ...])`: Exactly one of the referenced fields can be non-null/non-undefined at any
+  given time or all fields are null/undefined.
 - `@@finalType`: Indicates that the type is final and cannot be extended.
 
 Rules and recommendations for `@@oneOf`:
+
 - All listed fields must be declared with `@@nullable`
 - None or all listed fields must be declared with `@@immutable`.
 - If the fields are not `@@immutable` and a field is set, an SDK must unset all other fields
 - If the fields are not `@@immutable` and the currently set field is unset, an SDK must throw an error.
 - None or exactly one of the listed fields must be annotated by `@@default(value)`
-- If the fields are not `@@immutable` and none is annotated by `@@default(value)` at least one must be set by the constructor to not end in an invalid state. 
+- If the fields are not `@@immutable` and none is annotated by `@@default(value)` at least one must be set by the
+  constructor to not end in an invalid state.
 
 Rules and recommendations for `@@oneOrNoneOf`:
+
 - All listed fields must be declared with `@@nullable`
 - None or all listed fields must be declared with `@@immutable`.
 - If the fields are not `@@immutable` and a field is set, an SDK must unset all other fields
 - None or exactly one of the listed fields must be annotated by `@@default(value)`
 
 Examples:
+
 ```
 @@oneOf(email, phone)
 ContactInfo {    
@@ -83,10 +105,12 @@ ContactInfo {
 Complex data types can inherit from other complex data types to reuse fields and methods.
 
 Definition of an abstract type:
+
 - Use `abstraction` to declare an abstract type.
 - We do not define if it should be a class or an interface (that is language specific).
 
 Syntax example:
+
 ```
 abstraction Copyable {
     copy(): Copyable
@@ -94,11 +118,13 @@ abstraction Copyable {
 ```
 
 Definition of a child type:
+
 - Use `extends` to declare a child type.
 - Multiple inheritance is supported but should be avoided in general.
 - Inherited members: All fields and methods from the parent are inherited by the child (since we only define public API)
 
 Syntax examples:
+
 ```
 Person {
     name: string
@@ -130,6 +156,7 @@ abstraction Factory<$$Product> {
 The `$$Product` type parameter is used in the `create` method to define the return type of the method.
 A complexe type that extends a generic type can use the type parameter in its own definition.
 A concrete example of the syntax looks like this:
+
 ```
 CarFactory extends Factory<Car> {
 }
@@ -154,6 +181,7 @@ In the given example, the `FruitFactory` provides a `create` method that returns
 ### Enumerations
 
 Enumerations can be defined using the following syntax:
+
 ```
 enum EnumName {
     VALUE1
@@ -161,7 +189,8 @@ enum EnumName {
 }
 ```
 
-[Attributes](#attributes) can be added to enumerations. Attributes added to enumerations must be immutable (annotated with `@@immutable`).
+[Attributes](#attributes) can be added to enumerations. Attributes added to enumerations must be immutable (annotated
+with `@@immutable`).
 
 ```
 enum EnumName {
@@ -186,6 +215,7 @@ enum EnumName {
 ### Attributes
 
 Attributes can be defined using the following syntax:
+
 ```
     fieldName: DataType
 ```
@@ -194,14 +224,20 @@ Attributes can be defined using the following syntax:
 
 Attribute annotations can be used to provide additional information about attributes in complex data types.
 The following annotations should be used:
+
 - `@@immutable`: Indicates that the field is immutable and cannot be changed after creation.
 - `@@nullable`: Indicates that the field can be null or undefined (language-specific).
 - `@@default(value)`: Indicates that the field has a default value.
-- `@@min(value)`: Indicates the minimum value for numeric fields. Should be included if the value must be enforced at the SDK level.
-- `@@max(value)`: Indicates the maximum value for numeric fields. Should be included if the value must be enforced at the SDK level.
-- `@@minLength(value)`: Indicates the minimum length for string fields. Should be included if the value must be enforced at the SDK level.
-- `@@maxLength(value)`: Indicates the maximum length for string fields. Should be included if the value must be enforced at the SDK level.
-- `@@pattern(regex)`: Indicates a regex pattern that the string field must match. Should be included if the value must be enforced at the SDK level.
+- `@@min(value)`: Indicates the minimum value for numeric fields. Should be included if the value must be enforced at
+  the SDK level.
+- `@@max(value)`: Indicates the maximum value for numeric fields. Should be included if the value must be enforced at
+  the SDK level.
+- `@@minLength(value)`: Indicates the minimum length for string fields. Should be included if the value must be enforced
+  at the SDK level.
+- `@@maxLength(value)`: Indicates the maximum length for string fields. Should be included if the value must be enforced
+  at the SDK level.
+- `@@pattern(regex)`: Indicates a regex pattern that the string field must match. Should be included if the value must
+  be enforced at the SDK level.
 
 ### Methods
 
@@ -213,6 +249,7 @@ ReturnType methodName(param1: DataType1, param2: DataType2)
 
 If a method has no return type, the return type should be `void`.
 An example of a method with no return type:
+
 ```
 void resetCache()
 ```
@@ -221,8 +258,10 @@ void resetCache()
 
 Method annotations can be used to provide additional information about methods.
 The following annotations should be used:
+
 - `@@async`: Indicates that the method is asynchronous and returns a promise or future.
-  To make APIs easily useable by experts and newcomers, it makes sense to always provide a synchronous version of the method.
+  To make APIs easily useable by experts and newcomers, it makes sense to always provide a synchronous version of the
+  method.
   An API definition in the meta-language does not need to add the synchronous version explicitly.
 - `@@throws(error-type-a[, ...])`: Indicates that the method can throw an exception/error.
   The error-types should be stable identifiers, not transport-specific.
@@ -230,7 +269,8 @@ The following annotations should be used:
 
 #### Method Parameter annotations
 
-The following attribute annotations can be used on method parameters: `@@nullable`, `@@min(value)`, `@@max(value)`, `@@minLength(value)`, `@@maxLength(value)`, `@@pattern(regex)`
+The following attribute annotations can be used on method parameters: `@@nullable`, `@@min(value)`, `@@max(value)`,
+`@@minLength(value)`, `@@maxLength(value)`, `@@pattern(regex)`
 
 #### Method Return Types annotations
 
@@ -240,6 +280,7 @@ The following attribute annotations can be used on method return types: `@@nulla
 
 Namespaces can be used to group related data types and methods.
 The following syntax should be used to define namespaces:
+
 ```
 namespace transactions
 
@@ -262,6 +303,7 @@ namespace transactions
 ```
 
 If a namespace depends on other namespaces, use the `requires` keyword to declare the dependencies:
+
 ```
 namespace transactions
 requires common, keys
