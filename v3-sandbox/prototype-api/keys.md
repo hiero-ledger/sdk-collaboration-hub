@@ -45,11 +45,14 @@ abstraction Key {
     @@immutable algorithm: KeyAlgorithm //the algorithm of the key
     @@immutable type: KeyType //the type of the key
     
-    @@throws(illegal-format) bytes toBytes(container: keys.io.EncodedKeyContainer) // if container.format is not BYTES an illegal format error is thrown
+    // if container.format is not BYTES an illegal format error is thrown
+    @@throws(illegal-format) bytes toBytes(container: keys.io.EncodedKeyContainer)
 
-    @@throws(illegal-format) string toString(container: keys.io.EncodedKeyContainer) // if container.format is not STRING an illegal format error is thrown
+    // if container.format is not STRING an illegal format error is thrown
+    @@throws(illegal-format) string toString(container: keys.io.EncodedKeyContainer) 
 
-    bytes toRawBytes() // returns the key in the RAW encoding
+    // returns the key in the RAW encoding
+    bytes toRawBytes() 
     
     // Convert to bytes using specified container format
     // Throws illegal-format if container.format is not BYTES or doesn't support this key type
