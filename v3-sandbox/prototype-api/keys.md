@@ -50,6 +50,14 @@ abstraction Key {
     @@throws(illegal-format) string toString(container: keys.io.EncodedKeyContainer) // if container.format is not STRING an illegal format error is thrown
 
     bytes toRawBytes() // returns the key in the RAW encoding
+    
+    // Convert to bytes using specified container format
+    // Throws illegal-format if container.format is not BYTES or doesn't support this key type
+    @@throws(illegal-format) bytes toBytes(container: EncodedKeyContainer) 
+    
+    // Convert to string using specified container format
+    // Throws illegal-format if container.format is not STRING or doesn't support this key type
+    @@throws(illegal-format) string toString(container: EncodedKeyContainer) 
 }
 
 // a key pair
@@ -60,13 +68,22 @@ KeyPair {
 
 // public key definition
 PublicKey extends Key {
-    boolean verify(message: bytes, signature: bytes) // returns true if the signature is valid for the message and the public key
+    
+    // Verify a signature using this public key
+    // returns true if the signature is valid for the message and the public key
+    bool verify(message: bytes, signature: bytes)
 }
 
 // private key definition
 PrivateKey extends Key {
-    bytes sign(message: bytes) // returns the signature for the message
-    PublicKey createPublicKey() // always returns a new PublicKey instance
+    
+    // Sign a message with this private key
+    // returns the signature for the message
+    bytes sign(message: bytes) 
+    
+    // Derive the corresponding public key
+    // always returns a new PublicKey instance
+    PublicKey createPublicKey() 
 }
 
 // factory methods of keys that should be added to the namespace in the best language dependent way

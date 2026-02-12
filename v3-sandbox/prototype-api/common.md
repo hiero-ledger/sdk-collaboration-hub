@@ -25,18 +25,30 @@ enum HbarUnit {
     
     @@immutable symbol: String // symbol of the unit
     @@immutable tinybars: int64  // number of tinybars in one unit
+    
+    static list<HbarUnit> values()  // returns all HbarUnit values
 }
 
 // Hbar is a wrapper around int64 that represents a amount of Hbar based on a given unit.
 Hbar {
     @@immutable amount: int64 // amount in the given unit
     @@immutable unit: HbarUnit // unit of the amount
+    
+    // Convert this Hbar to a different unit
+    Hbar to(targetUnit: HbarUnit)
+    
+    // Get total amount in tinybars
+    int64 toTinybars()
 }
 
 // Represents the exchange rate of Hbar in USD cents.
 HBarExchangeRate {
     @@immutable expirationTime: zonedDateTime // expiration time of the exchange rate
     @@immutable exchangeRateInUsdCents: double // exchange rate of HBar in USD cents
+    
+    // Check if this exchange rate has expired
+    // returns true if current time is past expirationTime
+    bool isExpired()
 }
 
 // Represents a specific ledger instance
@@ -48,7 +60,7 @@ Ledger {
 // Represents a consensus node on a network.
 ConsensusNode {
     @@immutable ip: string // ip address of the node
-    @@immutable port: int // port of the node
+    @@immutable port: uint16 // port of the node
     @@immutable AccountId account // account of the node
 }
 
@@ -63,9 +75,15 @@ abstraction Address {
     @@immutable realm: uint64 // realm number
     @@immutable num: uint64 // account number
     @@immutable checksum: string // checksum of the address
-    boolean validateChecksum(ledger: Ledger) // validates the checksum of the address
-    string toString() // returns address in format "shard.realm.num"
-    string toStringWithChecksum() // returns address in format "shard.realm.num-checksum"
+    
+    // Validates the checksum of the address
+    bool validateChecksum(ledger: Ledger)
+    
+    // returns address in format "shard.realm.num"
+    string toString()
+    
+    // returns address in format "shard.realm.num-checksum"
+    string toStringWithChecksum()
 }
 
 // AccountId is the most common type of address on a network.
@@ -74,10 +92,14 @@ AccountId extends Address {
 
 // factory methods of AccountId that should be added to the namespace in the best language dependent way
 
+// Parses AccountId from string format: "shard.realm.num" or "shard.realm.num-checksum"
+// @@throws(illegal-format) if format is invalid, values are negative, or parsing fails
+// Supports optional checksum suffix after dash
 @@throws(illegal-format) AccountId fromString(accountId: string)
 ```
 
 ## Questions & Comments
 
 - [@hendrikebbers](https://github.com/hendrikebbers): Should we rename `Ledger` to `Network`?
-- [@hendrikebbers](https://github.com/hendrikebbers): Do we want an abstraction for currency? HBAR is the only one for now and can be seen as Hedera specific.
+- [@hendrikebbers](https://github.com/hendrikebbers): Do we want an abstraction for currency? HBAR is the only one for
+  now and can be seen as Hedera specific.
