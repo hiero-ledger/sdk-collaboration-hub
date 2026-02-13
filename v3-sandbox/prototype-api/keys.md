@@ -35,60 +35,8 @@ enum KeyType {
 
 //all supported algorithms
 enum KeyAlgorithm {
-    ED25519 // Edwards-curve Digital Signature Algorithm 
+    ED25519, // Edwards-curve Digital Signature Algorithm 
     ECDSA // Elliptic Curve Digital Signature Algorithm (secp256k1 curve)
-}
-
-// all supported encodings that can be used to import/export a container format
-enum KeyEncoding {
-    DER, // Distinguished Encoding Rules
-    PEM // Privacy Enhanced Mail
-}
-
-// all supported container formats
-enum KeyContainer {
-    PKCS8, // PKCS#8 Private Key Specification
-    SPKI // Subject Public Key Info
-    
-    // returns true if the container format supports the given key type
-    bool supportsType(type: KeyType) 
-    
-    // returns true if the container format supports the given encoding
-    // PKCS8 and SPKI support DER and PEM encodings
-    bool supportsEncoding(encoding: KeyEncoding) 
-                                                   
-}
-
-enum ByteImportEncoding {
-    HEX, // hex string representation of the bytes
-    BASE64 // base64 string representation of the bytes
-}
-
-enum RawFormate {
-    STRING, // string representation of the bytes in the specified encoding
-    BYTES // raw bytes
-}
-
-enum EncodedKeyContainer {
-    PKCS8_WITH_DER,
-    SPKI_WITH_DER,
-    PKCS8_WITH_PEM,
-    SPKI_WITH_PEM
-    
-    @immutable KeyContainer container // the container format
-    @immutable KeyEncoding encoding // the encoding
-    @immutable RawFormate format // the raw format of the import / export
-    
-    // Constructor with validation
-    // Throws invalid-format if container doesn't support the specified encoding
-    @@throws(invalid-format) EncodedKeyContainer(
-        container: KeyContainer,
-        encoding: KeyEncoding,
-        format: RawFormat
-    )
-    
-    // returns true if the internal container format supports the given key type
-    bool supportsType(type: KeyType) 
 }
 
 // abstract key definition
@@ -97,8 +45,14 @@ abstraction Key {
     @@immutable algorithm: KeyAlgorithm //the algorithm of the key
     @@immutable type: KeyType //the type of the key
     
-    // Get raw bytes of the key
-    bytes toRawBytes() // returns the key in the RAW encoding
+    // if container.format is not BYTES an illegal format error is thrown
+    @@throws(illegal-format) bytes toBytes(container: keys.io.EncodedKeyContainer)
+
+    // if container.format is not STRING an illegal format error is thrown
+    @@throws(illegal-format) string toString(container: keys.io.EncodedKeyContainer) 
+
+    // returns the key in the RAW encoding
+    bytes toRawBytes() 
     
     // Convert to bytes using specified container format
     // Throws illegal-format if container.format is not BYTES or doesn't support this key type
@@ -137,27 +91,77 @@ PrivateKey extends Key {
 
 // factory methods of keys that should be added to the namespace in the best language dependent way
 
+//Generate a new key based on a specific algorithm
 PrivateKey generatePrivateKey(algorithm: KeyAlgorithm)
 PublicKey generatePublicKey(algorithm: KeyAlgorithm)
 
-// Factory methods for key creation from raw bytes
-@@throws(illegal-format) PrivateKey createPrivateKey(algorithm: KeyAlgorithm, rawBytes: bytes)
-@@throws(illegal-format) PublicKey createPublicKey(algorithm: KeyAlgorithm, rawBytes: bytes)
+//Read a key based on a specific algorithm from a string
+@@throws(illegal-format) PrivateKey createPrivateKey(algorithm: KeyAlgorithm, encoding: keys.io.ByteImportEncoding, value: string) // calls createPrivateKey(algorithm: KeyAlgorithm, rawBytes: bytes)
+@@throws(illegal-format) PublicKey createPublicKey(algorithm: KeyAlgorithm, encoding: keys.io.ByteImportEncoding, value: string) // calls createPublicKey(algorithm: KeyAlgorithm, rawBytes: bytes)
 
-// Factory methods for key creation from encoded strings
-@@throws(illegal-format) PrivateKey createPrivateKey(algorithm: KeyAlgorithm, encoding: ByteImportEncoding, value: string)
-@@throws(illegal-format) PublicKey createPublicKey(algorithm: KeyAlgorithm, encoding: ByteImportEncoding, value: string)
+//Read a key based on a specific algorithm from a byte array
+@@throws(illegal-format) PrivateKey createPrivateKey(algorithm: KeyAlgorithm, rawBytes: bytes) // reads bytes as raw bytes for the given algorithm
+@@throws(illegal-format) PublicKey createPublicKey(algorithm: KeyAlgorithm, rawBytes: bytes) // reads bytes as raw bytes for the given algorithm
 
-// Factory methods for key creation from encoded containers
-@@throws(illegal-format) PrivateKey createPrivateKey(container: EncodedKeyContainer, value: string) // if container.format is not STRING an illegal format error is thrown
-@@throws(illegal-format) PublicKey createPublicKey(container: EncodedKeyContainer, value: string) // if container.format is not STRING an illegal format error is thrown
+//Read a key based on a specific format (container & encoding) from a string
+@@throws(illegal-format) PrivateKey createPrivateKey(container: keys.io.KeyFormat, value: string) // if container.format is not STRING an illegal format error is thrown
+@@throws(illegal-format) PublicKey createPublicKey(container: keys.io.KeyFormat, value: string) // if container.format is not STRING an illegal format error is thrown
 
-@@throws(illegal-format) PrivateKey createPrivateKey(container: EncodedKeyContainer, value: bytes) // if container.format is not BYTES an illegal format error is thrown
-@@throws(illegal-format) PublicKey createPublicKey(container: EncodedKeyContainer, value: bytes) // if container.format is not BYTES an illegal format error is thrown
+//Read a key based on a specific format (container & encoding) from a byte array
+@@throws(illegal-format) PrivateKey createPrivateKey(container: keys.io.KeyFormat, value: bytes) // if container.format is not BYTES an illegal format error is thrown
+@@throws(illegal-format) PublicKey createPublicKey(container: keys.io.KeyFormat, value: bytes) // if container.format is not BYTES an illegal format error is thrown
 
-// Convenience methods for PEM format
+//Read a key based on our prefered format (container & encoding) from a string
 @@throws(illegal-format) PrivateKey createPrivateKey(value: string) // reads string as PKCS#8 PEM
 @@throws(illegal-format) PublicKey createPublicKey(value: string) // reads string as SPKI PEM
+
+namespace keys.io
+
+enum RawFormate {
+    STRING, // string representation of the bytes in the specified encoding
+    BYTES // raw bytes
+}
+
+// all supported encodings that can be used to import/export a container format
+enum KeyEncoding {
+    DER, // Distinguished Encoding Rules
+    PEM // Privacy Enhanced Mail
+    
+    @immutable RawFormate rawFormat // the raw format of the import / export
+    byte[] decode(keyType : keys.KeyType, value : string)
+}
+
+// all supported container formats
+enum KeyContainer {
+    PKCS8, // PKCS#8 Private Key Specification
+    SPKI // Subject Public Key Info
+    
+    boolean supportsType(keys.KeyType type) // returns true if the container format supports the given key type
+}
+
+// encoding information for import / export
+enum ByteImportEncoding {
+    HEX, // hex string representation of the bytes
+    BASE64 // base64 string representation of the bytes
+    
+    byte[] decode(value : string)
+}
+
+// combined container format and encoding
+enum KeyFormat {
+    PKCS8_WITH_DER,
+    SPKI_WITH_DER,
+    PKCS8_WITH_PEM,
+    SPKI_WITH_PEM
+    
+    @immutable KeyContainer container // the container format
+    @immutable KeyEncoding encoding // the encoding
+    
+    boolean supportsType(KeyType type) // returns true if the internal container format supports the given key type
+    byte[] decode(keyType : KeyType, value : string) // decodes the given string value into raw bytes for the given key type
+  
+}
+
 ```
 
 ## KeyContainer rules
@@ -165,75 +169,6 @@ PublicKey generatePublicKey(algorithm: KeyAlgorithm)
 Not all combinations of container and encoding are valid.
 For example, a PKCS8 container format can only be used with DER encoding.
 Here you can find the complete list of rules as a basic implementation of the enum:
-
-```
-enum KeyContainer {
-PKCS8, 
-SPKI,  
-MULTICODEC, 
-JWK;        
-
-
-    /**
-     * Returns true if this container format supports the given key type.
-     */
-    boolean supportsType(KeyType type) {
-        switch (this) {
-            case PKCS8:
-                // PKCS#8 is ONLY for private keys
-                return type == KeyType.PRIVATE;
-
-            case SPKI:
-                // SPKI is ONLY for public keys
-                return type == KeyType.PUBLIC;
-
-            case MULTICODEC:
-                // Multicodec (DID-key style) is standardized ONLY for public keys
-                return type == KeyType.PUBLIC;
-
-            case JWK:
-                // JWK can contain:
-                // - public keys only
-                // - private keys only
-                // - both (if "d" is present)
-                return true;
-
-            default:
-                return false;
-        }
-    }
-
-
-    /**
-     * Returns true if this container format supports the given encoding.
-     */
-    boolean supportsEncoding(KeyEncoding encoding) {
-        switch (this) {
-            case PKCS8:
-            case SPKI:
-                // Standard encodings for ASN.1:
-                // - DER (binary)
-                // - PEM (Base64 with header/footer)
-                return encoding == KeyEncoding.DER
-                    || encoding == KeyEncoding.PEM;
-
-            case MULTICODEC:
-                // Multicodec is self-describing, but requires:
-                // - MULTIBASE (Base58btc, Base64url, Hex, etc.)
-                // - BASE64 (optional export without multibase-prefix)
-                return encoding == KeyEncoding.MULTIBASE
-                    || encoding == KeyEncoding.BASE64;
-
-            case JWK:
-                // JWK is always JSON text.
-                return encoding == KeyEncoding.JSON;
-
-            default:
-                return false;
-        }
-    }
-}
-```
 
 ### Key examples
 
@@ -252,8 +187,7 @@ E1 5D 8F 21 A7 01 73 09 BB 55 88 52 03 9B C7 5C
 
 ```
 -----BEGIN PRIVATE KEY-----
-MC4CAQAwBQYDK2VwBCIEIDNnGh6YuyLwEcDkvPUTVZDhXY8hpwFzCb
-tViFIDm8dc=
+MC4CAQAwBQYDK2VwBCIEINNnGh6YuyLwEcDkvPUSVZDhXY8hpwFzCbtViFIDm8dc
 -----END PRIVATE KEY-----
 ```
 
