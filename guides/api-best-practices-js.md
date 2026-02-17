@@ -210,6 +210,9 @@ specification.
 - **Validate non-nullable parameters**: For parameters not marked as `@@nullable` in the meta-language, validate that
   they are not `null` or `undefined` using `requireNonNull()`.
 - **Document nullability**: Clearly document which parameters and return values can be `null`.
+- **Clearing collections**: To explicitly clear an existing collection, provide a dedicated `clearXYZ()` method rather
+  than accepting `null` or an empty array as a signal to clear. This makes the intent explicit and maintains consistency
+  with the rule that collections should never be `null`.
 
 ### Validation Helpers
 
@@ -538,6 +541,13 @@ class Team {
     setMembers(members) {
         requireNonNullArray(members, 'members');
         this.#members = [...members];
+    }
+
+    /**
+     * Clears all team members.
+     */
+    clearMembers() {
+        this.#members = [];
     }
 }
 ```
