@@ -568,8 +568,52 @@ public final class UserService {
 }
 ```
 
-Avoid using `Optional` as a method parameter in the public API. Instead, use `@Nullable` for optional parameters and
-document the semantics for `null` explicitly.
+### Usage of Optional
+
+`Optional` was designed as a return type to represent the absence of a value. It must **never** be used as a method
+parameter, constructor parameter, or field type. These are not the intended use cases and lead to awkward APIs, extra
+wrapping, and unnecessary complexity. For parameters that may be absent, use `@Nullable` and document the semantics for
+`null` explicitly. For fields, store the value directly and use `@Nullable` if the field can be null.
+
+`Optional` should be used in the following cases:
+
+- As a **return type** of a method to signal that the result may be absent.
+- As a **temporary variable** inside method bodies, for example when working with streams or transformations.
+
+When creating an `Optional`, prefer `Optional.ofNullable(value)` for any value where nullability is uncertain or
+possible. `Optional.of(value)` must only be used when the value is guaranteed to be non-null, as it throws a
+`NullPointerException` if passed `null`. In practice, `Optional.ofNullable(value)` is the safer and more common choice.
+
+```java
+// WRONG: Do not use Optional as a parameter
+public void setName(Optional<String> name) { ... }
+
+// WRONG: Do not use Optional as a field
+private Optional<String> name;
+
+// CORRECT: Use @Nullable for parameters that may be absent
+public void setName(@Nullable final String name) { ... }
+
+// CORRECT: Use Optional as a return type
+@NonNull
+public Optional<String> findName() {
+    return Optional.ofNullable(name);
+}
+
+// CORRECT: Use Optional as a temporary variable in transformations
+public String getDisplayName() {
+    return Optional.ofNullable(name)
+            .map(String::trim)
+            .filter(n -> !n.isEmpty())
+            .orElse("Unknown");
+}
+
+// CORRECT: Use Optional.ofNullable for values that may be null
+Optional<User> user = Optional.ofNullable(userMap.get(id));
+
+// Use Optional.of only when the value is guaranteed to be non-null
+Optional<String> greeting = Optional.of("Hello");
+```
 
 ### Null handling of method return value
 
