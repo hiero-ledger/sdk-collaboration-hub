@@ -5,6 +5,7 @@
  * @param {*} value - The value to check
  * @param {string} paramName - The parameter name for error messages
  * @throws {TypeError} if value is undefined
+ * @returns {*} The validated value
  */
 export function requireDefined(value, paramName) {
     if (value === undefined) {
