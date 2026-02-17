@@ -839,6 +839,134 @@ public class Example {
 }
 ```
 
+## Logging
+
+Use `java.lang.System.Logger` (introduced in Java 9) for all logging in the SDK and library code.
+By using the JDK's built-in logging facade, no external logger dependency (such as SLF4J or Log4j) is needed.
+Consumers of the library can plug in any logging backend they prefer via the `System.LoggerFinder` SPI.
+
+Example usage:
+
+```java
+public class ExampleService {
+
+    private static final System.Logger LOGGER = System.getLogger(ExampleService.class.getName());
+
+    public void doWork() {
+        LOGGER.log(System.Logger.Level.INFO, "Starting work");
+        try {
+            // ...
+        } catch (final Exception e) {
+            LOGGER.log(System.Logger.Level.ERROR, "Unexpected error during work", e);
+        }
+    }
+}
+```
+
+### Parameterized and Expensive Log Messages
+
+The `System.Logger` API provides `log` methods that accept message parameters via `{0}`, `{1}`, etc. placeholders
+(using `java.text.MessageFormat` syntax). These should be preferred over string concatenation since the message is only
+formatted when the log level is active.
+
+```java
+LOGGER.log(System.Logger.Level.DEBUG, "Processing item {0} of {1}",currentIndex, totalCount);
+```
+
+For log messages where constructing the message itself is expensive (e.g. calling `toString()` on complex objects or
+performing computations), use a `Supplier<String>` or guard the call with `isLoggable(level)`. Both approaches ensure
+the expensive operation is only performed when the message will actually be logged.
+
+```java
+// Using a Supplier to defer expensive message construction
+LOGGER.log(System.Logger.Level.DEBUG, () ->"State snapshot: "+
+
+buildExpensiveSnapshot());
+
+// Using isLoggable to guard expensive operations
+        if(LOGGER.
+
+isLoggable(System.Logger.Level.TRACE)){
+final String dump = generateDetailedDump();
+    LOGGER.
+
+log(System.Logger.Level.TRACE, "Full dump: {0}",dump);
+}
+```
+
+The `Supplier` variant is generally more concise, while `isLoggable` is useful when multiple statements or
+side-effect-free preparations are needed before logging.
+
+## SPI (Service Provider Interface)
+
+When defining an SPI, two discovery approaches must be provided so that both modular and classpath-based projects are
+supported:
+
+1. **Java Module System (`module-info.java`)** — For projects using the Java Platform Module System (JPMS), the service
+   provider must be declared via `provides ... with ...` in the module descriptor.
+2. **Google AutoService** — For projects that run on the classpath (without `module-info.java`), the
+   `@com.google.auto.service.AutoService` annotation must be used on the provider implementation. The AutoService
+   annotation processor must be configured in the build so that the `META-INF/services` file is automatically generated
+   at compile time. Both the annotation dependency and the annotation processor must be declared — the annotation alone
+   is not sufficient. For example, in Gradle:
+   ```groovy
+   dependencies {
+       compileOnly 'com.google.auto.service:auto-service-annotations:1.1.1'
+       annotationProcessor 'com.google.auto.service:auto-service:1.1.1'
+   }
+   ```
+   In Maven:
+   ```xml
+   <dependencies>
+       <dependency>
+           <groupId>com.google.auto.service</groupId>
+           <artifactId>auto-service-annotations</artifactId>
+           <version>1.1.1</version>
+           <optional>true</optional>
+       </dependency>
+       <dependency>
+           <groupId>com.google.auto.service</groupId>
+           <artifactId>auto-service</artifactId>
+           <version>1.1.1</version>
+           <optional>true</optional>
+           <scope>provided</scope>
+       </dependency>
+   </dependencies>
+   ```
+
+Both approaches must be present so that consumers can use the SPI regardless of whether they use the module system or
+not.
+
+Example of a service provider supporting both approaches:
+
+```java
+// Service interface
+public interface ExampleProvider {
+    String provide();
+}
+```
+
+```java
+// Provider implementation with AutoService annotation for classpath-based discovery
+@com.google.auto.service.AutoService(ExampleProvider.class)
+public class DefaultExampleProvider implements ExampleProvider {
+
+    @Override
+    public String provide() {
+        return "default";
+    }
+}
+```
+
+```java
+// module-info.java for modular discovery
+module com.example.provider {
+    requires com.example.api;
+    provides com.example.api.ExampleProvider
+            with com.example.provider.DefaultExampleProvider;
+}
+```
+
 ## Questions & Comments
 
 ## Todos based on AI tests for generating Java code
