@@ -228,7 +228,9 @@ Every attribute, including immutable ones, can be accessed.
 Here the access is implemented in a language-specific way, but in most languages it is equivalent to a getter method.
 A mutable attribute can be changed at any time.
 Here a language-specific way to change an attribute is implemented.
-In most languages this is equivalent to a setter method.
+In most languages this is equivalent to a setter method or a native property access. 
+
+Please refer to the best practice guideline for a specific language to understand how attribute access (read/write) must be implemented.
 
 #### Attribute annotations
 
