@@ -224,7 +224,7 @@ By default an attribute is mutable.
 Attributes can be declared immutable by annotating them with `@@immutable`.
 In general, it is best practice to make all attributes immutable unless there is a clear reason why they cannot be.
 
-Every attribute, including immutable ones, that is defined can be accessed.
+Every attribute, including immutable ones, can be accessed.
 Here the access is implemented in a language-specific way, but in most languages it is equivalent to a getter method.
 A mutable attribute can be changed at any time.
 Here a language-specific way to change an attribute is implemented.
