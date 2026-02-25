@@ -226,6 +226,7 @@ In general, it is best practice to make all attributes immutable unless there is
 
 Every attribute, including immutable ones, can be accessed.
 Here the access is implemented in a language-specific way. That can be a getter method or a native property access.
+
 A mutable attribute can be changed at any time.
 Here a language-specific way to change an attribute is implemented.
 In most languages this is equivalent to a setter method or a native property access. 
