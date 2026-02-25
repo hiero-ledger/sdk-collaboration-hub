@@ -29,31 +29,31 @@ The following syntax should be used to document the APIs in a language-agnostic 
 
 The following basic data types should be used in the API documentation.
 
-| Data Type                | Description                                                           |
-|--------------------------|-----------------------------------------------------------------------|
-| `string`                 | A sequence of characters                                              |
-| `intX`                   | A signed integer of X bits (8 <= X <= 256)                            |
-| `uintX`                  | An unsigned integer of X bits (8 <= X <= 256)                         |
-| `double`                 | A native floating-point number in 64-bit base-2 format                |
-| `decimal`                | A decimal number with arbitrary precision                             |
-| `bool`                   | A boolean value                                                       |
-| `bytes`                  | A sequence of bytes                                                   |
-| `list<TYPE>`             | A list of elements of type TYPE                                       |
-| `set<TYPE>`              | A set of elements of type TYPE                                        |
-| `map<KEY, VALUE>`        | A map that maps KEY values to VALUE values                            |
-| `type`                   | A type identity that can be used to specify a complex type at runtime |
-| `date`                   | A date value (ISO 8601 calendar date)                                 |
-| `time`                   | A time value without date or timezone (nanosecond precision)          |
-| `dateTime`               | A date and time value without timezone (nanosecond precision)         |
-| `zonedDateTime`          | A date and time value with timezone (nanosecond precision)            |
-| `lambda<R m(p: T, ...)>` | A Lambda expression                                                   |
+| Data Type                  | Description                                                           |
+|----------------------------|-----------------------------------------------------------------------|
+| `string`                   | A sequence of characters                                              |
+| `intX`                     | A signed integer of X bits (8 <= X <= 256)                            |
+| `uintX`                    | An unsigned integer of X bits (8 <= X <= 256)                         |
+| `double`                   | A native floating-point number in 64-bit base-2 format                |
+| `decimal`                  | A decimal number with arbitrary precision                             |
+| `bool`                     | A boolean value                                                       |
+| `bytes`                    | A sequence of bytes                                                   |
+| `list<TYPE>`               | A list of elements of type TYPE                                       |
+| `set<TYPE>`                | A set of elements of type TYPE                                        |
+| `map<KEY, VALUE>`          | A map that maps KEY values to VALUE values                            |
+| `type`                     | A type identity that can be used to specify a complex type at runtime |
+| `date`                     | A date value (ISO 8601 calendar date)                                 |
+| `time`                     | A time value without date or timezone (nanosecond precision)          |
+| `dateTime`                 | A date and time value without timezone (nanosecond precision)         |
+| `zonedDateTime`            | A date and time value with timezone (nanosecond precision)            |
+| `function<R m(p: T, ...)>` | A function type (often called lambda/callable)                        |
 
-### Lambdas
+### Function Types
 
-As shown in the Basic data types table Lambda expressions are defined using the following syntax:
-`lambda<R m(p: T, ...)>`.
+As shown in the Basic data types table function types are defined using the following syntax:
+`function<R m(p: T, ...)>`.
 The expression within the angle brackets is based on the syntax of a method declaration.
-The return type `R` is optional. If the return type is void, the return type can be omitted: `lambda<m(p: T, ...)>`.
+The return type `R` is optional. If the return type is void, the return type can be omitted: `function<m(p: T, ...)>`.
 The parameters are defined using the following syntax: `paramName: DataType`.
 A lambda expression can have zero or more parameters.
 
