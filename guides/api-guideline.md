@@ -54,8 +54,20 @@ As shown in the Basic data types table function types are defined using the foll
 `function<R m(p: T, ...)>`.
 The expression within the angle brackets is based on the syntax of a method declaration.
 The return type `R` is optional. If the return type is void, the return type can be omitted: `function<m(p: T, ...)>`.
+`m` represents the function name that should be a descriptive name for the function.
 The parameters are defined using the following syntax: `paramName: DataType`.
 A lambda expression can have zero or more parameters.
+
+The following example shows the typical usage of a function type to define a callback (or listener):
+
+```
+subscribe(callback: function<void onEvent(event: Event)>)
+```
+
+The following example shows a function type without any parameters that is often used for async handling:
+
+execute(action: function<void run()>)
+
 
 ### Complex Types
 
