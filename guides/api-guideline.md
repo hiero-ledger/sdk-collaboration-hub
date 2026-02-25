@@ -53,7 +53,7 @@ The following basic data types should be used in the API documentation.
 As shown in the Basic data types table function types are defined using the following syntax:
 `function<R m(p: T, ...)>`.
 The expression within the angle brackets is based on the syntax of a method declaration.
-The return type `R` is optional. If the return type is void, the return type can be omitted: `function<m(p: T, ...)>`.
+`R` defines that return type (that can be void).
 `m` represents the function name that should be a descriptive name for the function.
 The parameters are defined using the following syntax: `paramName: DataType`.
 A lambda expression can have zero or more parameters.
@@ -275,8 +275,6 @@ An example of a method with no return type:
 ```
 void resetCache()
 ```
-
-If the return type is `void`, the return type can be omitted: `resetCache()`.
 
 #### Method annotations
 
