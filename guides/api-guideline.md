@@ -238,12 +238,6 @@ The following annotations should be used:
   at the SDK level.
 - `@@pattern(regex)`: Indicates a regex pattern that the string field must match. Should be included if the value must
   be enforced at the SDK level.
-- `@@getSet`: The field must not be exposed as a public property. The public API exposes a getter and a setter instead.
-  The getter returns the type of the field. The setter takes a single parameter of the name type as the field and
-  returns the type of the containing object (to enable method chaining). The getter is named `get` + the field name
-  in PascalCase; the setter is named `set` + the field name in PascalCase.
-
-  Example: `@@getSet memo: string` exposes `getMemo(): string` and `setMemo(memo: string): ContainingType`.
 
 ### Methods
 
