@@ -68,7 +68,6 @@ The following example shows a function type without any parameters that is often
 
 execute(action: function<void run()>)
 
-
 ### Complex Types
 
 Complex data types can be defined using the basic data types and other complex data types.
@@ -251,9 +250,10 @@ Here the access is implemented in a language-specific way. That can be a getter 
 
 A mutable attribute can be changed at any time.
 Here a language-specific way to change an attribute is implemented.
-In most languages this is equivalent to a setter method or a native property access. 
+In most languages this is equivalent to a setter method or a native property access.
 
-Please refer to the best practice guideline for a specific language to understand how attribute access (read/write) must be implemented.
+Please refer to the best practice guideline for a specific language to understand how attribute access (read/write) must
+be implemented.
 
 #### Attribute annotations
 
@@ -344,6 +344,28 @@ namespace transactions
 requires common, keys
 ...
  ```
+
+#### Cross-namespace type references
+
+When a type is used that is defined in a different namespace, it must be qualified with the namespace name using dot
+notation: `namespace.Type`. Types within the same namespace can be referenced by their simple name.
+
+Example:
+
+```
+namespace orders
+requires common
+
+// AccountId is defined in the `common` namespace, so it must be qualified
+OrderTransaction {
+    @@immutable account: common.AccountId
+    @@immutable status: OrderStatus // same namespace, no prefix needed
+}
+```
+
+This rule also applies to sub-namespaces. A type defined in `keys.io` must be referenced as `keys.io.TypeName` from
+outside that namespace, and a type in the parent `keys` namespace must be referenced as `keys.TypeName` from within
+`keys.io`.
 
 ### Constants
 

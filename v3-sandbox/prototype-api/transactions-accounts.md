@@ -11,28 +11,28 @@ namespace transactions-accounts
 requires common, transactions, keys
 
 @@finalType
-AccountCreateTransaction extends Transaction<AccountCreatePackedTransaction> {
-    @nullable accountMemo:String
-    @default(0) initialBalance:Hbar
-    key:PublicKey
+AccountCreateTransaction extends transactions.Transaction<AccountCreatePackedTransaction> {
+    @@nullable accountMemo:String
+    @@default(0) initialBalance:common.Hbar
+    key:keys.PublicKey
 }
 
 @@finalType
-AccountCreatePackedTransaction extends PackedTransaction<AccountCreateTransaction, AccountCreateResponse> {
+AccountCreatePackedTransaction extends transactions.PackedTransaction<AccountCreateTransaction, AccountCreateResponse> {
 }
 
 @@finalType
-AccountCreateResponse extends Response<AccountCreateReceipt, AccountCreateRecord> {
+AccountCreateResponse extends transactions.Response<AccountCreateReceipt, AccountCreateRecord> {
 }
 
 @@finalType
-AccountCreateReceipt extends Receipt {
-    @immutable accountId:AccountId
+AccountCreateReceipt extends transactions.Receipt {
+    @@immutable accountId:common.AccountId
 }
 
 @@finalType
-AccountCreateRecord extends Record<AccountCreateReceipt> {
-    @immutable accountId:AccountId
+AccountCreateRecord extends transactions.Record<AccountCreateReceipt> {
+    @@immutable accountId:common.AccountId
 }
 
 ```

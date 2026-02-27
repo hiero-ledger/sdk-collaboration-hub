@@ -29,9 +29,9 @@ enum BasicTransactionStatus extends TransactionStatus {
 
 // Id of a transaction
 abstraction TransactionId {
-  @@immutable accountId:AccountId // the account that is the payer of the transaction
+  @@immutable accountId:common.AccountId // the account that is the payer of the transaction
   @@immutable validStart:zonedDateTime // the start time of the transaction
-  @@immutable @nullable nonce:int32 // nonce of an internal transaction
+  @@immutable @@nullable nonce:int32 // nonce of an internal transaction
   
   string toString() // returns id in format TO_BE_DEFINED_IN_FUTURE_VERSIONS
   string toStringWithChecksum() // returns id in format TO_BE_DEFINED_IN_FUTURE_VERSIONS
@@ -44,11 +44,11 @@ abstraction TransactionSigner {
 
 // Basic definition of a transaction
 abstraction Transaction<$$PackedTransaction extends PackedTransaction> {
-  @@nullable maxTransactionFee:HBar // the maximal fee to be paid for this transaction
+  @@nullable maxTransactionFee:common.Hbar // the maximal fee to be paid for this transaction
   @@nullable validDuration:long // in milliseconds, a better lang specific type can be used
   @@nullable memo:string // a memo to be attached to the transaction
 
-  $$PackedTransaction packTransaction(client:HieroClient) // returns a new packed instance of the transaction (previously this was named frozen transaction)
+  $$PackedTransaction packTransaction(client:client.HieroClient) // returns a new packed instance of the transaction (previously this was named frozen transaction)
 }
 
 // A packed transaction that can not change any parameters after it was created
@@ -57,27 +57,27 @@ abstraction PackedTransaction<$$Transaction extends Transaction, $$Response exte
 
   $$Transaction unpack() // returns a new basic transaction instance based on this packed transaction
 
-  void sign(keyPair:KeyPair) // sign the transaction, if the lang supports it, we should provide a fluent API (return this)
-  void sign(publicKey:PublicKey, transactionSigner:TransactionSigner) // sign the transaction, if the lang supports it, we should provide a fluent API (return this)
+  void sign(keyPair:keys.KeyPair) // sign the transaction, if the lang supports it, we should provide a fluent API (return this)
+  void sign(publicKey:keys.PublicKey, transactionSigner:TransactionSigner) // sign the transaction, if the lang supports it, we should provide a fluent API (return this)
 
   @@async $$Response send() // send the transaction, we should provide async and sync versions in best case
 }
 
 // The response of a transaction send request
 Response<$$Receipt extends Receipt, $$Record extends Record> {
-  @immutable transactionId:TransactionId // the id of the transaction
+  @@immutable transactionId:TransactionId // the id of the transaction
 
   @@async $$Receipt queryReceipt() // query for the receipt of the transaction, we should provide async and sync versions in best case
   
-  @async $$Record queryRecord() // query for the record of the transaction, we should provide async and sync versions in best case
+  @@async $$Record queryRecord() // query for the record of the transaction, we should provide async and sync versions in best case
 }
 
 // The receipt of a transaction
 Receipt {
   @@immutable transactionId:TransactionId // the transaction id
   @@immutable status:TransactionStatus // the status of the transaction
-  @@immutable exchangeRate:HBarExchangeRate // the exchange rate at the time of the transaction
-  @@immutable nextExchangeRate:HBarExchangeRate // the next exchange rate
+  @@immutable exchangeRate:common.HBarExchangeRate // the exchange rate at the time of the transaction
+  @@immutable nextExchangeRate:common.HBarExchangeRate // the next exchange rate
 }
 
 // The record of a transaction
@@ -89,7 +89,7 @@ Record<$$Receipt extends Receipt> {
 
 // factory methods of TransactionId that should be added to the namespace in the best language dependent way
 
-TransactionId generateTransactionId(accountId: AccountId)
+TransactionId generateTransactionId(accountId: common.AccountId)
 @@throws(illegal-format) TransactionId fromString(transactionId: string)
 
 ```
