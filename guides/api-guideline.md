@@ -29,23 +29,45 @@ The following syntax should be used to document the APIs in a language-agnostic 
 
 The following basic data types should be used in the API documentation.
 
-| Data Type         | Description                                                           |
-|-------------------|-----------------------------------------------------------------------|
-| `string`          | A sequence of characters                                              |
-| `intX`            | A signed integer of X bits (8 <= X <= 256)                            |
-| `uintX`           | An unsigned integer of X bits (8 <= X <= 256)                         |
-| `double`          | A native floating-point number in 64-bit base-2 format                |
-| `decimal`         | A decimal number with arbitrary precision                             |
-| `bool`            | A boolean value                                                       |
-| `bytes`           | A sequence of bytes                                                   |
-| `list<TYPE>`      | A list of elements of type TYPE                                       |
-| `set<TYPE>`       | A set of elements of type TYPE                                        |
-| `map<KEY, VALUE>` | A map of elements of type TYPE                                        |
-| `type`            | A type identity that can be used to specify a complex type at runtime |
-| `date`            | A date value (ISO 8601 calendar date)                                 |
-| `time`            | A time value without date or timezone (nanosecond precision)          |
-| `dateTime`        | A date and time value without timezone (nanosecond precision)         |
-| `zonedDateTime`   | A date and time value with timezone (nanosecond precision)            |
+| Data Type                  | Description                                                           |
+|----------------------------|-----------------------------------------------------------------------|
+| `string`                   | A sequence of characters                                              |
+| `intX`                     | A signed integer of X bits (8 <= X <= 256)                            |
+| `uintX`                    | An unsigned integer of X bits (8 <= X <= 256)                         |
+| `double`                   | A native floating-point number in 64-bit base-2 format                |
+| `decimal`                  | A decimal number with arbitrary precision                             |
+| `bool`                     | A boolean value                                                       |
+| `bytes`                    | A sequence of bytes                                                   |
+| `list<TYPE>`               | A list of elements of type TYPE                                       |
+| `set<TYPE>`                | A set of elements of type TYPE                                        |
+| `map<KEY, VALUE>`          | A map that maps KEY values to VALUE values                            |
+| `type`                     | A type identity that can be used to specify a complex type at runtime |
+| `date`                     | A date value (ISO 8601 calendar date)                                 |
+| `time`                     | A time value without date or timezone (nanosecond precision)          |
+| `dateTime`                 | A date and time value without timezone (nanosecond precision)         |
+| `zonedDateTime`            | A date and time value with timezone (nanosecond precision)            |
+| `function<R m(p: T, ...)>` | A function type (often called lambda/callable)                        |
+
+### Function Types
+
+As shown in the Basic data types table function types are defined using the following syntax:
+`function<R m(p: T, ...)>`.
+The expression within the angle brackets is based on the syntax of a method declaration.
+`R` defines that return type (that can be void).
+`m` represents the function name that should be a descriptive name for the function.
+The parameters are defined using the following syntax: `paramName: DataType`.
+A lambda expression can have zero or more parameters.
+
+The following example shows the typical usage of a function type to define a callback (or listener):
+
+```
+subscribe(callback: function<void onEvent(event: Event)>)
+```
+
+The following example shows a function type without any parameters that is often used for async handling:
+
+execute(action: function<void run()>)
+
 
 ### Complex Types
 
@@ -220,6 +242,19 @@ Attributes can be defined using the following syntax:
     fieldName: DataType
 ```
 
+By default an attribute is mutable.
+Attributes can be declared immutable by annotating them with `@@immutable`.
+In general, it is best practice to make all attributes immutable unless there is a clear reason why they cannot be.
+
+Every attribute, including immutable ones, can be accessed.
+Here the access is implemented in a language-specific way. That can be a getter method or a native property access.
+
+A mutable attribute can be changed at any time.
+Here a language-specific way to change an attribute is implemented.
+In most languages this is equivalent to a setter method or a native property access. 
+
+Please refer to the best practice guideline for a specific language to understand how attribute access (read/write) must be implemented.
+
 #### Attribute annotations
 
 Attribute annotations can be used to provide additional information about attributes in complex data types.
@@ -325,6 +360,46 @@ constant MAX_TRANSACTIONS:int32 = 100
 ### Best practices and antipatterns
 
 The following best practices and antipattern should be followed when defining the API.
+
+#### Prefer immutable fields and objects
+
+Fields should be annotated with `@@immutable` by default. Mutable fields should only be introduced when there is a
+clear, justified reason why the value must change after object creation. When designing a new type, start by making
+every field immutable and only relax that constraint when mutability is genuinely required.
+
+**Why immutability matters:**
+
+- **Thread safety** – Immutable objects can be shared freely between threads without synchronization. Mutable state
+  requires careful coordination (locks, concurrent collections, atomic operations) and is a common source of race
+  conditions.
+- **Predictability** – When an object cannot change after creation, any code that holds a reference to it can rely on
+  its state staying consistent. This eliminates an entire class of bugs where state is modified unexpectedly by another
+  part of the system.
+- **Simpler `equals`/`hashCode`** – Immutable objects produce stable hash codes, so they can safely be used as keys in
+  hash-based collections. Mutable fields in `equals`/`hashCode` can cause objects to "disappear" from sets and maps
+  after mutation.
+- **Easier testing and debugging** – Immutable objects are easier to reason about in tests because their state is
+  fixed at construction time. There is no need to account for intermediate mutations.
+- **Safe sharing and caching** – Immutable instances can be cached, reused, and returned from public APIs without
+  defensive copying. Mutable objects must be copied every time they cross a trust boundary.
+
+**Strategies for reducing mutability:**
+
+- **Builder or factory pattern** – If an object needs many configuration values, collect them in a mutable builder and
+  produce an immutable instance at the end. This avoids mutable setters on the final object.
+- **Replace setters with new instances** – Instead of mutating a field in place, provide a method that returns a new
+  instance with the updated value (sometimes called a "with" method, e.g., `withName(newName)`). This keeps the
+  original object unchanged.
+- **Separate identity from state** – If part of an object genuinely changes over time (e.g., a status), consider
+  splitting the static identity (immutable) from the changing state. The changing state can live in a separate,
+  narrowly scoped mutable object or be retrieved on demand rather than stored.
+- **Event-driven updates** – Instead of mutating an existing object, emit a new event or message that represents the
+  change. Consumers create a new state snapshot from the event rather than modifying an existing one.
+- **Reconsider the lifecycle** – Sometimes mutability exists only because an object is created too early, before all its
+  data is available. Deferring construction until all values are known often removes the need for mutability entirely.
+
+When mutability is truly necessary, limit its scope: make only the specific fields that must change mutable, keep the
+rest immutable, and document clearly why the mutable fields cannot be immutable.
 
 #### Never define nullable collections
 
