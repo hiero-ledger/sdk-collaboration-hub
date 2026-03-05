@@ -23,7 +23,9 @@ OperatorAccount {
 HieroClient {
     @@immutable operatorAccount: OperatorAccount // the operator account
     @@immutable ledger: common.Ledger // the network to connect to
-    // TO_BE_DEFINED_IN_FUTURE_VERSIONS
+    consensusNetwork: ConsensusNetwork // consensus node network (used by Transaction, ConsensusQuery)
+    mirrorNetwork: MirrorNetwork // mirror node network (used by MirrorGrpcQuery, MirrorRestQuery, TopicMessageQuery)
+    blockNodeNetwork: BlockNodeNetwork // block node network (used by BlockNodeQuery, BlockStreamQuery)
 }
 
 // factory methods of `HieroClient` that should be added to the namespace in the best language dependent way

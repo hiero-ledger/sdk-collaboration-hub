@@ -125,23 +125,109 @@ ContactInfo {
 
 Complex data types can inherit from other complex data types to reuse fields and methods.
 
-Definition of an abstract type:
+The meta-language provides two keywords for abstract types, each with a distinct semantic intent:
 
-- Use `abstraction` to declare an abstract type.
-- We do not define if it should be a class or an interface (that is language specific).
+- **`abstraction`** — Declares a type with **shared fields and/or non-trivial implementation**. Subtypes inherit
+  meaningful shared behavior and state. Implement as abstract classes (Java/C++/Python/JS/TS/Swift) or embedded
+  structs + generics (Go/Rust).
+- **`contract`** — Declares a type with **only method signatures** and no fields or shared implementation. Multiple
+  unrelated types may satisfy the contract independently with completely different internals. Implement as interfaces
+  (Java/Go/TS), protocols (Swift), traits (Rust), or ABCs with no concrete methods (Python).
 
-Syntax example:
+Rule of thumb: if it has **fields or non-trivial method bodies**, use `abstraction`. If it only defines **what methods
+exist**, use `contract`.
+
+See each language's [implementation guideline](#concrete-implementations) for how to translate these keywords into
+language-specific constructs.
+
+Syntax examples:
 
 ```
-abstraction Copyable {
-    copy(): Copyable
+// Only defines what methods exist — no fields, no implementation.
+contract Serializable {
+    bytes toBytes()
+}
+
+// Has fields and shared implementation that subtypes inherit.
+abstraction Vehicle {
+    speed: int32
+    maxSpeed: int32
 }
 ```
+
+##### Mixed Inheritance (Abstraction + Contracts)
+
+When a type extends both an `abstraction` and one or more `contract` types, the `abstraction` provides the single class
+inheritance path while `contract` types are layered on via interface/trait/protocol implementation. This avoids diamond
+inheritance while allowing types to satisfy multiple behavioral contracts:
+
+```
+abstraction Animal {
+    name: string
+}
+
+contract Swimmable {
+    void swim()
+}
+
+contract Flyable {
+    void fly()
+}
+
+// Single class inheritance from Animal, implements both contracts.
+Duck extends Animal, Swimmable, Flyable {
+}
+```
+
+In this pattern, `Animal` is the class inheritance parent. `Swimmable` and `Flyable` are contracts that `Duck`
+implements. There is no diamond because contracts carry no state or inherited implementation.
+
+##### Internal / Protected Methods
+
+The meta-language is designed for **public API** definitions. However, some abstractions require non-public methods
+that subclasses override or call but end users do not interact with directly. Annotate these with `protected`:
+
+```
+abstraction Request {
+    maxAttempts: int32
+
+    protected $$Result withRetry(action: callback(attempt: int32) -> $$Result)
+}
+```
+
+Each language should translate `protected` to its closest equivalent:
+
+- Java/C++/Swift: `protected` keyword
+- TypeScript: `protected` keyword
+- Go: unexported method (lowercase name)
+- Rust: `pub(crate)` visibility
+- Python: single underscore prefix convention (`_method_name`)
+- JavaScript: `#` private field or `_` convention
+
+##### Callback Parameters
+
+Methods may accept callbacks (function parameters) using the `callback` keyword:
+
+```
+void forEach(action: void callback(item: $$Item))
+$$Result transform(mapper: callback(input: $$Input) -> $$Result)
+```
+
+Each language translates callbacks to its idiomatic function type:
+
+- Java: `Function<T, R>`, `Consumer<T>`, `Predicate<T>`, or `Runnable`
+- TypeScript/JavaScript: `(param: Type) => ReturnType`
+- Go: `func(param Type) ReturnType`
+- Rust: `impl Fn(Type) -> ReturnType` or `Box<dyn Fn(...)>`
+- C++: `std::function<ReturnType(ParamType)>`
+- Swift: `(ParamType) -> ReturnType`
+- Python: `Callable[[ParamType], ReturnType]`
 
 Definition of a child type:
 
 - Use `extends` to declare a child type.
-- Multiple inheritance is supported but should be avoided in general.
+- Multiple inheritance is supported but should be avoided in general. When used, at most one parent should be an
+  `abstraction`; the rest should be `contract` types to avoid diamond inheritance.
 - Inherited members: All fields and methods from the parent are inherited by the child (since we only define public API)
 
 Syntax examples:
@@ -436,7 +522,7 @@ Such special behavior must be documented in the best-practice guidelines for the
 
 To keep the API surface consistent and predictable, use the following naming rules:
 
-- Types (complex types, interfaces, enums, namespaces): PascalCase (e.g., UserProfile, Fetchable).
+- Types (complex types, abstractions, contracts, enums, namespaces): PascalCase (e.g., UserProfile, Fetchable).
 - Fields and methods: lowerCamelCase (e.g., employeeNumber, fetchById).
 - Enum values: UPPER_SNAKE_CASE (e.g., PENDING, COMPLETED).
 - Namespace names: lowerCamelCase (e.g., transactions).

@@ -102,17 +102,93 @@ public class Person {
 }
 ```
 
+## Implementing Abstractions
+
+The meta-language has two keywords for abstract types: `contract` (maps to Java `interface`) and `abstraction` (maps to
+Java `abstract class`).
+
+### Contract types (`contract` keyword)
+
+Implement as a Java `interface`. Contracts define only method signatures — no fields, no constructor, no shared
+implementation. Generic type parameters (`$$T`) map to Java generics (`<T>`).
+
+```java
+// Meta-language:
+//   contract Executable<$$Response> {
+//       @@async $$Response execute(client: HieroClient)
+//   }
+
+public interface Executable<R> {
+    R execute(HieroClient client) throws HieroException;
+    CompletionStage<R> executeAsync(HieroClient client);
+}
+```
+
+### Base types (`abstraction` keyword)
+
+Implement as a Java `abstract class`. Bases carry shared fields, constructors, and non-trivial method bodies that
+subtypes inherit.
+
+```java
+// Meta-language:
+//   abstraction Request {
+//       @@default(10) maxAttempts: int32
+//       protected $$Result withRetry(...)
+//   }
+
+public abstract class Request {
+    private int maxAttempts = 10;
+
+    protected <N, R> R withRetry(Network<N> network, Function<N, R> action, Predicate<Throwable> shouldRetry) {
+        // shared retry loop implementation
+    }
+}
+```
+
+### Mixed inheritance (base + contracts)
+
+When a type extends both an `abstraction` base and one or more `contract` types, the base becomes the Java `extends`
+target and the contracts become `implements` targets. This maintains single class inheritance with multiple interface
+implementation.
+
+```java
+// Meta-language:
+//   abstraction Transaction extends ConsensusRequest, Executable<TransactionResponse> { ... }
+
+public abstract class Transaction
+        extends ConsensusRequest               // class inheritance (base)
+        implements Executable<TransactionResponse> {  // interface implementation (contract)
+    // ...
+}
+```
+
+### Protected methods
+
+Meta-language `protected` maps directly to Java `protected`. These methods are accessible to subclasses but not to
+public API consumers.
+
+### Callback parameters
+
+Map callbacks to the appropriate `java.util.function` type:
+
+| Meta-language | Java |
+|---|---|
+| `void callback()` | `Runnable` |
+| `void callback(item: $$T)` | `Consumer<T>` |
+| `bool callback(item: $$T)` | `Predicate<T>` |
+| `$$R callback(item: $$T)` | `Function<T, R>` |
+
+### General guidance for interface vs abstract class
+
+Beyond the `contract` and `abstraction` keywords, use these additional heuristics:
+
+- Use `interface` when constructors should not be enforced and default methods suffice for shared behavior.
+- Use `abstract class` when constructors should be enforced, when methods should be `final`, or when mutable fields
+  are shared across subtypes.
+- Records should still be used wherever possible for types that are fully `@@immutable`.
+
 ## Complex Types
 
-The meta-language can be used to define complex types.
-Here the meta-language makes a difference between abstract types and non-abstract types.
-The meta-language does not define if anything should be an interface or abstract class since some languages do not
-support this.
-Therefore, there is no fix rule that defines if something must be created as interface or abstract class in Java.
-Especially with default methods, a lot can be done with interfaces.
-Abstract classes will make sense if constructors should be enforced or methods should be defined as final.
-
-Next to that records should be used wherever possible.
 If a non-abstract type in the meta-language only contains attributes annotated with `@@immutable`, the type must be
 declared as a Java `record`.
 
