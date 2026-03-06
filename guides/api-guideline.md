@@ -130,12 +130,24 @@ The meta-language provides two keywords for abstract types, each with a distinct
 - **`abstraction`** — Declares a type with **shared fields and/or non-trivial implementation**. Subtypes inherit
   meaningful shared behavior and state. Implement as abstract classes (Java/C++/Python/JS/TS/Swift) or embedded
   structs + generics (Go/Rust).
-- **`contract`** — Declares a type with **only method signatures** and no fields or shared implementation. Multiple
-  unrelated types may satisfy the contract independently with completely different internals. Implement as interfaces
+- **`interface`** — Declares a type with **only method signatures** and no fields or shared implementation. Multiple
+  unrelated types may satisfy the interface independently with completely different internals. Implement as interfaces
   (Java/Go/TS), protocols (Swift), traits (Rust), or ABCs with no concrete methods (Python).
 
+##### Why two keywords?
+
+The distinction between `abstraction` and `interface` is not just stylistic — it encodes a **structural requirement**
+that prevents diamond inheritance. When a type extends both an abstraction and one or more interfaces (e.g.
+`Transaction extends ConsensusRequest, Executable, GrpcRequest`), exactly one parent must be a class (the abstraction)
+and the rest must be pure interfaces. If SDK implementers cannot tell which is which from the API specification, they
+may implement an `interface` type as a class, breaking the single-inheritance chain. With 7 SDK teams working from the
+same specification, this distinction acts as a guardrail for cross-SDK consistency.
+
+The word `interface` was chosen over the earlier `contract` keyword to avoid confusion with the Hedera/Hiero smart
+contract domain (e.g. `ContractCallQuery`, `ContractCreateTransaction`).
+
 Rule of thumb: if it has **fields or non-trivial method bodies**, use `abstraction`. If it only defines **what methods
-exist**, use `contract`.
+exist**, use `interface`.
 
 See each language's [implementation guideline](#concrete-implementations) for how to translate these keywords into
 language-specific constructs.
@@ -144,7 +156,7 @@ Syntax examples:
 
 ```
 // Only defines what methods exist — no fields, no implementation.
-contract Serializable {
+interface Serializable {
     bytes toBytes()
 }
 
@@ -155,32 +167,32 @@ abstraction Vehicle {
 }
 ```
 
-##### Mixed Inheritance (Abstraction + Contracts)
+##### Mixed Inheritance (Abstraction + Interfaces)
 
-When a type extends both an `abstraction` and one or more `contract` types, the `abstraction` provides the single class
-inheritance path while `contract` types are layered on via interface/trait/protocol implementation. This avoids diamond
-inheritance while allowing types to satisfy multiple behavioral contracts:
+When a type extends both an `abstraction` and one or more `interface` types, the `abstraction` provides the single class
+inheritance path while `interface` types are layered on via interface/trait/protocol implementation. This avoids diamond
+inheritance while allowing types to satisfy multiple behavioral interfaces:
 
 ```
 abstraction Animal {
     name: string
 }
 
-contract Swimmable {
+interface Swimmable {
     void swim()
 }
 
-contract Flyable {
+interface Flyable {
     void fly()
 }
 
-// Single class inheritance from Animal, implements both contracts.
+// Single class inheritance from Animal, implements both interfaces.
 Duck extends Animal, Swimmable, Flyable {
 }
 ```
 
-In this pattern, `Animal` is the class inheritance parent. `Swimmable` and `Flyable` are contracts that `Duck`
-implements. There is no diamond because contracts carry no state or inherited implementation.
+In this pattern, `Animal` is the class inheritance parent. `Swimmable` and `Flyable` are interfaces that `Duck`
+implements. There is no diamond because interfaces carry no state or inherited implementation.
 
 ##### Internal / Protected Methods
 
@@ -227,7 +239,7 @@ Definition of a child type:
 
 - Use `extends` to declare a child type.
 - Multiple inheritance is supported but should be avoided in general. When used, at most one parent should be an
-  `abstraction`; the rest should be `contract` types to avoid diamond inheritance.
+  `abstraction`; the rest should be `interface` types to avoid diamond inheritance.
 - Inherited members: All fields and methods from the parent are inherited by the child (since we only define public API)
 
 Syntax examples:
@@ -522,7 +534,7 @@ Such special behavior must be documented in the best-practice guidelines for the
 
 To keep the API surface consistent and predictable, use the following naming rules:
 
-- Types (complex types, abstractions, contracts, enums, namespaces): PascalCase (e.g., UserProfile, Fetchable).
+- Types (complex types, abstractions, interfaces, enums, namespaces): PascalCase (e.g., UserProfile, Fetchable).
 - Fields and methods: lowerCamelCase (e.g., employeeNumber, fetchById).
 - Enum values: UPPER_SNAKE_CASE (e.g., PENDING, COMPLETED).
 - Namespace names: lowerCamelCase (e.g., transactions).

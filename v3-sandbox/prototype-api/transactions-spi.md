@@ -9,26 +9,28 @@ The consensus node supports adding custom services next to the services that are
 Since new and custom services can provide new transaction types, the SDKs must be able to handle these new transaction types.
 The transactions SPI API defines the interface that must be implemented by the custom service that provides new transaction types.
 
-### Relationship to ExecutableSpi
+### Relationship to Executable and GrpcRequest SPI Methods
 
-`TransactionSupport` and `ExecutableSpi` (from [requests-spi.md](requests-spi.md)) are complementary:
+`TransactionSupport` and the SPI methods on `Executable` / `GrpcRequest` (from [requests-spi.md](requests-spi.md)) are complementary:
 
 - **`TransactionSupport`** is the **data-layer SPI** — it handles proto serialization, deserialization, and gRPC method selection for a specific transaction type.
-- **`ExecutableSpi`** is the **transport-layer SPI** — it handles building the wire request, sending it, mapping the response, and determining retryability.
+- **`GrpcRequest` SPI methods** (`buildRequest`, `shouldRetry`) handle building the protobuf request and determining retryability.
+- **`Executable` SPI methods** (`send`, `mapResponse`) handle sending the request and mapping the response.
 
-`PackedTransaction<$$Data>` implements `ExecutableSpi` generically by delegating to the `TransactionSupport` instance that matches its `$$Data` type:
+`Transaction` implements the `GrpcRequest` and `Executable` SPI methods generically by delegating to the `TransactionSupport` instance that matches its concrete data type:
 
-| ExecutableSpi method | PackedTransaction implementation |
-|---|---|
-| `buildRequest(node)` | Uses `TransactionSupport.updateBody()` to build the `TransactionBody`, sets `transactionId` and `nodeAccountId`, signs with collected signers, wraps in `SignedTransaction` |
-| `send(node, request)` | Uses `TransactionSupport.getMethodDescriptor()` to select the gRPC method, invokes it on the consensus node |
-| `mapResponse(response)` | Uses `TransactionSupport.convert(protoResponse)` to produce the SDK `TransactionResponse` |
-| `shouldRetry(error)` | Checks for retryable consensus error codes (BUSY, PLATFORM_TRANSACTION_NOT_CREATED, etc.) |
+| SPI method | Source | Transaction implementation |
+|---|---|---|
+| `buildRequest(node)` | `GrpcRequest` | Uses `TransactionSupport.updateBody()` to build the `TransactionBody`, sets `transactionId` and `nodeAccountId`, signs with collected signers, wraps in `SignedTransaction` |
+| `send(node, request)` | `Executable` | Uses `TransactionSupport.getMethodDescriptor()` to select the gRPC method, invokes it on the consensus node |
+| `mapResponse(response)` | `Executable` | Uses `TransactionSupport.convert(protoResponse)` to produce the SDK `TransactionResponse` |
+| `shouldRetry(error)` | `GrpcRequest` | Checks gRPC status codes (UNAVAILABLE, RESOURCE_EXHAUSTED) plus consensus-specific codes (BUSY, PLATFORM_TRANSACTION_NOT_CREATED, etc.) |
 
 This means adding a new transaction type requires only:
-1. A new `Transaction` builder subclass (e.g. `FooTransaction extends Transaction`)
+1. A new `Transaction` subclass (e.g. `FooTransaction extends Transaction`)
 2. A new `TransactionSupport` implementation for the `FooTransactionData` type
-No new `PackedTransaction` subclass is needed.
+
+No additional subclasses are needed for SPI purposes.
 
 ## API Schema
 
@@ -37,7 +39,7 @@ namespace transactions-spi
 requires transactions, grpc, hiero-proto
 
 // TransactionSupport is the interface that must be implemented per custom transaction type.
-// It provides the data-layer mechanics that PackedTransaction delegates to
+// It provides the data-layer mechanics that Transaction delegates to
 // when implementing ExecutableSpi.
 abstraction TransactionSupport<$$Data, $$Response, $$Receipt, $$Record> {
 

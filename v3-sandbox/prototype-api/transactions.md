@@ -7,18 +7,38 @@ This section defines the API for transactions.
 The transactions API defines the basic building blocks for transactions.
 It does not define specific transaction types but everything that is common to all transaction types.
 
-Transactions use a **two-phase lifecycle**:
+Transactions use a **single-type design with an internal state machine**:
 
-1. **`Transaction`** — A mutable builder for setting transaction parameters. It extends `ConsensusRequest` (which extends `Request`), inheriting retry/timeout config and `nodeAccountIds`. It does NOT implement `Executable` — users must call `pack()` before executing. Concrete transaction types (e.g. `AccountCreateTransaction`) extend this.
-2. **`PackedTransaction<$$Data>`** — An immutable, signable, executable object produced by `Transaction.pack(client)`. It also extends `ConsensusRequest` and implements `Executable<TransactionResponse>`, participating in the shared `withRetry` retry loop. `pack()` transfers inherited `Request` config and `nodeAccountIds` from the builder to the packed form. See [requests.md](requests.md) for the full hierarchy.
+- **`Transaction`** — Extends `ConsensusRequest` (which extends `Request`) and implements `Executable<TransactionResponse>` and `GrpcRequest`. It starts in a **mutable** state where fields can be set freely, and transitions to a **frozen** state when finalized (transactionId and nodeAccountIds are assigned, the body is locked). Concrete transaction types (e.g. `AccountCreateTransaction`) extend this.
 
-`PackedTransaction` is generic over `$$Data` — the per-type transaction data. There is one `PackedTransaction` class for all transaction types. Per-type differences in proto serialization and gRPC method selection are handled by the `TransactionSupport` SPI (see [transactions-spi.md](transactions-spi.md)). Languages with type aliases may expose concrete names like `PackedAccountCreateTransaction = PackedTransaction<AccountCreateTransactionData>`.
+### State Machine
+
+| State | Can modify fields? | Can sign? | Can execute? | Can serialize? |
+|---|---|---|---|---|
+| **Mutable** | Yes | No (auto-freezes first) | No (auto-freezes first) | Yes (serializes incomplete form) |
+| **Frozen** | No (throws at runtime) | Yes | Yes | Yes |
+
+- `sign()` auto-freezes if the transaction is still mutable (signing requires a finalized body).
+- `execute()` auto-freezes if needed, then auto-signs with the client's operator key.
+- `toBytes()` works in **any** state — serializes whatever is there, even if incomplete. This enables dApps to serialize an unsigned, unfrozen transaction for transport to a wallet.
+- `fromBytes()` deserializes; if the transaction was frozen when serialized, the deserialized form is also frozen.
+- Once any signature is added (including via auto-freeze), modifications throw at runtime.
+
+### Why not PackedTransaction?
+
+An earlier design used a two-type split: `Transaction` (mutable builder) and `PackedTransaction` (immutable executor, produced by `pack()`). This was dropped because:
+
+1. **Conflicts with community direction on freeze deprecation** — [Issue #56](https://github.com/hiero-ledger/sdk-collaboration-hub/issues/56) and its linked discussions ([hiero-sdk-js#1445](https://github.com/hiero-ledger/hiero-sdk-js/issues/1445), [hedera-sdk-reference#127](https://github.com/hashgraph/hedera-sdk-reference/issues/127)) show the community wants to deprecate `freeze()` as an explicit step in favor of auto-freezing on `sign()`/`execute()`. `PackedTransaction` would have made freeze **mandatory** at the type level — `pack()` was semantically identical to `freezeWith()`, just returning a new type.
+2. **Architectural complexity** — Both `Transaction` and `PackedTransaction` needed the same config fields (`maxAttempts`, `nodeAccountIds`, etc.), leading to awkward inheritance or field duplication across every design iteration.
+3. **v2 SDKs prove runtime checks are sufficient** — Every existing SDK uses a single `Transaction` type with an internal frozen flag. `execute()` auto-freezes. Accidental modification of frozen transactions is extremely rare in practice because transaction flows are naturally linear.
+
+See [requests.md](requests.md) for the full hierarchy and [requests-core.md](requests-core.md) for base type definitions.
 
 ## API Schema
 
 ```
 namespace transactions
-requires common, keys, client, requests
+requires common, keys, client, requests-core
 
 // Defines the status of a transaction. Since we can have custom transaction types based on custom services in the consensus node we can not use an enum here anymore
 abstraction TransactionStatus {
@@ -50,64 +70,38 @@ abstraction TransactionSigner {
 }
 
 // ============================================================================
-// TRANSACTION BUILDER
+// TRANSACTION (single type — mutable builder + executable)
 // ============================================================================
 
-// Mutable builder for transaction parameters.
 // Class chain: Transaction -> ConsensusRequest -> Request
-// Inherits retry/timeout config from Request and nodeAccountIds from ConsensusRequest.
-// Does NOT implement Executable — users must call pack() to get an executable form.
-abstraction Transaction extends ConsensusRequest {
-   // The maximal fee to be paid for this transaction.
-  @@nullable maxTransactionFee: common.Hbar
-
-  // In milliseconds, a better lang specific type can be used.
-  @@nullable validDuration: long
-
-  // A memo to be attached to the transaction.
-  @@nullable memo: string
-
-  // Returns a new packed instance of the transaction (previously this was named frozen transaction).
-  PackedTransaction<$$Data> pack(client:HieroClient)
-}
-
-// Mutable builder for transactions that split large payloads into chunks.
-abstraction ChunkedTransaction extends Transaction {
-  @@async
-  PackedChunkedTransaction<$$Data> pack(client:HieroClient)
-}
-
-// ============================================================================
-// PACKED TRANSACTION (inside the Request hierarchy)
-// ============================================================================
-
-// Immutable, signed, executable transaction. Produced by Transaction.pack().
-// Class chain: PackedTransaction -> ConsensusRequest -> Request
-// Contract: implements Executable<TransactionResponse>
+// Contracts: implements Executable<TransactionResponse>, GrpcRequest
 //
-// Parameterized by $$Data — the per-type transaction data. One generic class
-// for all transaction types; TransactionSupport SPI handles per-type differences.
-abstraction PackedTransaction<$$Data> extends ConsensusRequest, Executable<TransactionResponse> {
-  // The id of the transaction.
-  @@immutable transactionId: TransactionId
+// Starts mutable, transitions to frozen on sign()/execute()/explicit freeze.
+// See the State Machine table in the Description section above.
+abstraction Transaction extends ConsensusRequest, Executable<TransactionResponse>, GrpcRequest {
+    // Assigned during freeze (auto or explicit). Null while mutable.
+    @@nullable transactionId: TransactionId
 
-  // Returns a new basic transaction instance based on this packed transaction.
-  Transaction unpack()
+    @@nullable maxTransactionFee: common.Hbar
 
-  // Sign the transaction, if the lang supports it, we should provide a fluent API.
-  void sign(keyPair: keys.KeyPair)
-  void sign(publicKey: keys.PublicKey, transactionSigner: TransactionSigner)
+    @@nullable validDuration: duration
 
-  // Convert the transaction to a byte array.
-  bytes toBytes()
+    @@nullable memo: string
 
-  // Send the transaction, we should provide async and sync versions in best case.
-  @@async
-  TransactionResponse send()
+    // Sign the transaction. Auto-freezes if still mutable.
+    void sign(keyPair: keys.KeyPair)
+    void sign(publicKey: keys.PublicKey, transactionSigner: TransactionSigner)
+
+    // Serialize the transaction to bytes. Works in any state (mutable or frozen).
+    bytes toBytes()
+
+    // Execute the transaction. Auto-freezes if still mutable, auto-signs with operator.
+    @@async
+    TransactionResponse execute(client: HieroClient)
 }
 
-// Packed form of chunked transactions. Handles multi-chunk signing and execution.
-abstraction PackedChunkedTransaction<$$Data> extends PackedTransaction<$$Data> {
+// Transactions that split large payloads into chunks.
+abstraction ChunkedTransaction extends Transaction {
 }
 
 // ============================================================================
@@ -161,9 +155,10 @@ Record<$$Receipt extends Receipt> {
 TransactionId generateTransactionId(accountId: common.AccountId)
 @@throws(illegal-format) TransactionId fromString(transactionId: string)
 
-// Deserialize a PackedTransaction from bytes (produced by PackedTransaction.toBytes()).
+// Deserialize a Transaction from bytes (produced by Transaction.toBytes()).
+// If the transaction was frozen when serialized, the deserialized form is also frozen.
 // TransactionSupport SPI is used to identify the transaction type from the proto body.
-@@throws(illegal-format) PackedTransaction fromBytes(bytes: bytes)
+@@throws(illegal-format) Transaction fromBytes(bytes: bytes)
 
 ```
 
@@ -173,16 +168,39 @@ TransactionId generateTransactionId(accountId: common.AccountId)
 HieroClient client = ...
 KeyPair keyPair = ...
 
-FooTransaction transaction = new FooTransaction()
-transaction.setBar("baz")
-
-TransactionResponse response = transaction.pack(client)
-           .sign(keyPair)
-           .execute(client)
+// Simple path: build, execute, done
+TransactionResponse response = new FooTransaction()
+    .setBar("baz")
+    .setMaxAttempts(5)
+    .execute(client)
 
 FooReceipt receipt = response.queryReceipt(client)
-
 FooRecord record = response.queryRecord(client)
+```
+
+### Multi-party signing
+
+```
+// Alice builds and signs (auto-freezes on sign)
+FooTransaction tx = new FooTransaction()
+tx.setBar("baz")
+tx.sign(aliceKeyPair)
+bytes txBytes = tx.toBytes()
+
+// Bob receives, signs, and executes
+Transaction tx2 = Transaction.fromBytes(txBytes)
+tx2.sign(bobKeyPair)
+TransactionResponse response = tx2.execute(client)
+```
+
+### Serialization for wallet transport
+
+```
+// dApp builds an incomplete transaction and sends to wallet
+FooTransaction tx = new FooTransaction()
+tx.setBar("baz")
+bytes txBytes = tx.toBytes()    // works without freeze — for transport
+// send txBytes to wallet via JSON payload, QR code, etc.
 ```
 
 ## Questions & Comments

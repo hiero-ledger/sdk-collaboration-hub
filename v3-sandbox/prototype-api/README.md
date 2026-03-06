@@ -2,15 +2,32 @@
 
 This file defines the API for the prototype in the format defined at our [api-guideline](../../guides/api-guideline.md).
 
-## APIs
+## Architecture
 
-- [Common API](common.md)
-- [Configuration API](config.md)
-- [Key API](keys.md)
-- [Client API](client.md)
-- [Requests API](requests.md) — Request hierarchy, contracts, and all request/query/subscription types
-- [Requests SPI API](requests-spi.md) — Internal execution loop and SPI methods
-- [Transactions API](transactions.md) — Transaction builder, PackedTransaction, and response types (integrates with Requests API)
-- [Transactions SPI API](transactions-spi.md) — TransactionSupport data-layer SPI (integrates with Requests SPI)
+- [Requests Overview](requests.md) — Request hierarchy, design rationale, hierarchy diagrams
+- [Requests Core Types](requests-core.md) — `RequestConfig` struct, execution contracts (`Executable`, `Subscribable`), transport contracts (`GrpcRequest`, `RestRequest`), `Request` root base, network-specific request bases
+- [Requests SPI](requests-spi.md) — Internal node/network types, `withRetry` execution loop, SPI methods distributed across 3 axes
 
-Every SDK will depend in its public API on [our protobuf definitions](hiero-proto.md) and [GRPC](grpc.md).
+## Consensus Node
+
+- [Transactions](transactions.md) — `Transaction` (single type with internal state machine), response types
+- [Transactions SPI](transactions-spi.md) — `TransactionSupport` data-layer SPI
+- [Account Transactions](transactions-accounts.md) — `AccountCreateTransaction` concrete example
+- [Consensus Queries](consensus-queries.md) — `ConsensusQuery` base + concrete consensus query types
+
+## Mirror Node
+
+- [Mirror Requests](mirror-requests.md) — Mirror gRPC/REST queries + `TopicMessageQuery` streaming
+
+## Block Node
+
+- [Block Requests](block-requests.md) — Block node queries + `BlockStreamQuery` streaming
+
+## Shared Dependencies
+
+- [Common API](common.md) — Shared types (`Hbar`, `AccountId`, `Ledger`, etc.)
+- [Configuration API](config.md) — Network configuration
+- [Key API](keys.md) — Cryptographic key creation and serialization
+- [Client API](client.md) — `HieroClient` and `OperatorAccount`
+
+Every SDK will depend in its public API on [our protobuf definitions](hiero-proto.md) and [gRPC](grpc.md).

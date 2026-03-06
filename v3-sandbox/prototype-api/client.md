@@ -11,7 +11,7 @@ A client defines a concrete network connection to a specific network with a spec
 
 ```
 namespace client
-requires common, config, keys
+requires common, config, keys, requests-core
 
 // Definition of an account that signs and pays for requests
 OperatorAccount {
@@ -23,9 +23,7 @@ OperatorAccount {
 HieroClient {
     @@immutable operatorAccount: OperatorAccount // the operator account
     @@immutable ledger: common.Ledger // the network to connect to
-    consensusNetwork: ConsensusNetwork // consensus node network (used by Transaction, ConsensusQuery)
-    mirrorNetwork: MirrorNetwork // mirror node network (used by MirrorGrpcQuery, MirrorRestQuery, TopicMessageQuery)
-    blockNodeNetwork: BlockNodeNetwork // block node network (used by BlockNodeQuery, BlockStreamQuery)
+    defaultRequestConfig: requests-core.RequestConfig // client-level defaults for retry/timeout (overridden by per-request config)
 }
 
 // factory methods of `HieroClient` that should be added to the namespace in the best language dependent way
