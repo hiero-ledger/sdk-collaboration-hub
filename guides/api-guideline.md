@@ -140,11 +140,7 @@ The distinction between `abstraction` and `interface` is not just stylistic — 
 that prevents diamond inheritance. When a type extends both an abstraction and one or more interfaces (e.g.
 `Transaction extends ConsensusRequest, Executable, GrpcRequest`), exactly one parent must be a class (the abstraction)
 and the rest must be pure interfaces. If SDK implementers cannot tell which is which from the API specification, they
-may implement an `interface` type as a class, breaking the single-inheritance chain. With 7 SDK teams working from the
-same specification, this distinction acts as a guardrail for cross-SDK consistency.
-
-The word `interface` was chosen over the earlier `contract` keyword to avoid confusion with the Hedera/Hiero smart
-contract domain (e.g. `ContractCallQuery`, `ContractCreateTransaction`).
+may implement an `interface` type as a class, breaking the single-inheritance chain. This distinction acts as a guardrail for cross-SDK consistency.
 
 Rule of thumb: if it has **fields or non-trivial method bodies**, use `abstraction`. If it only defines **what methods
 exist**, use `interface`.
