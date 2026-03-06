@@ -10,5 +10,6 @@ This file defines the API for the prototype in the format defined at our [api-gu
 - [Client API](client.md)
 - [Transactions API](transactions.md)
 - [Transactions SPI API](transactions-spi.md)
+- [Mirror Node Query API](mirror-node.md)
 
 Every SDK will depend in its public API on [our protobuf definitions](hiero-proto.md) and [GRPC](grpc.md).
