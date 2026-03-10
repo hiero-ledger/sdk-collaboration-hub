@@ -28,21 +28,14 @@ interface Executable<$$Response> {
     $$Response execute(client: HieroClient)
 }
 
-// Any request that produces a stream of items via subscribe().
+// Produces an asynchronous stream of $$Item values.
 // Does NOT extend Request — avoids diamond inheritance.
+// Implementations must provide item delivery, error propagation,
+// completion signaling, and cancellation support.
+// The return type and consumer mechanism are language-specific.
+// See language best practice guides for the concrete signature.
 interface Subscribable<$$Item> {
-    Subscribable setCompletionHandler(handler: void callback())
-    Subscribable setErrorHandler(handler: void callback(error: $$Error))
-    Subscribable setRetryHandler(handler: bool callback(error: $$Error))
-
-    @@async
-    @@throws(network-error, network-not-configured)
-    SubscriptionHandle subscribe(client: HieroClient, onNext: void callback(item: $$Item))
-}
-
-// Handle returned by Subscribable.subscribe() to control a streaming subscription.
-SubscriptionHandle {
-    void unsubscribe()
+    subscribe(client: HieroClient)
 }
 
 // ============================================================================
@@ -54,7 +47,6 @@ SubscriptionHandle {
 //   buildRequest(node) — builds the protobuf request
 //   shouldRetry(error) — default: retry on gRPC UNAVAILABLE, RESOURCE_EXHAUSTED
 interface GrpcRequest {
-    bool shouldRetry(error: $$Error)
 }
 
 // Marks a request as using REST/HTTP transport.
@@ -62,7 +54,6 @@ interface GrpcRequest {
 //   buildRequest(node) — builds the HTTP request (URL, headers, body)
 //   shouldRetry(error) — default: retry on HTTP 503, 429, 408
 interface RestRequest {
-    bool shouldRetry(error: $$Error)
 }
 
 // ============================================================================
@@ -76,12 +67,28 @@ interface RestRequest {
 // Priority chain: per-request config > client defaults > hardcoded defaults.
 // When execute()/subscribe() is called, any unset fields on the request are
 // filled from client.defaultRequestConfig, then from @@default values here.
+//
+// Timeout semantics:
+//
+//   attemptTimeout — Max time for a SINGLE network call (one attempt).
+//     gRPC: the deadline for a single unary RPC or initial connection timeout for streaming.
+//     REST: the HTTP request timeout for a single call (connect + read).
+//     If this fires, the attempt fails and withRetry can try the next node.
+//
+//   requestTimeout — Max time for the ENTIRE operation across ALL attempts.
+//     gRPC and REST: same semantics — wall-clock timeout covering all retries
+//     and backoff delays combined. If this fires, withRetry stops immediately
+//     regardless of remaining attempts.
+//
+//   Example: maxAttempts=3, attemptTimeout=5s, requestTimeout=30s means each
+//   individual call can take up to 5s, but the whole operation (up to 3 attempts
+//   with backoff) must finish within 30s.
 RequestConfig {
     @@default(10) maxAttempts: int32
     @@default(8s) maxBackoff: duration
     @@default(250ms) minBackoff: duration
-    @@nullable attemptTimeout: duration // max time for a single attempt (one network call); applies to both gRPC and REST
-    @@nullable requestTimeout: duration // max time for the entire operation (all attempts combined)
+    @@nullable attemptTimeout: duration
+    @@nullable requestTimeout: duration
 }
 
 // ============================================================================

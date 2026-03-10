@@ -199,7 +199,7 @@ that subclasses override or call but end users do not interact with directly. An
 abstraction Request {
     maxAttempts: int32
 
-    protected $$Result withRetry(action: callback(attempt: int32) -> $$Result)
+    protected $$Result withRetry(action: function<$$Result attempt(attempt: int32)>)
 }
 ```
 
@@ -211,25 +211,6 @@ Each language should translate `protected` to its closest equivalent:
 - Rust: `pub(crate)` visibility
 - Python: single underscore prefix convention (`_method_name`)
 - JavaScript: `#` private field or `_` convention
-
-##### Callback Parameters
-
-Methods may accept callbacks (function parameters) using the `callback` keyword:
-
-```
-void forEach(action: void callback(item: $$Item))
-$$Result transform(mapper: callback(input: $$Input) -> $$Result)
-```
-
-Each language translates callbacks to its idiomatic function type:
-
-- Java: `Function<T, R>`, `Consumer<T>`, `Predicate<T>`, or `Runnable`
-- TypeScript/JavaScript: `(param: Type) => ReturnType`
-- Go: `func(param Type) ReturnType`
-- Rust: `impl Fn(Type) -> ReturnType` or `Box<dyn Fn(...)>`
-- C++: `std::function<ReturnType(ParamType)>`
-- Swift: `(ParamType) -> ReturnType`
-- Python: `Callable[[ParamType], ReturnType]`
 
 Definition of a child type:
 

@@ -51,8 +51,8 @@ requires requests-core, common, client
 abstraction Request {
     protected $$Result withRetry(
         network: Network<$$Node>,
-        action: @@throws(network-error) callback(node: $$Node) -> $$Result,
-        shouldRetry: callback(error: $$Error) -> bool
+        action: @@throws(network-error) function<$$Result attempt(node: $$Node)>,
+        shouldRetry: function<bool shouldRetry(error: $$Error)>
     )
 }
 
@@ -61,23 +61,22 @@ abstraction Request {
 // NODE TYPES (internal — not part of the public API)
 // ============================================================================
 
-// Consensus nodes are identified by AccountId and connect via gRPC.
-ConsensusNode {
-    @@immutable accountId: common.AccountId
+abstraction Node {
     @@immutable host: string
     @@immutable port: uint16
+}
+
+// Consensus nodes are identified by AccountId and connect via gRPC.
+ConsensusNode extends Node {
+    @@immutable accountId: common.AccountId
 }
 
 // Mirror nodes are identified by host:port. Used for both gRPC and REST.
-MirrorNode {
-    @@immutable host: string
-    @@immutable port: uint16
+MirrorNode extends Node {
 }
 
 // Block nodes are identified by host:port.
-BlockNode {
-    @@immutable host: string
-    @@immutable port: uint16
+BlockNode extends Node {
 }
 
 // ============================================================================
@@ -147,20 +146,20 @@ interface Executable<$$Response> {
 // AXIS 2 SPI: EXECUTION — Subscribable internal methods
 // ============================================================================
 
-// Each type implementing Subscribable must provide these protected methods.
-// They are called by the subscribe() implementation within the withRetry loop.
+// Each type implementing Subscribable must provide an internal method to open
+// the server-streaming call. Called by the subscribe() implementation within
+// the withRetry loop. The item delivery mechanism is language-specific.
 // Note: buildRequest() is on the transport interface (Axis 3), not here.
 
 interface Subscribable<$$Item> {
 
     // Open a server-streaming call to the given node.
-    // Items are delivered to onNext. On stream end, returns normally.
+    // Items are delivered to the consumer. On stream end, returns normally.
     // On stream failure, throws a network-error so withRetry can handle it.
     @@throws(network-error)
     protected void openStream(
         node: $$Node,
-        request: $$ProtoRequest,
-        onNext: void callback(item: $$Item)
+        request: $$ProtoRequest
     )
 }
 
@@ -209,11 +208,11 @@ interface RestRequest {
 //
 // Streaming execution (e.g. TopicMessageQuery.subscribe):
 //
-//   subscribe(client, onNext):
+//   subscribe(client):
 //     network = this.getNetwork(client)                     // Axis 1: network base
 //     return this.withRetry(network, (node) -> {             // from Request
 //       request = this.buildRequest(node)                     // Axis 3: GrpcRequest
-//       this.openStream(node, request, onNext)                // Axis 2: Subscribable
+//       this.openStream(node, request)                        // Axis 2: Subscribable
 //     }, (error) -> this.shouldRetry(error))                  // Axis 3: GrpcRequest
 //
 // In both cases, withRetry handles:

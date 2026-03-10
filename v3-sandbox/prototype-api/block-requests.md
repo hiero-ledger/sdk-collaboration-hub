@@ -46,15 +46,11 @@ ServerStatusQuery statusQuery = new ServerStatusQuery()
 ServerStatus status = statusQuery.execute(client)
 
 // Subscribe to block stream
+// The concrete subscribe() signature is language-specific.
+// This pseudocode shows the semantic intent:
 BlockStreamQuery streamQuery = new BlockStreamQuery()
 streamQuery.setStartBlockNumber(1000)
-
-SubscriptionHandle handle = streamQuery.subscribe(client, (block) -> {
-    // process each Block
-})
-
-// Later, to stop receiving blocks:
-handle.unsubscribe()
+streamQuery.subscribe(client)  // delivers Block items; see language guide for concrete API
 ```
 
 ## Questions & Comments

@@ -60,16 +60,12 @@ MirrorNodeContractCallQuery callQuery = new MirrorNodeContractCallQuery()
 string result = callQuery.execute(client)
 
 // Streaming subscription (gRPC)
+// The concrete subscribe() signature is language-specific.
+// This pseudocode shows the semantic intent:
 TopicMessageQuery subscription = new TopicMessageQuery()
 subscription.setTopicId(topicId)
 subscription.setStartTime(startTime)
-
-SubscriptionHandle handle = subscription.subscribe(client, (message) -> {
-    // process each TopicMessage
-})
-
-// Later, to stop receiving messages:
-handle.unsubscribe()
+subscription.subscribe(client)  // delivers TopicMessage items; see language guide for concrete API
 ```
 
 ## Questions & Comments
