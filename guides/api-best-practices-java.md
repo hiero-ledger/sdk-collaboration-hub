@@ -34,12 +34,14 @@ In Java, this maps to `java.lang.Class<?>`.
 
 **Basic Usage**:
 
-```java
+```
 // Meta-language definition
 Container {
-    type getInnerType ()
+    type getInnerType()
 }
+```
 
+```java
 // Java implementation
 public interface Container {
     @NonNull
@@ -75,7 +77,7 @@ Class<?> innerType = container.getInnerType();
 
 // Type-safe usage with generics
 Container<Transaction> txContainer = new TypedServiceContainer<>();
-Transaction tx = txContainer.getInnerType(); // Type-safe, no cast needed
+Class<Transaction> txClass = txContainer.getInnerType();
 
 // Common pattern: factory with type parameter
 public <T extends Transaction> T createTransaction(@NonNull final Class<T> transactionType) {
@@ -1142,13 +1144,13 @@ When a meta-language error identifier has a natural equivalent in the Java stand
 instead of defining a custom one. Java developers already know and handle these exceptions, and frameworks and libraries
 are built around them.
 
-| Meta-Language Identifier | Java Exception                              | Rationale                              |
-|--------------------------|---------------------------------------------|----------------------------------------|
-| `timeout-error`          | `java.util.concurrent.TimeoutException`     | Standard for timeout scenarios         |
-| `invalid-argument-error` | `java.lang.IllegalArgumentException`        | Standard for bad input                 |
-| `invalid-state-error`    | `java.lang.IllegalStateException`           | Standard for wrong object state        |
-| `io-error`               | `java.io.IOException`                       | Standard for I/O failures              |
-| `unsupported-error`      | `java.lang.UnsupportedOperationException`   | Standard for unimplemented operations  |
+| Meta-Language Identifier | Java Exception                            | Rationale                             |
+|--------------------------|-------------------------------------------|---------------------------------------|
+| `timeout-error`          | `java.util.concurrent.TimeoutException`   | Standard for timeout scenarios        |
+| `invalid-argument-error` | `java.lang.IllegalArgumentException`      | Standard for bad input                |
+| `invalid-state-error`    | `java.lang.IllegalStateException`         | Standard for wrong object state       |
+| `io-error`               | `java.io.IOException`                     | Standard for I/O failures             |
+| `unsupported-error`      | `java.lang.UnsupportedOperationException` | Standard for unimplemented operations |
 
 Only define a custom exception class when no suitable standard exception exists — typically for SDK-specific error
 conditions that have no Java equivalent (e.g., transaction-specific failures, network-specific consensus errors).
@@ -1234,13 +1236,23 @@ methods, the exception is delivered as the cause of the failed `CompletionStage`
 
 ```java
 service.fetchDetails("key-123")
-        .thenAccept(details -> System.out.println("Found: " + details))
-        .exceptionally(throwable -> {
-            if (throwable.getCause() instanceof NotFoundException) {
-                System.out.println("Not found");
+        .
+
+thenAccept(details ->System.out.
+
+println("Found: "+details))
+        .
+
+exceptionally(throwable ->{
+        if(throwable.
+
+getCause() instanceof NotFoundException){
+        System.out.
+
+println("Not found");
             }
-            return null;
-        });
+                    return null;
+                    });
 ```
 
 ## Usage of final Keyword
