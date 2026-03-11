@@ -252,6 +252,71 @@ Next to that records should be used wherever possible.
 If a non-abstract type in the meta-language only contains attributes annotated with `@@immutable`, the type must be
 declared as a Java `record`.
 
+### Generic Type Parameters
+
+Generic type parameters in the meta-language use the `$$` prefix (e.g., `$$T`, `$$Product`). In Java, drop the `$$`
+prefix and use standard Java generic syntax.
+
+**Basic mapping:**
+
+```
+// Meta-language
+abstraction Factory<$$Product> {
+    $$Product create()
+}
+```
+
+```java
+// Java implementation
+public interface Factory<Product> {
+    @NonNull
+    Product create();
+}
+```
+
+**Bounded type parameters** using `extends` map directly:
+
+```
+// Meta-language
+abstraction FruitFactory<$$Product extends Fruit> {
+    $$Product create()
+}
+```
+
+```java
+// Java implementation
+public interface FruitFactory<Product extends Fruit> {
+    @NonNull
+    Product create();
+}
+```
+
+**Concrete extension** of a generic type:
+
+```
+// Meta-language
+CarFactory extends Factory<Car> {
+}
+```
+
+```java
+// Java implementation
+public final class CarFactory implements Factory<Car> {
+
+    @Override
+    @NonNull
+    public Car create() {
+        return new Car();
+    }
+}
+```
+
+**Rules:**
+
+1. Drop the `$$` prefix — `$$T` becomes `T`, `$$Product` becomes `Product`
+2. Keep descriptive names where the meta-language uses them (e.g., `Product` instead of shortening to `T`)
+3. Apply `@NonNull`/`@Nullable` annotations to generic return types and parameters as usual
+
 ## Enumerations
 
 Enumerations defined in the meta-language map directly to Java `enum` types. Enum values use `UPPER_SNAKE_CASE` as
