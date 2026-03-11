@@ -1,3 +1,6 @@
+@.claude/hip-context.md
+@.claude/tck-context.md
+
 # CLAUDE.md
 
 ## Project Overview
@@ -68,10 +71,14 @@ When editing or adding to language-specific best practice files (`guides/api-bes
 
 ## Writing Proposals
 
-- Proposals go in the `proposals/` folder.
-- Each proposal should include a section that documents the API in the language-agnostic meta-language syntax defined in
-  `guides/api-guideline.md`.
-- Use templates from `templates/` as a starting point.
+- Proposals go in the `proposals/` folder. HIP-specific proposals go in `proposals/hips/` and are named `hip-NNNN.md`.
+- Every new proposal **must** follow the template in `templates/sdk-design-doc-template.md`. The template defines the
+  required structure: Summary, New APIs, Updated APIs, Internal Changes (including Response Codes and Transaction Retry),
+  Test Plan (with TCK section), and SDK Example.
+- API definitions in proposals must use the language-agnostic meta-language syntax defined in `guides/api-guideline.md`.
+- The Test Plan section should use the Given/When/Then idiom and cover all new response codes.
+- The TCK section should reference tests to be added to the
+  [hiero-sdk-tck](https://github.com/hiero-ledger/hiero-sdk-tck) repository.
 
 ## Style and Conventions
 
