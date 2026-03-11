@@ -109,6 +109,9 @@ abstraction Request {
 // Shared base for all consensus node requests.
 // Network resolution is handled internally via SPI (see requests-spi.md).
 abstraction ConsensusRequest extends Request {
+    // Allows the user to explicitly target specific consensus nodes.
+    // When set, the withRetry loop selects from this list instead of the full network.
+    // Corresponds to the node_account_id field in the protobuf TransactionBody/QueryHeader.
     nodeAccountIds: list<AccountId>
 }
 
