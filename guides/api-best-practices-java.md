@@ -25,6 +25,7 @@ Use the following canonical mappings when turning meta types into Java:
 | `dateTime`        | `java.time.LocalDateTime`                                                                                                          | -                                                                                |
 | `zonedDateTime`   | `java.time.ZonedDateTime`                                                                                                          | -                                                                                |
 | `type`            | `java.lang.Class<?>`                                                                                                               | Used for runtime type information, typically with generics `Class<T>`            |
+| `function<...>`   | `@FunctionalInterface` or `java.util.function.*`                                                                                   | See [Function Types](#function-types) section below                              |
 
 ### Type Parameter for Runtime Type Information
 
@@ -111,6 +112,69 @@ For each numeric Java type a maximum numeric type is defined.
 | `uint32`         | `int`, `java.lang.Integer` |
 | `uint64`         | `long`, `java.lang.Long`   |
 | `uint256`        | `java.math.BigInteger`     |
+
+### Function Types
+
+The meta-language `function<R m(p: T, ...)>` maps to a `@FunctionalInterface` in Java. Where possible, use the
+standard interfaces from `java.util.function`. Define a custom `@FunctionalInterface` only when no standard interface
+matches.
+
+**Mapping to standard functional interfaces:**
+
+| Meta-Language                                    | Java Type                          |
+|--------------------------------------------------|------------------------------------|
+| `function<void run()>`                           | `java.lang.Runnable`               |
+| `function<void accept(value: T)>`               | `java.util.function.Consumer<T>`   |
+| `function<R supply()>`                           | `java.util.function.Supplier<R>`   |
+| `function<R apply(value: T)>`                    | `java.util.function.Function<T,R>` |
+| `function<bool test(value: T)>`                  | `java.util.function.Predicate<T>`  |
+| `function<R apply(value1: T, value2: U)>`        | `java.util.function.BiFunction<T,U,R>` |
+| `function<void accept(value1: T, value2: U)>`   | `java.util.function.BiConsumer<T,U>` |
+
+**Example with standard interface:**
+
+```
+// Meta-language
+subscribe(callback: function<void onEvent(event: Event)>)
+```
+
+```java
+// Java implementation using Consumer
+public void subscribe(@NonNull final Consumer<Event> callback) {
+    Objects.requireNonNull(callback, "callback must not be null");
+    // ...
+}
+```
+
+**Custom functional interface:**
+
+When the function signature does not match any standard interface (e.g., more than two parameters or checked exceptions),
+define a custom `@FunctionalInterface`:
+
+```
+// Meta-language
+execute(handler: function<bool onMessage(topic: string, message: bytes, timestamp: dateTime)>)
+```
+
+```java
+// Java implementation with custom functional interface
+@FunctionalInterface
+public interface MessageHandler {
+    boolean onMessage(@NonNull String topic, @NonNull byte[] message, @NonNull LocalDateTime timestamp);
+}
+
+public void execute(@NonNull final MessageHandler handler) {
+    Objects.requireNonNull(handler, "handler must not be null");
+    // ...
+}
+```
+
+**Rules:**
+
+1. Prefer standard `java.util.function` interfaces over custom ones
+2. Always annotate custom functional interfaces with `@FunctionalInterface`
+3. Apply `@NonNull`/`@Nullable` annotations to functional interface method parameters and return types
+4. Function type parameters must not be `null` unless annotated with `@@nullable` in the meta-language
 
 ## Immutable Objects
 
