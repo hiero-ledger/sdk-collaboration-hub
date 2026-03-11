@@ -50,14 +50,14 @@ public interface Container {
 
 When possible, use generics to provide type safety:
 
-```java
+```
 // Meta-language definition with generic
-abstraction Container
-
-<$$T> {
-    $$T getInnerType ()
+abstraction Container<$$T> {
+    $$T getInnerType()
 }
+```
 
+```java
 // Java implementation with generics
 public interface Container<T> {
     @NonNull
@@ -70,11 +70,11 @@ public interface Container<T> {
 ```java
 // Basic usage with Class<?>
 Container container = new ServiceContainer();
-Object service = container.create(MyService.class);
+Class<?> innerType = container.getInnerType();
 
 // Type-safe usage with generics
 Container<Transaction> txContainer = new TypedServiceContainer<>();
-Transaction tx = txContainer.create(Transaction.class); // Type-safe, no cast needed
+Transaction tx = txContainer.getInnerType(); // Type-safe, no cast needed
 
 // Common pattern: factory with type parameter
 public <T extends Transaction> T createTransaction(@NonNull final Class<T> transactionType) {
@@ -988,9 +988,9 @@ The synchronous method can be defined and implemented as follows:
 ```java
 public interface ExampleService {
 
-    CompletionStage<Example> getExample();
+    CompletionStage<Example> getExample(final String id);
 
-    default Example getExampleSync(final long timeout, final TimeUnit unit) {
+    default Example getExampleSync(final String id, final long timeout, final TimeUnit unit) {
         return getExample(id).toCompletableFuture().get(timeout, unit);
     }
 
@@ -1214,7 +1214,7 @@ The `System.Logger` API provides `log` methods that accept message parameters vi
 formatted when the log level is active.
 
 ```java
-LOGGER.log(System.Logger.Level.DEBUG, "Processing item {0} of {1}",currentIndex, totalCount);
+LOGGER.log(System.Logger.Level.DEBUG, "Processing item {0} of {1}", currentIndex, totalCount);
 ```
 
 For log messages where constructing the message itself is expensive (e.g. calling `toString()` on complex objects or
@@ -1223,18 +1223,12 @@ the expensive operation is only performed when the message will actually be logg
 
 ```java
 // Using a Supplier to defer expensive message construction
-LOGGER.log(System.Logger.Level.DEBUG, () ->"State snapshot: "+
-
-buildExpensiveSnapshot());
+LOGGER.log(System.Logger.Level.DEBUG, () -> "State snapshot: " + buildExpensiveSnapshot());
 
 // Using isLoggable to guard expensive operations
-        if(LOGGER.
-
-isLoggable(System.Logger.Level.TRACE)){
-final String dump = generateDetailedDump();
-    LOGGER.
-
-log(System.Logger.Level.TRACE, "Full dump: {0}",dump);
+if (LOGGER.isLoggable(System.Logger.Level.TRACE)) {
+    final String dump = generateDetailedDump();
+    LOGGER.log(System.Logger.Level.TRACE, "Full dump: {0}", dump);
 }
 ```
 
@@ -1308,6 +1302,34 @@ module com.example.provider {
     requires com.example.api;
     provides com.example.api.ExampleProvider
             with com.example.provider.DefaultExampleProvider;
+}
+```
+
+### Loading a Service Provider
+
+On the consumer side, use `java.util.ServiceLoader` to discover and load provider implementations at runtime. This works
+both on the module path (JPMS) and the classpath (`META-INF/services`).
+
+```java
+import java.util.ServiceLoader;
+
+public final class ExampleProviderLoader {
+
+    @NonNull
+    public static ExampleProvider load() {
+        return ServiceLoader.load(ExampleProvider.class)
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("No ExampleProvider implementation found"));
+    }
+}
+```
+
+When a module uses `ServiceLoader` to load a service, it must declare this in its `module-info.java`:
+
+```java
+module com.example.consumer {
+    requires com.example.api;
+    uses com.example.api.ExampleProvider;
 }
 ```
 
@@ -1811,10 +1833,10 @@ class PublicKeyTest {
 1. **Use Given-When-Then structure** - clearly separate test phases with comments
 2. **Test one thing per test** - each test should verify a single behavior
 3. **Clear assertions** - provide meaningful assertion messages
-5. **Test edge cases** - null values, empty collections, boundary values
-6. **Test error conditions** - verify exceptions are thrown when expected
-7. **Independent tests** - tests should not depend on execution order
-8. **Fast execution** - unit tests should run in milliseconds
+4. **Test edge cases** - null values, empty collections, boundary values
+5. **Test error conditions** - verify exceptions are thrown when expected
+6. **Independent tests** - tests should not depend on execution order
+7. **Fast execution** - unit tests should run in milliseconds
 
 ### Integration Test Guidelines
 
@@ -2166,15 +2188,15 @@ module org.hiero.accounts {
 // Account.java
 package org.hiero.accounts;
 
-        import org.hiero.transactions.Transaction;
-        import org.jspecify.annotations.Nullable;
+import org.hiero.transactions.Transaction;
+import org.jspecify.annotations.Nullable;
 
-        public record Account(
+public record Account(
         String id,
         @Nullable Transaction lastTransaction
-        ){
-        // ...
-        }
+) {
+    // ...
+}
 ```
 
 **Note**: This creates a dependency, so `org.hiero.transactions` types appear in the public API. Consider whether
