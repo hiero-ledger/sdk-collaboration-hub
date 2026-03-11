@@ -128,7 +128,7 @@ Person {
 
 ```java
 // Implementation of the Person type in Java
-public record Person(@Nullable String name, @Nullable int age) {
+public record Person(@Nullable String name, @Nullable Integer age) {
 } // Usage of the @Nullable annotation is described in the following chapter
 ```
 
@@ -181,9 +181,98 @@ Therefore, there is no fix rule that defines if something must be created as int
 Especially with default methods, a lot can be done with interfaces.
 Abstract classes will make sense if constructors should be enforced or methods should be defined as final.
 
+Types annotated with `@@finalType` in the meta-language must be declared with the `final` keyword in Java (or as a
+`record`, which is implicitly final). This prevents subclassing and ensures the type cannot be extended.
+
 Next to that records should be used wherever possible.
 If a non-abstract type in the meta-language only contains attributes annotated with `@@immutable`, the type must be
 declared as a Java `record`.
+
+## Enumerations
+
+Enumerations defined in the meta-language map directly to Java `enum` types. Enum values use `UPPER_SNAKE_CASE` as
+defined in the meta-language naming conventions, which matches Java's standard enum naming.
+
+**Simple enumeration:**
+
+```
+// Meta-language
+enum TransactionStatus {
+    PENDING
+    COMPLETED
+    FAILED
+}
+```
+
+```java
+// Java implementation
+public enum TransactionStatus {
+    PENDING,
+    COMPLETED,
+    FAILED
+}
+```
+
+**Enumeration with immutable attributes:**
+
+All attributes on enumerations must be `@@immutable` in the meta-language. In Java, enum fields are declared `final` and
+set via the constructor.
+
+```
+// Meta-language
+enum KeyAlgorithm {
+    ED25519
+    ECDSA_SECP256K1
+
+    @@immutable keySize: int32
+}
+```
+
+```java
+// Java implementation
+public enum KeyAlgorithm {
+
+    ED25519(32),
+    ECDSA_SECP256K1(33);
+
+    private final int keySize;
+
+    KeyAlgorithm(final int keySize) {
+        this.keySize = keySize;
+    }
+
+    public int getKeySize() {
+        return keySize;
+    }
+}
+```
+
+**Enumeration with methods:**
+
+```
+// Meta-language
+enum TransactionStatus {
+    PENDING
+    COMPLETED
+    FAILED
+
+    bool isTerminal()
+}
+```
+
+```java
+// Java implementation
+public enum TransactionStatus {
+
+    PENDING,
+    COMPLETED,
+    FAILED;
+
+    public boolean isTerminal() {
+        return this == COMPLETED || this == FAILED;
+    }
+}
+```
 
 ## Collections
 
@@ -501,7 +590,7 @@ The given sample can be implemented as a class or record in Java.
 A class can be implemented as follows:
 
 ```java
-public record Example(@NonNull final String name) {
+public record Example(@NonNull String name) {
 
     public Example {
         Objects.requireNonNull(name, "name must not be null");
@@ -575,7 +664,7 @@ public class Example {
 A record can be implemented as follows:
 
 ```java
-public record Example(@NonNull final String name) {
+public record Example(@NonNull String name) {
 
     public Example {
         Objects.requireNonNull(name, "name must not be null");
