@@ -121,15 +121,15 @@ matches.
 
 **Mapping to standard functional interfaces:**
 
-| Meta-Language                                    | Java Type                          |
-|--------------------------------------------------|------------------------------------|
-| `function<void run()>`                           | `java.lang.Runnable`               |
-| `function<void accept(value: T)>`               | `java.util.function.Consumer<T>`   |
-| `function<R supply()>`                           | `java.util.function.Supplier<R>`   |
-| `function<R apply(value: T)>`                    | `java.util.function.Function<T,R>` |
-| `function<bool test(value: T)>`                  | `java.util.function.Predicate<T>`  |
-| `function<R apply(value1: T, value2: U)>`        | `java.util.function.BiFunction<T,U,R>` |
-| `function<void accept(value1: T, value2: U)>`   | `java.util.function.BiConsumer<T,U>` |
+| Meta-Language                                 | Java Type                              |
+|-----------------------------------------------|----------------------------------------|
+| `function<void run()>`                        | `java.lang.Runnable`                   |
+| `function<void accept(value: T)>`             | `java.util.function.Consumer<T>`       |
+| `function<R supply()>`                        | `java.util.function.Supplier<R>`       |
+| `function<R apply(value: T)>`                 | `java.util.function.Function<T,R>`     |
+| `function<bool test(value: T)>`               | `java.util.function.Predicate<T>`      |
+| `function<R apply(value1: T, value2: U)>`     | `java.util.function.BiFunction<T,U,R>` |
+| `function<void accept(value1: T, value2: U)>` | `java.util.function.BiConsumer<T,U>`   |
 
 **Example with standard interface:**
 
@@ -148,7 +148,8 @@ public void subscribe(@NonNull final Consumer<Event> callback) {
 
 **Custom functional interface:**
 
-When the function signature does not match any standard interface (e.g., more than two parameters or checked exceptions),
+When the function signature does not match any standard interface (e.g., more than two parameters or checked
+exceptions),
 define a custom `@FunctionalInterface`:
 
 ```
@@ -873,13 +874,13 @@ possible. `Optional.of(value)` must only be used when the value is guaranteed to
 
 ```java
 // WRONG: Do not use Optional as a parameter
-public void setName(Optional<String> name) { ... }
+public void setName(Optional<String> name) { ...}
 
 // WRONG: Do not use Optional as a field
 private Optional<String> name;
 
 // CORRECT: Use @Nullable for parameters that may be absent
-public void setName(@Nullable final String name) { ... }
+public void setName(@Nullable final String name) { ...}
 
 // CORRECT: Use Optional as a return type
 @NonNull
@@ -1130,6 +1131,118 @@ The sample uses `long timeout, TimeUnit unit` as parameters for the synchronous 
 That is the best practice in Java to ensure that the synchronous method can be called from multiple threads.
 Instead of just defining a `long timeoutInMs` the usage of `TimeUnit` is recommended.
 
+## Exception Handling (`@@throws`)
+
+The meta-language `@@throws(error-type-a, error-type-b)` annotation declares which errors a method can produce.
+In Java, these map to exception classes.
+
+### Prefer standard Java exceptions
+
+When a meta-language error identifier has a natural equivalent in the Java standard library, use that standard exception
+instead of defining a custom one. Java developers already know and handle these exceptions, and frameworks and libraries
+are built around them.
+
+| Meta-Language Identifier | Java Exception                              | Rationale                              |
+|--------------------------|---------------------------------------------|----------------------------------------|
+| `timeout-error`          | `java.util.concurrent.TimeoutException`     | Standard for timeout scenarios         |
+| `invalid-argument-error` | `java.lang.IllegalArgumentException`        | Standard for bad input                 |
+| `invalid-state-error`    | `java.lang.IllegalStateException`           | Standard for wrong object state        |
+| `io-error`               | `java.io.IOException`                       | Standard for I/O failures              |
+| `unsupported-error`      | `java.lang.UnsupportedOperationException`   | Standard for unimplemented operations  |
+
+Only define a custom exception class when no suitable standard exception exists — typically for SDK-specific error
+conditions that have no Java equivalent (e.g., transaction-specific failures, network-specific consensus errors).
+
+### Checked vs. unchecked exceptions
+
+Whether an exception is checked (`extends Exception`) or unchecked (`extends RuntimeException`) is a deliberate design
+decision per error type. Both have their place in the SDK:
+
+- **Checked exceptions** are appropriate when the caller is expected to handle the error as part of normal control flow.
+  They force the caller to acknowledge the error at compile time. Examples: a transaction that is rejected by the
+  network, a query for an entity that may not exist.
+- **Unchecked exceptions** are appropriate for programming errors, unexpected failures, or situations where recovery is
+  unlikely. Examples: invalid arguments, internal SDK errors, configuration mistakes.
+
+When deciding, consider:
+
+- **Async methods** — For `@@async` methods returning `CompletionStage`, exceptions are delivered through the
+  `CompletionStage` failure mechanism. Checked exceptions cannot be declared on the `CompletionStage` type itself, but
+  they can still be thrown by the underlying implementation and wrapped by the `CompletionStage`. Callers handle them
+  via `exceptionally`, `handle`, or `whenComplete`.
+- **Lambda compatibility** — Checked exceptions cannot be thrown from standard functional interfaces (`Consumer`,
+  `Function`, etc.) without wrapping. If an exception is commonly encountered in lambda contexts, unchecked may be more
+  ergonomic.
+- **Cross-SDK consistency** — Most other SDK languages (Go, Rust, Python, JavaScript, Swift) do not distinguish between
+  checked and unchecked. The choice is Java-specific and should be documented clearly for each error type.
+
+### Naming convention for custom exceptions
+
+When a custom exception class is needed, the meta-language kebab-case identifier is converted to a Java class name:
+
+- Convert kebab-case to PascalCase
+- Drop the `-error` suffix and replace it with `Exception` (e.g., `not-found-error` becomes `NotFoundException`)
+
+### Custom exception class structure
+
+Custom exception classes should follow this pattern. Each custom exception must provide at least two constructors
+(message only, and message with cause). Constructors without a message parameter are not allowed — every exception must
+carry a descriptive message to support debugging and logging:
+
+```java
+// Custom exception for an SDK-specific error (e.g., 'transaction-rejected-error')
+public final class TransactionRejectedException extends Exception {
+
+    public TransactionRejectedException(@NonNull final String message) {
+        super(Objects.requireNonNull(message, "message must not be null"));
+    }
+
+    public TransactionRejectedException(@NonNull final String message, @Nullable final Throwable cause) {
+        super(Objects.requireNonNull(message, "message must not be null"), cause);
+    }
+}
+```
+
+### Usage in synchronous and asynchronous methods
+
+```
+// Meta-language
+@@async
+@@throws(not-found-error)
+@@nullable TransactionDetails fetchDetails(apiKey: string)
+```
+
+```java
+// Java implementation — using standard IOException for I/O failures,
+// custom NotFoundException for SDK-specific lookup failure
+public interface TransactionService {
+
+    // Synchronous: checked exceptions declared in signature
+    @Nullable
+    TransactionDetails fetchDetailsSync(@NonNull String apiKey, long timeout, @NonNull TimeUnit unit)
+            throws NotFoundException;
+
+    // Asynchronous: exceptions delivered through CompletionStage failure
+    @NonNull
+    CompletionStage<@Nullable TransactionDetails> fetchDetails(@NonNull String apiKey);
+}
+```
+
+For synchronous methods, checked exceptions are declared in the method signature and thrown directly. For asynchronous
+methods, the exception is delivered as the cause of the failed `CompletionStage`. Callers handle it via `exceptionally`,
+`handle`, or `whenComplete`:
+
+```java
+service.fetchDetails("key-123")
+        .thenAccept(details -> System.out.println("Found: " + details))
+        .exceptionally(throwable -> {
+            if (throwable.getCause() instanceof NotFoundException) {
+                System.out.println("Not found");
+            }
+            return null;
+        });
+```
+
 ## Usage of final Keyword
 
 The `final` keyword should be used consistently throughout the full implementation.
@@ -1343,7 +1456,7 @@ The `System.Logger` API provides `log` methods that accept message parameters vi
 formatted when the log level is active.
 
 ```java
-LOGGER.log(System.Logger.Level.DEBUG, "Processing item {0} of {1}", currentIndex, totalCount);
+LOGGER.log(System.Logger.Level.DEBUG, "Processing item {0} of {1}",currentIndex, totalCount);
 ```
 
 For log messages where constructing the message itself is expensive (e.g. calling `toString()` on complex objects or
@@ -1352,12 +1465,18 @@ the expensive operation is only performed when the message will actually be logg
 
 ```java
 // Using a Supplier to defer expensive message construction
-LOGGER.log(System.Logger.Level.DEBUG, () -> "State snapshot: " + buildExpensiveSnapshot());
+LOGGER.log(System.Logger.Level.DEBUG, () ->"State snapshot: "+
+
+buildExpensiveSnapshot());
 
 // Using isLoggable to guard expensive operations
-if (LOGGER.isLoggable(System.Logger.Level.TRACE)) {
-    final String dump = generateDetailedDump();
-    LOGGER.log(System.Logger.Level.TRACE, "Full dump: {0}", dump);
+        if(LOGGER.
+
+isLoggable(System.Logger.Level.TRACE)){
+final String dump = generateDetailedDump();
+    LOGGER.
+
+log(System.Logger.Level.TRACE, "Full dump: {0}",dump);
 }
 ```
 
@@ -2317,15 +2436,15 @@ module org.hiero.accounts {
 // Account.java
 package org.hiero.accounts;
 
-import org.hiero.transactions.Transaction;
-import org.jspecify.annotations.Nullable;
+        import org.hiero.transactions.Transaction;
+        import org.jspecify.annotations.Nullable;
 
-public record Account(
+        public record Account(
         String id,
         @Nullable Transaction lastTransaction
-) {
-    // ...
-}
+        ){
+        // ...
+        }
 ```
 
 **Note**: This creates a dependency, so `org.hiero.transactions` types appear in the public API. Consider whether
