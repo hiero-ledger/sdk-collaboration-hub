@@ -30,4 +30,5 @@ This file defines the API for the prototype in the format defined at our [api-gu
 - [Key API](keys.md) — Cryptographic key creation and serialization
 - [Client API](client.md) — `HieroClient` and `OperatorAccount`
 
-Every SDK will depend in its public API on [our protobuf definitions](hiero-proto.md) and [gRPC](grpc.md).
+Every SDK will depend in its public API (only SPI part) on [our protobuf definitions](hiero-proto.md)
+and [GRPC](grpc.md).

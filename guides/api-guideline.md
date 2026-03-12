@@ -376,6 +376,39 @@ The following annotations should be used:
 - `@@throws(error-type-a[, ...])`: Indicates that the method can throw an exception/error.
   The error-types should be stable identifiers, not transport-specific.
   Use lowercase-kebab for error identifiers (e.g., `not-found-error`, `parse-error`).
+- `@@threadSafe[(groupName)]`: Indicates that the method can be called concurrently by the SDK and must be implemented
+  in a thread-safe manner. The implementation is free to choose the appropriate strategy (locks, lock-free structures,
+  actors, immutable copies, etc.). The optional `groupName` parameter groups methods that can be called concurrently
+  with each other — the SDK may invoke any combination of methods in the same group at the same time. Without a group
+  name, the method must be safe for concurrent calls on its own. In single-threaded environments (e.g., JavaScript) the
+  annotation serves as documentation of the concurrent intent.
+
+Example:
+
+```
+DataCache {
+    @@threadSafe(cache)
+    void updateCache(data: bytes)
+
+    @@threadSafe(cache)
+    bytes readCache()
+
+    @@threadSafe
+    void resetStats()
+}
+```
+
+In this example, `updateCache` and `readCache` are in the `cache` group, meaning the SDK may call them concurrently
+with each other. `resetStats` has no group and can only be called concurrently with itself. Note that even a single
+method annotated with `@@threadSafe` (without a group) is meaningful — it indicates that the SDK may invoke that method
+multiple times in parallel.
+
+**Important:** `@@threadSafe` describes concurrency requirements between the SDK and the implementation of the annotated
+method — it does not define thread-safety guarantees for end users of the SDK. User-facing thread-safety is addressed
+through other means: preferring immutable types (see [Prefer immutable fields and objects](#prefer-immutable-fields-and-objects))
+ensures that most objects can be shared safely across threads without synchronization. For mutable types, getters and
+setters are not individually annotated with `@@threadSafe` — it is the user's responsibility to synchronize access to
+mutable objects if they choose to share them across threads.
 
 #### Method Parameter annotations
 
