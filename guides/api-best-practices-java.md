@@ -51,6 +51,7 @@ Use the following canonical mappings when turning meta types into Java:
 | `dateTime`        | `java.time.LocalDateTime`                                                                                                          | -                                                                                |
 | `zonedDateTime`   | `java.time.ZonedDateTime`                                                                                                          | -                                                                                |
 | `type`            | `java.lang.Class<?>`                                                                                                               | Used for runtime type information, typically with generics `Class<T>`            |
+| `function<...>`   | `@FunctionalInterface` or `java.util.function.*`                                                                                   | See [Function Types](#function-types) section below                              |
 
 ### Type Parameter for Runtime Type Information
 
@@ -59,12 +60,14 @@ In Java, this maps to `java.lang.Class<?>`.
 
 **Basic Usage**:
 
-```java
+```
 // Meta-language definition
 Container {
-    type getInnerType ()
+    type getInnerType()
 }
+```
 
+```java
 // Java implementation
 public interface Container {
     @NonNull
@@ -76,14 +79,14 @@ public interface Container {
 
 When possible, use generics to provide type safety:
 
-```java
+```
 // Meta-language definition with generic
-abstraction Container
-
-<$$T> {
-    $$T getInnerType ()
+abstraction Container<$$T> {
+    $$T getInnerType()
 }
+```
 
+```java
 // Java implementation with generics
 public interface Container<T> {
     @NonNull
@@ -96,11 +99,11 @@ public interface Container<T> {
 ```java
 // Basic usage with Class<?>
 Container container = new ServiceContainer();
-Object service = container.create(MyService.class);
+Class<?> innerType = container.getInnerType();
 
 // Type-safe usage with generics
 Container<Transaction> txContainer = new TypedServiceContainer<>();
-Transaction tx = txContainer.create(Transaction.class); // Type-safe, no cast needed
+Class<Transaction> txClass = txContainer.getInnerType();
 
 // Common pattern: factory with type parameter
 public <T extends Transaction> T createTransaction(@NonNull final Class<T> transactionType) {
@@ -138,6 +141,70 @@ For each numeric Java type a maximum numeric type is defined.
 | `uint64`         | `long`, `java.lang.Long`   |
 | `uint256`        | `java.math.BigInteger`     |
 
+### Function Types
+
+The meta-language `function<R m(p: T, ...)>` maps to a `@FunctionalInterface` in Java. Where possible, use the
+standard interfaces from `java.util.function`. Define a custom `@FunctionalInterface` only when no standard interface
+matches.
+
+**Mapping to standard functional interfaces:**
+
+| Meta-Language                                 | Java Type                              |
+|-----------------------------------------------|----------------------------------------|
+| `function<void run()>`                        | `java.lang.Runnable`                   |
+| `function<void accept(value: T)>`             | `java.util.function.Consumer<T>`       |
+| `function<R supply()>`                        | `java.util.function.Supplier<R>`       |
+| `function<R apply(value: T)>`                 | `java.util.function.Function<T,R>`     |
+| `function<bool test(value: T)>`               | `java.util.function.Predicate<T>`      |
+| `function<R apply(value1: T, value2: U)>`     | `java.util.function.BiFunction<T,U,R>` |
+| `function<void accept(value1: T, value2: U)>` | `java.util.function.BiConsumer<T,U>`   |
+
+**Example with standard interface:**
+
+```
+// Meta-language
+subscribe(callback: function<void onEvent(event: Event)>)
+```
+
+```java
+// Java implementation using Consumer
+public void subscribe(@NonNull final Consumer<Event> callback) {
+    Objects.requireNonNull(callback, "callback must not be null");
+    // ...
+}
+```
+
+**Custom functional interface:**
+
+When the function signature does not match any standard interface (e.g., more than two parameters or checked
+exceptions),
+define a custom `@FunctionalInterface`:
+
+```
+// Meta-language
+execute(handler: function<bool onMessage(topic: string, message: bytes, timestamp: dateTime)>)
+```
+
+```java
+// Java implementation with custom functional interface
+@FunctionalInterface
+public interface MessageHandler {
+    boolean onMessage(@NonNull String topic, @NonNull byte[] message, @NonNull LocalDateTime timestamp);
+}
+
+public void execute(@NonNull final MessageHandler handler) {
+    Objects.requireNonNull(handler, "handler must not be null");
+    // ...
+}
+```
+
+**Rules:**
+
+1. Prefer standard `java.util.function` interfaces over custom ones
+2. Always annotate custom functional interfaces with `@FunctionalInterface`
+3. Apply `@NonNull`/`@Nullable` annotations to functional interface method parameters and return types
+4. Function type parameters must not be `null` unless annotated with `@@nullable` in the meta-language
+
 ## Immutable Objects
 
 If a non-abstract type and all the types it extends only contain fields annotated with `@@immutable`, the type should be
@@ -154,7 +221,7 @@ Person {
 
 ```java
 // Implementation of the Person type in Java
-public record Person(@Nullable String name, @Nullable int age) {
+public record Person(@Nullable String name, @Nullable Integer age) {
 } // Usage of the @Nullable annotation is described in the following chapter
 ```
 
@@ -207,9 +274,163 @@ Therefore, there is no fix rule that defines if something must be created as int
 Especially with default methods, a lot can be done with interfaces.
 Abstract classes will make sense if constructors should be enforced or methods should be defined as final.
 
+Types annotated with `@@finalType` in the meta-language must be declared with the `final` keyword in Java (or as a
+`record`, which is implicitly final). This prevents subclassing and ensures the type cannot be extended.
+
 Next to that records should be used wherever possible.
 If a non-abstract type in the meta-language only contains attributes annotated with `@@immutable`, the type must be
 declared as a Java `record`.
+
+### Generic Type Parameters
+
+Generic type parameters in the meta-language use the `$$` prefix (e.g., `$$T`, `$$Product`). In Java, drop the `$$`
+prefix and use standard Java generic syntax.
+
+**Basic mapping:**
+
+```
+// Meta-language
+abstraction Factory<$$Product> {
+    $$Product create()
+}
+```
+
+```java
+// Java implementation
+public interface Factory<Product> {
+    @NonNull
+    Product create();
+}
+```
+
+**Bounded type parameters** using `extends` map directly:
+
+```
+// Meta-language
+abstraction FruitFactory<$$Product extends Fruit> {
+    $$Product create()
+}
+```
+
+```java
+// Java implementation
+public interface FruitFactory<Product extends Fruit> {
+    @NonNull
+    Product create();
+}
+```
+
+**Concrete extension** of a generic type:
+
+```
+// Meta-language
+CarFactory extends Factory<Car> {
+}
+```
+
+```java
+// Java implementation
+public final class CarFactory implements Factory<Car> {
+
+    @Override
+    @NonNull
+    public Car create() {
+        return new Car();
+    }
+}
+```
+
+**Rules:**
+
+1. Drop the `$$` prefix — `$$T` becomes `T`, `$$Product` becomes `Product`
+2. Keep descriptive names where the meta-language uses them (e.g., `Product` instead of shortening to `T`)
+3. Apply `@NonNull`/`@Nullable` annotations to generic return types and parameters as usual
+
+## Enumerations
+
+Enumerations defined in the meta-language map directly to Java `enum` types. Enum values use `UPPER_SNAKE_CASE` as
+defined in the meta-language naming conventions, which matches Java's standard enum naming.
+
+**Simple enumeration:**
+
+```
+// Meta-language
+enum TransactionStatus {
+    PENDING
+    COMPLETED
+    FAILED
+}
+```
+
+```java
+// Java implementation
+public enum TransactionStatus {
+    PENDING,
+    COMPLETED,
+    FAILED
+}
+```
+
+**Enumeration with immutable attributes:**
+
+All attributes on enumerations must be `@@immutable` in the meta-language. In Java, enum fields are declared `final` and
+set via the constructor.
+
+```
+// Meta-language
+enum KeyAlgorithm {
+    ED25519
+    ECDSA_SECP256K1
+
+    @@immutable keySize: int32
+}
+```
+
+```java
+// Java implementation
+public enum KeyAlgorithm {
+
+    ED25519(32),
+    ECDSA_SECP256K1(33);
+
+    private final int keySize;
+
+    KeyAlgorithm(final int keySize) {
+        this.keySize = keySize;
+    }
+
+    public int getKeySize() {
+        return keySize;
+    }
+}
+```
+
+**Enumeration with methods:**
+
+```
+// Meta-language
+enum TransactionStatus {
+    PENDING
+    COMPLETED
+    FAILED
+
+    bool isTerminal()
+}
+```
+
+```java
+// Java implementation
+public enum TransactionStatus {
+
+    PENDING,
+    COMPLETED,
+    FAILED;
+
+    public boolean isTerminal() {
+        return this == COMPLETED || this == FAILED;
+    }
+}
+```
 
 ## Collections
 
@@ -527,7 +748,7 @@ The given sample can be implemented as a class or record in Java.
 A class can be implemented as follows:
 
 ```java
-public record Example(@NonNull final String name) {
+public record Example(@NonNull String name) {
 
     public Example {
         Objects.requireNonNull(name, "name must not be null");
@@ -601,7 +822,7 @@ public class Example {
 A record can be implemented as follows:
 
 ```java
-public record Example(@NonNull final String name) {
+public record Example(@NonNull String name) {
 
     public Example {
         Objects.requireNonNull(name, "name must not be null");
@@ -925,9 +1146,9 @@ The synchronous method can be defined and implemented as follows:
 ```java
 public interface ExampleService {
 
-    CompletionStage<Example> getExample();
+    CompletionStage<Example> getExample(final String id);
 
-    default Example getExampleSync(final long timeout, final TimeUnit unit) {
+    default Example getExampleSync(final String id, final long timeout, final TimeUnit unit) {
         return getExample(id).toCompletableFuture().get(timeout, unit);
     }
 
@@ -937,6 +1158,128 @@ public interface ExampleService {
 The sample uses `long timeout, TimeUnit unit` as parameters for the synchronous method.
 That is the best practice in Java to ensure that the synchronous method can be called from multiple threads.
 Instead of just defining a `long timeoutInMs` the usage of `TimeUnit` is recommended.
+
+## Exception Handling (`@@throws`)
+
+The meta-language `@@throws(error-type-a, error-type-b)` annotation declares which errors a method can produce.
+In Java, these map to exception classes.
+
+### Prefer standard Java exceptions
+
+When a meta-language error identifier has a natural equivalent in the Java standard library, use that standard exception
+instead of defining a custom one. Java developers already know and handle these exceptions, and frameworks and libraries
+are built around them.
+
+| Meta-Language Identifier | Java Exception                            | Rationale                             |
+|--------------------------|-------------------------------------------|---------------------------------------|
+| `timeout-error`          | `java.util.concurrent.TimeoutException`   | Standard for timeout scenarios        |
+| `invalid-argument-error` | `java.lang.IllegalArgumentException`      | Standard for bad input                |
+| `invalid-state-error`    | `java.lang.IllegalStateException`         | Standard for wrong object state       |
+| `io-error`               | `java.io.IOException`                     | Standard for I/O failures             |
+| `unsupported-error`      | `java.lang.UnsupportedOperationException` | Standard for unimplemented operations |
+
+Only define a custom exception class when no suitable standard exception exists — typically for SDK-specific error
+conditions that have no Java equivalent (e.g., transaction-specific failures, network-specific consensus errors).
+
+### Checked vs. unchecked exceptions
+
+Whether an exception is checked (`extends Exception`) or unchecked (`extends RuntimeException`) is a deliberate design
+decision per error type. Both have their place in the SDK:
+
+- **Checked exceptions** are appropriate when the caller is expected to handle the error as part of normal control flow.
+  They force the caller to acknowledge the error at compile time. Examples: a transaction that is rejected by the
+  network, a query for an entity that may not exist.
+- **Unchecked exceptions** are appropriate for programming errors, unexpected failures, or situations where recovery is
+  unlikely. Examples: invalid arguments, internal SDK errors, configuration mistakes.
+
+When deciding, consider:
+
+- **Async methods** — For `@@async` methods returning `CompletionStage`, exceptions are delivered through the
+  `CompletionStage` failure mechanism. Checked exceptions cannot be declared on the `CompletionStage` type itself, but
+  they can still be thrown by the underlying implementation and wrapped by the `CompletionStage`. Callers handle them
+  via `exceptionally`, `handle`, or `whenComplete`.
+- **Lambda compatibility** — Checked exceptions cannot be thrown from standard functional interfaces (`Consumer`,
+  `Function`, etc.) without wrapping. If an exception is commonly encountered in lambda contexts, unchecked may be more
+  ergonomic.
+- **Cross-SDK consistency** — Most other SDK languages (Go, Rust, Python, JavaScript, Swift) do not distinguish between
+  checked and unchecked. The choice is Java-specific and should be documented clearly for each error type.
+
+### Naming convention for custom exceptions
+
+When a custom exception class is needed, the meta-language kebab-case identifier is converted to a Java class name:
+
+- Convert kebab-case to PascalCase
+- Drop the `-error` suffix and replace it with `Exception` (e.g., `not-found-error` becomes `NotFoundException`)
+
+### Custom exception class structure
+
+Custom exception classes should follow this pattern. Each custom exception must provide at least two constructors
+(message only, and message with cause). Constructors without a message parameter are not allowed — every exception must
+carry a descriptive message to support debugging and logging:
+
+```java
+// Custom exception for an SDK-specific error (e.g., 'transaction-rejected-error')
+public final class TransactionRejectedException extends Exception {
+
+    public TransactionRejectedException(@NonNull final String message) {
+        super(Objects.requireNonNull(message, "message must not be null"));
+    }
+
+    public TransactionRejectedException(@NonNull final String message, @Nullable final Throwable cause) {
+        super(Objects.requireNonNull(message, "message must not be null"), cause);
+    }
+}
+```
+
+### Usage in synchronous and asynchronous methods
+
+```
+// Meta-language
+@@async
+@@throws(not-found-error)
+@@nullable TransactionDetails fetchDetails(apiKey: string)
+```
+
+```java
+// Java implementation — using standard IOException for I/O failures,
+// custom NotFoundException for SDK-specific lookup failure
+public interface TransactionService {
+
+    // Synchronous: checked exceptions declared in signature
+    @Nullable
+    TransactionDetails fetchDetailsSync(@NonNull String apiKey, long timeout, @NonNull TimeUnit unit)
+            throws NotFoundException;
+
+    // Asynchronous: exceptions delivered through CompletionStage failure
+    @NonNull
+    CompletionStage<@Nullable TransactionDetails> fetchDetails(@NonNull String apiKey);
+}
+```
+
+For synchronous methods, checked exceptions are declared in the method signature and thrown directly. For asynchronous
+methods, the exception is delivered as the cause of the failed `CompletionStage`. Callers handle it via `exceptionally`,
+`handle`, or `whenComplete`:
+
+```java
+service.fetchDetails("key-123")
+        .
+
+thenAccept(details ->System.out.
+
+println("Found: "+details))
+        .
+
+exceptionally(throwable ->{
+        if(throwable.
+
+getCause() instanceof NotFoundException){
+        System.out.
+
+println("Not found");
+            }
+                    return null;
+                    });
+```
 
 ## Usage of final Keyword
 
@@ -1245,6 +1588,34 @@ module com.example.provider {
     requires com.example.api;
     provides com.example.api.ExampleProvider
             with com.example.provider.DefaultExampleProvider;
+}
+```
+
+### Loading a Service Provider
+
+On the consumer side, use `java.util.ServiceLoader` to discover and load provider implementations at runtime. This works
+both on the module path (JPMS) and the classpath (`META-INF/services`).
+
+```java
+import java.util.ServiceLoader;
+
+public final class ExampleProviderLoader {
+
+    @NonNull
+    public static ExampleProvider load() {
+        return ServiceLoader.load(ExampleProvider.class)
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("No ExampleProvider implementation found"));
+    }
+}
+```
+
+When a module uses `ServiceLoader` to load a service, it must declare this in its `module-info.java`:
+
+```java
+module com.example.consumer {
+    requires com.example.api;
+    uses com.example.api.ExampleProvider;
 }
 ```
 
@@ -1748,10 +2119,10 @@ class PublicKeyTest {
 1. **Use Given-When-Then structure** - clearly separate test phases with comments
 2. **Test one thing per test** - each test should verify a single behavior
 3. **Clear assertions** - provide meaningful assertion messages
-5. **Test edge cases** - null values, empty collections, boundary values
-6. **Test error conditions** - verify exceptions are thrown when expected
-7. **Independent tests** - tests should not depend on execution order
-8. **Fast execution** - unit tests should run in milliseconds
+4. **Test edge cases** - null values, empty collections, boundary values
+5. **Test error conditions** - verify exceptions are thrown when expected
+6. **Independent tests** - tests should not depend on execution order
+7. **Fast execution** - unit tests should run in milliseconds
 
 ### Integration Test Guidelines
 
