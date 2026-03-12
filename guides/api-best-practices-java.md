@@ -4,6 +4,32 @@ This document translates the [language-agnostic API meta-definition](api-guideli
 conventions, and ready‑to‑copy code templates.
 It aims to keep SDK APIs consistent, ergonomic, and maintainable across modules.
 
+## Defensive Implementation
+
+SDK implementations should be defensively written to minimize the risk of unexpected failures at runtime — even in
+situations that are not explicitly required by the API contract. However, defensive measures must never come at the cost
+of performance. Only use techniques that have negligible overhead in the normal case.
+
+Examples of good defensive practices:
+
+- **Null checks on public API boundaries** — Validate non-null parameters early with `Objects.requireNonNull` to fail
+  fast with a clear message instead of producing a `NullPointerException` deep in the call stack.
+- **Thread-safe collection types** — Use `CopyOnWriteArrayList`, `CopyOnWriteArraySet`, and `ConcurrentHashMap` for
+  mutable internal collections instead of `ArrayList`, `HashSet`, and `HashMap`. These prevent
+  `ConcurrentModificationException` if a user happens to access the SDK from multiple threads, without requiring
+  explicit locks. The overhead is minimal for collections that are read far more often than written.
+- **Immutable return values** — Return unmodifiable views or copies of internal collections to prevent callers from
+  accidentally modifying SDK state.
+- **Validation of constraints** — Enforce `@@min`, `@@max`, `@@minLength`, `@@maxLength`, and `@@pattern` annotations
+  in constructors and setters to catch invalid data early.
+
+Defensive implementation does **not** mean:
+
+- Adding `synchronized` blocks or locks to every method — this kills performance and is only justified when explicitly
+  required (see `@@threadSafe` in the [API guideline](api-guideline.md)).
+- Catching and silently swallowing exceptions — errors should propagate clearly.
+- Adding redundant checks in internal (non-public) code paths where invariants are already guaranteed.
+
 ## Type Mapping
 
 Use the following canonical mappings when turning meta types into Java:
@@ -24,6 +50,78 @@ Use the following canonical mappings when turning meta types into Java:
 | `time`            | `java.time.LocalTime`                                                                                                              | -                                                                                |
 | `dateTime`        | `java.time.LocalDateTime`                                                                                                          | -                                                                                |
 | `zonedDateTime`   | `java.time.ZonedDateTime`                                                                                                          | -                                                                                |
+| `type`            | `java.lang.Class<?>`                                                                                                               | Used for runtime type information, typically with generics `Class<T>`            |
+| `function<...>`   | `@FunctionalInterface` or `java.util.function.*`                                                                                   | See [Function Types](#function-types) section below                              |
+
+### Type Parameter for Runtime Type Information
+
+The meta-language defines `type` as a way to specify runtime type information.
+In Java, this maps to `java.lang.Class<?>`.
+
+**Basic Usage**:
+
+```
+// Meta-language definition
+Container {
+    type getInnerType()
+}
+```
+
+```java
+// Java implementation
+public interface Container {
+    @NonNull
+    Class<?> getInnerType();
+}
+```
+
+**Preferred: Generic Type-Safe Usage**:
+
+When possible, use generics to provide type safety:
+
+```
+// Meta-language definition with generic
+abstraction Container<$$T> {
+    $$T getInnerType()
+}
+```
+
+```java
+// Java implementation with generics
+public interface Container<T> {
+    @NonNull
+    T getInnerType();
+}
+```
+
+**Usage Examples**:
+
+```java
+// Basic usage with Class<?>
+Container container = new ServiceContainer();
+Class<?> innerType = container.getInnerType();
+
+// Type-safe usage with generics
+Container<Transaction> txContainer = new TypedServiceContainer<>();
+Class<Transaction> txClass = txContainer.getInnerType();
+
+// Common pattern: factory with type parameter
+public <T extends Transaction> T createTransaction(@NonNull final Class<T> transactionType) {
+    Objects.requireNonNull(transactionType, "transactionType must not be null");
+    // Create instance based on type
+    return instantiate(transactionType);
+}
+```
+
+**Best Practices for `type` → `Class<?>`**:
+
+1. **Prefer generics**: Use `Class<T>` with generic type parameters when possible for type safety
+2. **Null checks**: Always validate that Class parameters are not null
+3. **Bounded wildcards**: Use `Class<? extends BaseType>` to constrain acceptable types
+4. **Avoid raw types**: Never use raw `Class` without type parameter
+5. **Document constraints**: Clearly document which types are acceptable and any requirements (e.g., must have no-arg
+   constructor)
+6. **Consider alternatives**: For simple cases, consider using enums or sealed types instead of runtime type parameters
 
 ### Numeric Types
 
@@ -43,6 +141,70 @@ For each numeric Java type a maximum numeric type is defined.
 | `uint64`         | `long`, `java.lang.Long`   |
 | `uint256`        | `java.math.BigInteger`     |
 
+### Function Types
+
+The meta-language `function<R m(p: T, ...)>` maps to a `@FunctionalInterface` in Java. Where possible, use the
+standard interfaces from `java.util.function`. Define a custom `@FunctionalInterface` only when no standard interface
+matches.
+
+**Mapping to standard functional interfaces:**
+
+| Meta-Language                                 | Java Type                              |
+|-----------------------------------------------|----------------------------------------|
+| `function<void run()>`                        | `java.lang.Runnable`                   |
+| `function<void accept(value: T)>`             | `java.util.function.Consumer<T>`       |
+| `function<R supply()>`                        | `java.util.function.Supplier<R>`       |
+| `function<R apply(value: T)>`                 | `java.util.function.Function<T,R>`     |
+| `function<bool test(value: T)>`               | `java.util.function.Predicate<T>`      |
+| `function<R apply(value1: T, value2: U)>`     | `java.util.function.BiFunction<T,U,R>` |
+| `function<void accept(value1: T, value2: U)>` | `java.util.function.BiConsumer<T,U>`   |
+
+**Example with standard interface:**
+
+```
+// Meta-language
+subscribe(callback: function<void onEvent(event: Event)>)
+```
+
+```java
+// Java implementation using Consumer
+public void subscribe(@NonNull final Consumer<Event> callback) {
+    Objects.requireNonNull(callback, "callback must not be null");
+    // ...
+}
+```
+
+**Custom functional interface:**
+
+When the function signature does not match any standard interface (e.g., more than two parameters or checked
+exceptions),
+define a custom `@FunctionalInterface`:
+
+```
+// Meta-language
+execute(handler: function<bool onMessage(topic: string, message: bytes, timestamp: dateTime)>)
+```
+
+```java
+// Java implementation with custom functional interface
+@FunctionalInterface
+public interface MessageHandler {
+    boolean onMessage(@NonNull String topic, @NonNull byte[] message, @NonNull LocalDateTime timestamp);
+}
+
+public void execute(@NonNull final MessageHandler handler) {
+    Objects.requireNonNull(handler, "handler must not be null");
+    // ...
+}
+```
+
+**Rules:**
+
+1. Prefer standard `java.util.function` interfaces over custom ones
+2. Always annotate custom functional interfaces with `@FunctionalInterface`
+3. Apply `@NonNull`/`@Nullable` annotations to functional interface method parameters and return types
+4. Function type parameters must not be `null` unless annotated with `@@nullable` in the meta-language
+
 ## Immutable Objects
 
 If a non-abstract type and all the types it extends only contain fields annotated with `@@immutable`, the type should be
@@ -59,7 +221,7 @@ Person {
 
 ```java
 // Implementation of the Person type in Java
-public record Person(@Nullable String name, @Nullable int age) {
+public record Person(@Nullable String name, @Nullable Integer age) {
 } // Usage of the @Nullable annotation is described in the following chapter
 ```
 
@@ -112,9 +274,163 @@ Therefore, there is no fix rule that defines if something must be created as int
 Especially with default methods, a lot can be done with interfaces.
 Abstract classes will make sense if constructors should be enforced or methods should be defined as final.
 
+Types annotated with `@@finalType` in the meta-language must be declared with the `final` keyword in Java (or as a
+`record`, which is implicitly final). This prevents subclassing and ensures the type cannot be extended.
+
 Next to that records should be used wherever possible.
 If a non-abstract type in the meta-language only contains attributes annotated with `@@immutable`, the type must be
 declared as a Java `record`.
+
+### Generic Type Parameters
+
+Generic type parameters in the meta-language use the `$$` prefix (e.g., `$$T`, `$$Product`). In Java, drop the `$$`
+prefix and use standard Java generic syntax.
+
+**Basic mapping:**
+
+```
+// Meta-language
+abstraction Factory<$$Product> {
+    $$Product create()
+}
+```
+
+```java
+// Java implementation
+public interface Factory<Product> {
+    @NonNull
+    Product create();
+}
+```
+
+**Bounded type parameters** using `extends` map directly:
+
+```
+// Meta-language
+abstraction FruitFactory<$$Product extends Fruit> {
+    $$Product create()
+}
+```
+
+```java
+// Java implementation
+public interface FruitFactory<Product extends Fruit> {
+    @NonNull
+    Product create();
+}
+```
+
+**Concrete extension** of a generic type:
+
+```
+// Meta-language
+CarFactory extends Factory<Car> {
+}
+```
+
+```java
+// Java implementation
+public final class CarFactory implements Factory<Car> {
+
+    @Override
+    @NonNull
+    public Car create() {
+        return new Car();
+    }
+}
+```
+
+**Rules:**
+
+1. Drop the `$$` prefix — `$$T` becomes `T`, `$$Product` becomes `Product`
+2. Keep descriptive names where the meta-language uses them (e.g., `Product` instead of shortening to `T`)
+3. Apply `@NonNull`/`@Nullable` annotations to generic return types and parameters as usual
+
+## Enumerations
+
+Enumerations defined in the meta-language map directly to Java `enum` types. Enum values use `UPPER_SNAKE_CASE` as
+defined in the meta-language naming conventions, which matches Java's standard enum naming.
+
+**Simple enumeration:**
+
+```
+// Meta-language
+enum TransactionStatus {
+    PENDING
+    COMPLETED
+    FAILED
+}
+```
+
+```java
+// Java implementation
+public enum TransactionStatus {
+    PENDING,
+    COMPLETED,
+    FAILED
+}
+```
+
+**Enumeration with immutable attributes:**
+
+All attributes on enumerations must be `@@immutable` in the meta-language. In Java, enum fields are declared `final` and
+set via the constructor.
+
+```
+// Meta-language
+enum KeyAlgorithm {
+    ED25519
+    ECDSA_SECP256K1
+
+    @@immutable keySize: int32
+}
+```
+
+```java
+// Java implementation
+public enum KeyAlgorithm {
+
+    ED25519(32),
+    ECDSA_SECP256K1(33);
+
+    private final int keySize;
+
+    KeyAlgorithm(final int keySize) {
+        this.keySize = keySize;
+    }
+
+    public int getKeySize() {
+        return keySize;
+    }
+}
+```
+
+**Enumeration with methods:**
+
+```
+// Meta-language
+enum TransactionStatus {
+    PENDING
+    COMPLETED
+    FAILED
+
+    bool isTerminal()
+}
+```
+
+```java
+// Java implementation
+public enum TransactionStatus {
+
+    PENDING,
+    COMPLETED,
+    FAILED;
+
+    public boolean isTerminal() {
+        return this == COMPLETED || this == FAILED;
+    }
+}
+```
 
 ## Collections
 
@@ -432,7 +748,7 @@ The given sample can be implemented as a class or record in Java.
 A class can be implemented as follows:
 
 ```java
-public record Example(@NonNull final String name) {
+public record Example(@NonNull String name) {
 
     public Example {
         Objects.requireNonNull(name, "name must not be null");
@@ -506,7 +822,7 @@ public class Example {
 A record can be implemented as follows:
 
 ```java
-public record Example(@NonNull final String name) {
+public record Example(@NonNull String name) {
 
     public Example {
         Objects.requireNonNull(name, "name must not be null");
@@ -568,8 +884,52 @@ public final class UserService {
 }
 ```
 
-Avoid using `Optional` as a method parameter in the public API. Instead, use `@Nullable` for optional parameters and
-document the semantics for `null` explicitly.
+### Usage of Optional
+
+`Optional` was designed as a return type to represent the absence of a value. It must **never** be used as a method
+parameter, constructor parameter, or field type. These are not the intended use cases and lead to awkward APIs, extra
+wrapping, and unnecessary complexity. For parameters that may be absent, use `@Nullable` and document the semantics for
+`null` explicitly. For fields, store the value directly and use `@Nullable` if the field can be null.
+
+`Optional` should be used in the following cases:
+
+- As a **return type** of a method to signal that the result may be absent.
+- As a **temporary variable** inside method bodies, for example when working with streams or transformations.
+
+When creating an `Optional`, prefer `Optional.ofNullable(value)` for any value where nullability is uncertain or
+possible. `Optional.of(value)` must only be used when the value is guaranteed to be non-null, as it throws a
+`NullPointerException` if passed `null`. In practice, `Optional.ofNullable(value)` is the safer and more common choice.
+
+```java
+// WRONG: Do not use Optional as a parameter
+public void setName(Optional<String> name) { ...}
+
+// WRONG: Do not use Optional as a field
+private Optional<String> name;
+
+// CORRECT: Use @Nullable for parameters that may be absent
+public void setName(@Nullable final String name) { ...}
+
+// CORRECT: Use Optional as a return type
+@NonNull
+public Optional<String> findName() {
+    return Optional.ofNullable(name);
+}
+
+// CORRECT: Use Optional as a temporary variable in transformations
+public String getDisplayName() {
+    return Optional.ofNullable(name)
+            .map(String::trim)
+            .filter(n -> !n.isEmpty())
+            .orElse("Unknown");
+}
+
+// CORRECT: Use Optional.ofNullable for values that may be null
+Optional<User> user = Optional.ofNullable(userMap.get(id));
+
+// Use Optional.of only when the value is guaranteed to be non-null
+Optional<String> greeting = Optional.of("Hello");
+```
 
 ### Null handling of method return value
 
@@ -786,9 +1146,9 @@ The synchronous method can be defined and implemented as follows:
 ```java
 public interface ExampleService {
 
-    CompletionStage<Example> getExample();
+    CompletionStage<Example> getExample(final String id);
 
-    default Example getExampleSync(final long timeout, final TimeUnit unit) {
+    default Example getExampleSync(final String id, final long timeout, final TimeUnit unit) {
         return getExample(id).toCompletableFuture().get(timeout, unit);
     }
 
@@ -798,6 +1158,128 @@ public interface ExampleService {
 The sample uses `long timeout, TimeUnit unit` as parameters for the synchronous method.
 That is the best practice in Java to ensure that the synchronous method can be called from multiple threads.
 Instead of just defining a `long timeoutInMs` the usage of `TimeUnit` is recommended.
+
+## Exception Handling (`@@throws`)
+
+The meta-language `@@throws(error-type-a, error-type-b)` annotation declares which errors a method can produce.
+In Java, these map to exception classes.
+
+### Prefer standard Java exceptions
+
+When a meta-language error identifier has a natural equivalent in the Java standard library, use that standard exception
+instead of defining a custom one. Java developers already know and handle these exceptions, and frameworks and libraries
+are built around them.
+
+| Meta-Language Identifier | Java Exception                            | Rationale                             |
+|--------------------------|-------------------------------------------|---------------------------------------|
+| `timeout-error`          | `java.util.concurrent.TimeoutException`   | Standard for timeout scenarios        |
+| `invalid-argument-error` | `java.lang.IllegalArgumentException`      | Standard for bad input                |
+| `invalid-state-error`    | `java.lang.IllegalStateException`         | Standard for wrong object state       |
+| `io-error`               | `java.io.IOException`                     | Standard for I/O failures             |
+| `unsupported-error`      | `java.lang.UnsupportedOperationException` | Standard for unimplemented operations |
+
+Only define a custom exception class when no suitable standard exception exists — typically for SDK-specific error
+conditions that have no Java equivalent (e.g., transaction-specific failures, network-specific consensus errors).
+
+### Checked vs. unchecked exceptions
+
+Whether an exception is checked (`extends Exception`) or unchecked (`extends RuntimeException`) is a deliberate design
+decision per error type. Both have their place in the SDK:
+
+- **Checked exceptions** are appropriate when the caller is expected to handle the error as part of normal control flow.
+  They force the caller to acknowledge the error at compile time. Examples: a transaction that is rejected by the
+  network, a query for an entity that may not exist.
+- **Unchecked exceptions** are appropriate for programming errors, unexpected failures, or situations where recovery is
+  unlikely. Examples: invalid arguments, internal SDK errors, configuration mistakes.
+
+When deciding, consider:
+
+- **Async methods** — For `@@async` methods returning `CompletionStage`, exceptions are delivered through the
+  `CompletionStage` failure mechanism. Checked exceptions cannot be declared on the `CompletionStage` type itself, but
+  they can still be thrown by the underlying implementation and wrapped by the `CompletionStage`. Callers handle them
+  via `exceptionally`, `handle`, or `whenComplete`.
+- **Lambda compatibility** — Checked exceptions cannot be thrown from standard functional interfaces (`Consumer`,
+  `Function`, etc.) without wrapping. If an exception is commonly encountered in lambda contexts, unchecked may be more
+  ergonomic.
+- **Cross-SDK consistency** — Most other SDK languages (Go, Rust, Python, JavaScript, Swift) do not distinguish between
+  checked and unchecked. The choice is Java-specific and should be documented clearly for each error type.
+
+### Naming convention for custom exceptions
+
+When a custom exception class is needed, the meta-language kebab-case identifier is converted to a Java class name:
+
+- Convert kebab-case to PascalCase
+- Drop the `-error` suffix and replace it with `Exception` (e.g., `not-found-error` becomes `NotFoundException`)
+
+### Custom exception class structure
+
+Custom exception classes should follow this pattern. Each custom exception must provide at least two constructors
+(message only, and message with cause). Constructors without a message parameter are not allowed — every exception must
+carry a descriptive message to support debugging and logging:
+
+```java
+// Custom exception for an SDK-specific error (e.g., 'transaction-rejected-error')
+public final class TransactionRejectedException extends Exception {
+
+    public TransactionRejectedException(@NonNull final String message) {
+        super(Objects.requireNonNull(message, "message must not be null"));
+    }
+
+    public TransactionRejectedException(@NonNull final String message, @Nullable final Throwable cause) {
+        super(Objects.requireNonNull(message, "message must not be null"), cause);
+    }
+}
+```
+
+### Usage in synchronous and asynchronous methods
+
+```
+// Meta-language
+@@async
+@@throws(not-found-error)
+@@nullable TransactionDetails fetchDetails(apiKey: string)
+```
+
+```java
+// Java implementation — using standard IOException for I/O failures,
+// custom NotFoundException for SDK-specific lookup failure
+public interface TransactionService {
+
+    // Synchronous: checked exceptions declared in signature
+    @Nullable
+    TransactionDetails fetchDetailsSync(@NonNull String apiKey, long timeout, @NonNull TimeUnit unit)
+            throws NotFoundException;
+
+    // Asynchronous: exceptions delivered through CompletionStage failure
+    @NonNull
+    CompletionStage<@Nullable TransactionDetails> fetchDetails(@NonNull String apiKey);
+}
+```
+
+For synchronous methods, checked exceptions are declared in the method signature and thrown directly. For asynchronous
+methods, the exception is delivered as the cause of the failed `CompletionStage`. Callers handle it via `exceptionally`,
+`handle`, or `whenComplete`:
+
+```java
+service.fetchDetails("key-123")
+        .
+
+thenAccept(details ->System.out.
+
+println("Found: "+details))
+        .
+
+exceptionally(throwable ->{
+        if(throwable.
+
+getCause() instanceof NotFoundException){
+        System.out.
+
+println("Not found");
+            }
+                    return null;
+                    });
+```
 
 ## Usage of final Keyword
 
@@ -980,6 +1462,1031 @@ public class Example {
     }
 }
 ```
+
+## Logging
+
+Use `java.lang.System.Logger` (introduced in Java 9) for all logging in the SDK and library code.
+By using the JDK's built-in logging facade, no external logger dependency (such as SLF4J or Log4j) is needed.
+Consumers of the library can plug in any logging backend they prefer via the `System.LoggerFinder` SPI.
+
+Example usage:
+
+```java
+public class ExampleService {
+
+    private static final System.Logger LOGGER = System.getLogger(ExampleService.class.getName());
+
+    public void doWork() {
+        LOGGER.log(System.Logger.Level.INFO, "Starting work");
+        try {
+            // ...
+        } catch (final Exception e) {
+            LOGGER.log(System.Logger.Level.ERROR, "Unexpected error during work", e);
+        }
+    }
+}
+```
+
+### Parameterized and Expensive Log Messages
+
+The `System.Logger` API provides `log` methods that accept message parameters via `{0}`, `{1}`, etc. placeholders
+(using `java.text.MessageFormat` syntax). These should be preferred over string concatenation since the message is only
+formatted when the log level is active.
+
+```java
+LOGGER.log(System.Logger.Level.DEBUG, "Processing item {0} of {1}",currentIndex, totalCount);
+```
+
+For log messages where constructing the message itself is expensive (e.g. calling `toString()` on complex objects or
+performing computations), use a `Supplier<String>` or guard the call with `isLoggable(level)`. Both approaches ensure
+the expensive operation is only performed when the message will actually be logged.
+
+```java
+// Using a Supplier to defer expensive message construction
+LOGGER.log(System.Logger.Level.DEBUG, () ->"State snapshot: "+
+
+buildExpensiveSnapshot());
+
+// Using isLoggable to guard expensive operations
+        if(LOGGER.
+
+isLoggable(System.Logger.Level.TRACE)){
+final String dump = generateDetailedDump();
+    LOGGER.
+
+log(System.Logger.Level.TRACE, "Full dump: {0}",dump);
+}
+```
+
+The `Supplier` variant is generally more concise, while `isLoggable` is useful when multiple statements or
+side-effect-free preparations are needed before logging.
+
+## SPI (Service Provider Interface)
+
+When defining an SPI, two discovery approaches must be provided so that both modular and classpath-based projects are
+supported:
+
+1. **Java Module System (`module-info.java`)** — For projects using the Java Platform Module System (JPMS), the service
+   provider must be declared via `provides ... with ...` in the module descriptor.
+2. **Google AutoService** — For projects that run on the classpath (without `module-info.java`), the
+   `@com.google.auto.service.AutoService` annotation must be used on the provider implementation. The AutoService
+   annotation processor must be configured in the build so that the `META-INF/services` file is automatically generated
+   at compile time. Both the annotation dependency and the annotation processor must be declared — the annotation alone
+   is not sufficient. For example, in Gradle:
+   ```groovy
+   dependencies {
+       compileOnly 'com.google.auto.service:auto-service-annotations:1.1.1'
+       annotationProcessor 'com.google.auto.service:auto-service:1.1.1'
+   }
+   ```
+   In Maven:
+   ```xml
+   <dependencies>
+       <dependency>
+           <groupId>com.google.auto.service</groupId>
+           <artifactId>auto-service-annotations</artifactId>
+           <version>1.1.1</version>
+           <optional>true</optional>
+       </dependency>
+       <dependency>
+           <groupId>com.google.auto.service</groupId>
+           <artifactId>auto-service</artifactId>
+           <version>1.1.1</version>
+           <optional>true</optional>
+           <scope>provided</scope>
+       </dependency>
+   </dependencies>
+   ```
+
+Both approaches must be present so that consumers can use the SPI regardless of whether they use the module system or
+not.
+
+Example of a service provider supporting both approaches:
+
+```java
+// Service interface
+public interface ExampleProvider {
+    String provide();
+}
+```
+
+```java
+// Provider implementation with AutoService annotation for classpath-based discovery
+@com.google.auto.service.AutoService(ExampleProvider.class)
+public class DefaultExampleProvider implements ExampleProvider {
+
+    @Override
+    public String provide() {
+        return "default";
+    }
+}
+```
+
+```java
+// module-info.java for modular discovery
+module com.example.provider {
+    requires com.example.api;
+    provides com.example.api.ExampleProvider
+            with com.example.provider.DefaultExampleProvider;
+}
+```
+
+### Loading a Service Provider
+
+On the consumer side, use `java.util.ServiceLoader` to discover and load provider implementations at runtime. This works
+both on the module path (JPMS) and the classpath (`META-INF/services`).
+
+```java
+import java.util.ServiceLoader;
+
+public final class ExampleProviderLoader {
+
+    @NonNull
+    public static ExampleProvider load() {
+        return ServiceLoader.load(ExampleProvider.class)
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("No ExampleProvider implementation found"));
+    }
+}
+```
+
+When a module uses `ServiceLoader` to load a service, it must declare this in its `module-info.java`:
+
+```java
+module com.example.consumer {
+    requires com.example.api;
+    uses com.example.api.ExampleProvider;
+}
+```
+
+## Builder Pattern
+
+The Builder Pattern is a recommended design pattern for constructing complex objects with many parameters,
+especially when several parameters are optional. This pattern improves API usability and readability by providing a
+fluent interface for object construction.
+
+### When to Use Builder Pattern
+
+The Builder Pattern should be used for:
+
+- **Central domain objects** that users frequently create (e.g., Transactions, Queries, Configuration objects)
+- Classes with **many parameters** (more than 4-5 parameters)
+- Classes with **multiple optional parameters**
+- Classes where **parameter order** might be confusing
+- Classes that require **validation across multiple fields** before construction
+
+The Builder Pattern is **NOT required** for:
+
+- Simple data classes with few parameters
+- Internal implementation classes not exposed in public API
+- Immutable records with only required fields
+
+### Builder Pattern Implementation
+
+**Example - Transaction with Builder**:
+
+```java
+public final class Transaction {
+
+    private final String transactionId;
+    private final BigDecimal amount;
+    private final String fromAccount;
+    private final String toAccount;
+    private final LocalDateTime timestamp;
+    private final String memo;
+    private final TransactionType type;
+
+    // Constructor with all parameters - allows direct instantiation without builder
+    public Transaction(@NonNull final String transactionId,
+                       @NonNull final BigDecimal amount,
+                       @NonNull final String fromAccount,
+                       @NonNull final String toAccount,
+                       @NonNull final TransactionType type,
+                       @NonNull final LocalDateTime timestamp,
+                       @Nullable final String memo) {
+        // Validate required fields
+        this.transactionId = Objects.requireNonNull(transactionId, "transactionId must not be null");
+        this.amount = Objects.requireNonNull(amount, "amount must not be null");
+        this.fromAccount = Objects.requireNonNull(fromAccount, "fromAccount must not be null");
+        this.toAccount = Objects.requireNonNull(toAccount, "toAccount must not be null");
+        this.type = Objects.requireNonNull(type, "type must not be null");
+        this.timestamp = Objects.requireNonNull(timestamp, "timestamp must not be null");
+        this.memo = memo;
+
+        // Cross-field validation
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("amount must be positive");
+        }
+        if (fromAccount.equals(toAccount)) {
+            throw new IllegalArgumentException("fromAccount and toAccount must be different");
+        }
+    }
+
+    // Private constructor for builder
+    private Transaction(@NonNull final Builder builder) {
+        this(
+                builder.transactionId,
+                builder.amount,
+                builder.fromAccount,
+                builder.toAccount,
+                builder.type,
+                builder.timestamp,
+                builder.memo
+        );
+    }
+
+    @NonNull
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    // Getters
+    @NonNull
+    public String getTransactionId() {
+        return transactionId;
+    }
+
+    @NonNull
+    public BigDecimal getAmount() {
+        return amount;
+    }
+
+    @NonNull
+    public String getFromAccount() {
+        return fromAccount;
+    }
+
+    @NonNull
+    public String getToAccount() {
+        return toAccount;
+    }
+
+    @NonNull
+    public LocalDateTime getTimestamp() {
+        return timestamp;
+    }
+
+    @Nullable
+    public String getMemo() {
+        return memo;
+    }
+
+    @NonNull
+    public TransactionType getType() {
+        return type;
+    }
+
+    public static final class Builder {
+
+        private String transactionId;
+        private BigDecimal amount;
+        private String fromAccount;
+        private String toAccount;
+        private LocalDateTime timestamp = LocalDateTime.now(); // default value
+        private String memo;
+        private TransactionType type;
+
+        private Builder() {
+            // Private constructor - use Transaction.builder()
+        }
+
+        @NonNull
+        public Builder transactionId(@NonNull final String transactionId) {
+            this.transactionId = Objects.requireNonNull(transactionId, "transactionId must not be null");
+            return this;
+        }
+
+        @NonNull
+        public Builder amount(@NonNull final BigDecimal amount) {
+            this.amount = Objects.requireNonNull(amount, "amount must not be null");
+            return this;
+        }
+
+        @NonNull
+        public Builder fromAccount(@NonNull final String fromAccount) {
+            this.fromAccount = Objects.requireNonNull(fromAccount, "fromAccount must not be null");
+            return this;
+        }
+
+        @NonNull
+        public Builder toAccount(@NonNull final String toAccount) {
+            this.toAccount = Objects.requireNonNull(toAccount, "toAccount must not be null");
+            return this;
+        }
+
+        @NonNull
+        public Builder timestamp(@NonNull final LocalDateTime timestamp) {
+            this.timestamp = Objects.requireNonNull(timestamp, "timestamp must not be null");
+            return this;
+        }
+
+        @NonNull
+        public Builder memo(@Nullable final String memo) {
+            this.memo = memo;
+            return this;
+        }
+
+        @NonNull
+        public Builder type(@NonNull final TransactionType type) {
+            this.type = Objects.requireNonNull(type, "type must not be null");
+            return this;
+        }
+
+        @NonNull
+        public Transaction build() {
+            return new Transaction(this);
+        }
+    }
+}
+```
+
+**Usage Example**:
+
+```java
+// Option 1: Creating a transaction with builder - fluent and readable
+Transaction transaction = Transaction.builder()
+                .transactionId("tx-12345")
+                .amount(new BigDecimal("100.50"))
+                .fromAccount("account-a")
+                .toAccount("account-b")
+                .type(TransactionType.TRANSFER)
+                .memo("Payment for services")
+                .build();
+
+// Option 2: Creating a transaction with constructor - direct instantiation
+Transaction directTransaction = new Transaction(
+        "tx-12345",
+        new BigDecimal("100.50"),
+        "account-a",
+        "account-b",
+        TransactionType.TRANSFER,
+        LocalDateTime.now(),
+        "Payment for services"
+);
+
+// Builder with optional parameters omitted
+Transaction simpleTransaction = Transaction.builder()
+        .transactionId("tx-67890")
+        .amount(new BigDecimal("50.00"))
+        .fromAccount("account-c")
+        .toAccount("account-d")
+        .type(TransactionType.TRANSFER)
+        .build(); // timestamp will use default (now), memo is null
+```
+
+### Builder Pattern with Records
+
+For immutable data classes (records), a builder can still be useful when there are many optional parameters:
+
+```java
+public record QueryOptions(
+        @NonNull String query,
+        int limit,
+        int offset,
+        @Nullable String sortField,
+        @NonNull SortOrder sortOrder,
+        boolean includeMetadata
+) {
+    // Compact constructor with validation
+    public QueryOptions {
+        Objects.requireNonNull(query, "query must not be null");
+        Objects.requireNonNull(sortOrder, "sortOrder must not be null");
+        if (limit < 0) {
+            throw new IllegalArgumentException("limit must be non-negative");
+        }
+        if (offset < 0) {
+            throw new IllegalArgumentException("offset must be non-negative");
+        }
+    }
+
+    // Constructor for builder
+    private QueryOptions(Builder builder) {
+        this(
+                builder.query,
+                builder.limit,
+                builder.offset,
+                builder.sortField,
+                builder.sortOrder != null ? builder.sortOrder : SortOrder.ASC,
+                builder.includeMetadata
+        );
+    }
+
+    @NonNull
+    public static Builder builder(@NonNull final String query) {
+        return new Builder(query);
+    }
+
+    public static final class Builder {
+        private final String query;
+        private int limit = 100; // default
+        private int offset = 0; // default
+        private String sortField;
+        private SortOrder sortOrder;
+        private boolean includeMetadata = false; // default
+
+        private Builder(@NonNull final String query) {
+            this.query = Objects.requireNonNull(query, "query must not be null");
+        }
+
+        @NonNull
+        public Builder limit(final int limit) {
+            this.limit = limit;
+            return this;
+        }
+
+        @NonNull
+        public Builder offset(final int offset) {
+            this.offset = offset;
+            return this;
+        }
+
+        @NonNull
+        public Builder sortField(@Nullable final String sortField) {
+            this.sortField = sortField;
+            return this;
+        }
+
+        @NonNull
+        public Builder sortOrder(@NonNull final SortOrder sortOrder) {
+            this.sortOrder = Objects.requireNonNull(sortOrder, "sortOrder must not be null");
+            return this;
+        }
+
+        @NonNull
+        public Builder includeMetadata(final boolean includeMetadata) {
+            this.includeMetadata = includeMetadata;
+            return this;
+        }
+
+        @NonNull
+        public QueryOptions build() {
+            return new QueryOptions(this);
+        }
+    }
+}
+```
+
+**Usage with Record Builder**:
+
+```java
+// Using builder with defaults
+QueryOptions options = QueryOptions.builder("SELECT * FROM users")
+                .limit(50)
+                .sortField("name")
+                .build();
+
+// Direct instantiation with record constructor
+QueryOptions directOptions = new QueryOptions(
+        "SELECT * FROM users",
+        50,
+        0,
+        "name",
+        SortOrder.ASC,
+        false
+);
+```
+
+### Builder Pattern Best Practices
+
+1. **Static factory method**: Provide a static `builder()` method to obtain a Builder instance
+2. **Fluent interface**: All builder methods should return `this` (except `build()`)
+3. **Immutable product**: The constructed object should be immutable
+4. **Public constructor with all parameters**: Provide a public constructor accepting all parameters for direct
+   instantiation without builder
+5. **Private builder constructor**: The builder-specific constructor should be private and delegate to the public
+   constructor
+6. **Initialize defaults in Builder**: Set default values directly in the Builder field declarations (e.g.,
+   `private LocalDateTime timestamp = LocalDateTime.now();`), not in the build() method
+7. **Validation in constructor**: Perform all validation in the main class constructor, not in builder methods
+8. **Null checks in builder methods**: Check for null on required parameters in builder setter methods
+9. **Meaningful method names**: Builder methods should have clear, descriptive names matching the field names
+10. **Final Builder class**: Make the Builder class `static final` nested within the product class
+11. **Builder reuse**: Document whether builders can be reused (generally they should not be)
+12. **Thread safety**: Builders are not thread-safe; each thread should use its own builder instance
+
+### Alternative: Factory Methods with Parameters
+
+For simpler cases with fewer optional parameters, consider using factory methods with parameter objects or overloaded
+factory methods instead of a full builder.
+
+**Factory Methods with Classes**:
+
+```java
+public final class PublicKey {
+
+    // Simple case - factory methods are sufficient
+    @NonNull
+    public static PublicKey create(@NonNull final KeyAlgorithm algorithm, @NonNull final byte[] rawBytes) {
+        return KeyFactory.createPublicKey(algorithm, rawBytes);
+    }
+
+    @NonNull
+    public static PublicKey create(@NonNull final String pemEncoded) {
+        return KeyFactory.createPublicKey(EncodedKeyContainer.SPKI_WITH_PEM, pemEncoded);
+    }
+}
+```
+
+**Factory Methods with Records**:
+
+Records work perfectly with factory methods for common creation patterns:
+
+```java
+public record KeyPair(
+        @NonNull PublicKey publicKey,
+        @NonNull PrivateKey privateKey
+) {
+    // Compact constructor with validation
+    public KeyPair {
+        Objects.requireNonNull(publicKey, "publicKey must not be null");
+        Objects.requireNonNull(privateKey, "privateKey must not be null");
+    }
+
+    // Factory method for generating a new key pair
+    @NonNull
+    public static KeyPair generate(@NonNull final KeyAlgorithm algorithm) {
+        Objects.requireNonNull(algorithm, "algorithm must not be null");
+        final PrivateKey privateKey = PrivateKey.generate(algorithm);
+        final PublicKey publicKey = privateKey.derivePublicKey();
+        return new KeyPair(publicKey, privateKey);
+    }
+
+    // Factory method for importing from bytes
+    @NonNull
+    public static KeyPair fromBytes(@NonNull final KeyAlgorithm algorithm,
+                                    @NonNull final byte[] publicKeyBytes,
+                                    @NonNull final byte[] privateKeyBytes) {
+        Objects.requireNonNull(algorithm, "algorithm must not be null");
+        Objects.requireNonNull(publicKeyBytes, "publicKeyBytes must not be null");
+        Objects.requireNonNull(privateKeyBytes, "privateKeyBytes must not be null");
+
+        final PublicKey publicKey = PublicKey.create(algorithm, publicKeyBytes);
+        final PrivateKey privateKey = PrivateKey.create(algorithm, privateKeyBytes);
+        return new KeyPair(publicKey, privateKey);
+    }
+}
+```
+
+**Usage**:
+
+```java
+// Using factory method - clean and expressive
+KeyPair keyPair = KeyPair.generate(KeyAlgorithm.ED25519);
+
+// Using factory method with parameters
+KeyPair imported = KeyPair.fromBytes(
+        KeyAlgorithm.ED25519,
+        publicKeyBytes,
+        privateKeyBytes
+);
+
+// Direct constructor still available
+KeyPair direct = new KeyPair(publicKey, privateKey);
+```
+
+## Testing
+
+Multiple types of tests must be written for each new feature to ensure quality and correctness.
+Understanding the different test types and their purposes is crucial for contributors.
+In Java JUnit (version 5+) is used for all tests.
+
+**Unit Tests**:
+
+- Test individual classes and methods in isolation
+- Run quickly without external dependencies
+- Mock or stub external dependencies
+- Must be written for all public API functionality
+
+**Integration Tests**:
+
+- Test interaction between multiple components
+- May require external services or infrastructure
+- **Status**: TBD - integration test strategy is being defined
+
+**TCK (Technology Compatibility Kit)**:
+
+- External test suite: [Hiero SDK TCK](https://github.com/hiero-ledger/hiero-sdk-tck)
+- Provides comprehensive functional and integration tests
+- Tests are executed against all SDK implementations via a driver
+- Ensures consistency across SDKs (Java, JavaScript, Go, etc.)
+
+### Unit Test Guidelines
+
+All unit tests must follow the Given-When-Then pattern for clarity and readability.
+
+**Example**:
+
+```java
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+class PublicKeyTest {
+
+    @Test
+    void testVerifyValidSignature() {
+        // given
+        final byte[] message = "Hello, World!".getBytes();
+        final PrivateKey privateKey = PrivateKey.create(KeyAlgorithm.ED25519);
+        final PublicKey publicKey = privateKey.getPublicKey();
+        final byte[] signature = privateKey.sign(message);
+
+        // when
+        final boolean result = publicKey.verify(message, signature);
+
+        // then
+        assertTrue(result, "Valid signature should be verified successfully");
+    }
+
+    @Test
+    void testVerifyInvalidSignature() {
+        // given
+        final byte[] message = "Hello, World!".getBytes();
+        final byte[] invalidSignature = new byte[64];
+        final PublicKey publicKey = PublicKey.create(KeyAlgorithm.ED25519);
+
+        // when
+        final boolean result = publicKey.verify(message, invalidSignature);
+
+        // then
+        assertFalse(result, "Invalid signature should not be verified");
+    }
+}
+```
+
+**Best Practices for Unit Tests**:
+
+1. **Use Given-When-Then structure** - clearly separate test phases with comments
+2. **Test one thing per test** - each test should verify a single behavior
+3. **Clear assertions** - provide meaningful assertion messages
+4. **Test edge cases** - null values, empty collections, boundary values
+5. **Test error conditions** - verify exceptions are thrown when expected
+6. **Independent tests** - tests should not depend on execution order
+7. **Fast execution** - unit tests should run in milliseconds
+
+### Integration Test Guidelines
+
+**Status**: TBD
+
+## Java Platform Module System (JPMS)
+
+All SDK modules must fully support the Java Platform Module System (JPMS) introduced in Java 9.
+Each module must provide a `module-info.java` file that clearly defines:
+
+- Exported packages (public API)
+- Required dependencies
+- Provided services (if applicable)
+- Used services (if applicable)
+
+### Public API vs. Internal Implementation
+
+JPMS provides a clear separation between public API and internal implementation:
+
+- **Exported packages**: These contain the public API that external consumers can use. All types in exported packages
+  are accessible to consumers.
+- **Non-exported packages**: These contain internal implementation details that are not part of the public API. Types in
+  non-exported packages are not accessible to external modules, even if they are declared `public` in Java.
+
+This separation allows for a clean distinction between what is part of the public contract and what is an internal
+implementation detail that can change without affecting consumers.
+
+### Package Structure Convention
+
+To clearly distinguish between public API and internal implementation, use the following package structure:
+
+```
+org.hiero.{module}/              # Public API (exported)
+├── {PublicInterfaces}.java
+├── {PublicClasses}.java
+└── impl/                        # Internal implementation (NOT exported)
+    ├── {InternalImplementations}.java
+    └── {Factories}.java
+```
+
+### Example module-info.java
+
+```java
+module org.hiero.keys {
+    // Export public API packages
+    exports org.hiero.keys;
+
+    // Do NOT export internal implementation packages
+    // (org.hiero.keys.impl is not exported and therefore not accessible from outside)
+
+    // Declare compile-time only dependencies (annotations, etc.)
+    requires static org.jspecify;
+
+    // Declare runtime dependencies
+    requires org.bouncycastle.provider;
+
+    // Optionally provide services
+    provides org.hiero.keys.KeyProvider
+            with org.hiero.keys.impl.DefaultKeyProvider;
+}
+```
+
+### Rules for JPMS
+
+1. **Every module must have a `module-info.java`** at the root of its source directory
+2. **Only export packages that contain public API** - never export `impl` packages to consumers
+3. **Use `requires` for all dependencies** - make dependencies explicit
+4. **Use `requires static` for compile-time only dependencies** - annotations (like `org.jspecify`), code generators, or
+   other tools that are not needed at runtime must use `requires static`
+5. **Avoid `requires transitive` whenever possible** - exposing types from dependencies in your public API should be
+   avoided. If unavoidable (e.g., your public API returns or accepts types from another module), you must use
+   `requires transitive` so consumers have access to those types
+6. **Never use unnamed modules** - all production code must be in named modules
+7. **Tests must run on the module path** - test code should also use named modules to ensure JPMS compatibility
+8. **Use `exports ... to` for test-only access** - to test internal implementation packages (like `impl`), use qualified
+   exports to make them accessible only to test modules
+9. **Test modules should use `open module`** - declare test modules as `open module` to allow reflection access for test
+   frameworks without needing individual `opens` declarations
+10. **Document exported packages** in the module-info.java using comments
+
+### Compile-Time vs Runtime Dependencies
+
+Understanding the difference between compile-time and runtime dependencies is crucial for optimal module design:
+
+**Compile-Time Only (`requires static`)**:
+
+- Annotation libraries (e.g., `org.jspecify`)
+- Code generation tools
+- Build-time processors
+- Any dependency whose types are only referenced in annotations or comments
+
+**Runtime Dependencies (`requires`)**:
+
+- Libraries whose types are used internally but NOT exposed in the public API
+- Libraries that provide actual functionality at runtime
+- Any dependency needed for the application to run
+
+**Transitive Dependencies (`requires transitive`)** - **AVOID WHENEVER POSSIBLE**:
+
+- Only use when your public API exposes types from another module (e.g., returning or accepting types from that module
+  in public methods)
+- This creates tight coupling between your module and the dependency
+- **Best practice**: Wrap or adapt external types so your public API only uses your own types
+
+**Example - Good Design (avoiding transitive)**:
+
+```java
+module org.hiero.keys {
+    // Compile-time only: annotations are erased after compilation
+    requires static org.jspecify;
+
+    // Runtime: BouncyCastle is used internally but NOT exposed in public API
+    requires org.bouncycastle.provider;
+
+    // Export only our own types
+    exports org.hiero.keys;
+}
+```
+
+**Example - When transitive is unavoidable**:
+
+```java
+module org.hiero.client {
+    requires static org.jspecify;
+
+    // Our public API returns CompletionStage, so we use standard Java types (no transitive needed)
+    requires java.base;
+
+    // Our public API exposes Transaction types from org.hiero.transaction
+    // Consumers MUST have access to these types
+    requires transitive org.hiero.transaction;
+
+    exports org.hiero.client;
+}
+```
+
+### Testing with JPMS
+
+Tests should run on the module path to ensure full JPMS compatibility. To test internal implementation packages that are
+not exported to consumers, use qualified exports with `exports ... to`.
+
+**module-info.java** (in `src/main/java/module-info.java`):
+
+```java
+module org.hiero.keys {
+    // Export public API to everyone
+    exports org.hiero.keys;
+
+    // Export internal implementation ONLY to test module
+    exports org.hiero.keys.impl to org.hiero.keys.test;
+
+    requires static org.jspecify;
+    requires org.bouncycastle.provider;
+}
+```
+
+**module-info.java** (in `src/test/java/module-info.java`):
+
+```java
+open module org.hiero.keys.test {
+    // Require the module under test
+    requires org.hiero.keys;
+
+    // Test frameworks
+    requires org.junit.jupiter.api;
+
+    // Note: 'open module' makes all packages accessible for reflection
+    // No need for individual 'opens' declarations
+}
+```
+
+**Key Points**:
+
+- The production module uses `exports ... to` to selectively expose `impl` packages only to the test module
+- The test module should be declared as `open module` to allow reflection access for test frameworks (JUnit, Mockito,
+  etc.)
+- Using `open module` eliminates the need for individual `opens` declarations for each test package
+- This approach ensures that `impl` packages remain inaccessible to consumers while being fully testable
+
+**Directory Structure**:
+
+```
+src/
+├── main/
+│   └── java/
+│       ├── module-info.java
+│       └── org/hiero/keys/
+│           ├── PublicKey.java
+│           └── impl/
+│               └── PublicKeyImpl.java
+└── test/
+    └── java/
+        ├── module-info.java
+        └── org/hiero/keys/impl/test/
+            └── PublicKeyImplTest.java
+```
+
+## Namespace Mapping
+
+The meta-language uses namespaces to group related types and functionality. In Java, namespaces map to a combination of
+**packages** and **JPMS modules**.
+
+### Namespace Concept
+
+**Meta-language namespace definition**:
+
+```
+namespace transactions
+requires common, keys
+
+constant MAX_TRANSACTIONS:int32 = 100
+
+Transaction {
+    @@immutable id: string
+    @@immutable amount: decimal
+}
+
+enum TransactionStatus {
+    PENDING
+    COMPLETED
+    FAILED
+}
+```
+
+### Java Implementation of Namespaces
+
+Namespaces are implemented using:
+
+1. **Java Package** - for code organization (`org.hiero.transactions`)
+2. **JPMS Module** - for encapsulation and dependency management
+
+**Package Structure**:
+
+```
+org.hiero.transactions/
+├── Transaction.java
+├── TransactionStatus.java
+├── TransactionConstants.java
+└── impl/
+    └── TransactionImpl.java
+```
+
+**module-info.java** (maps namespace dependencies):
+
+```java
+module org.hiero.transactions {
+    // Namespace 'requires common, keys' maps to:
+    requires org.hiero.common;
+    requires org.hiero.keys;
+
+    // Compile-time dependencies
+    requires static org.jspecify;
+
+    // Export public API (namespace types)
+    exports org.hiero.transactions;
+
+    // Do NOT export internal implementation
+    // (org.hiero.transactions.impl stays private)
+}
+```
+
+### Namespace to Package Naming Convention
+
+**Rule**: `namespace NAME` → `org.hiero.NAME` package
+
+| Meta-Language Namespace  | Java Package             |
+|--------------------------|--------------------------|
+| `namespace transactions` | `org.hiero.transactions` |
+| `namespace keys`         | `org.hiero.keys`         |
+| `namespace common`       | `org.hiero.common`       |
+| `namespace client`       | `org.hiero.client`       |
+
+### Namespace Dependencies
+
+Namespace dependencies in the meta-language map directly to JPMS module dependencies:
+
+```
+// Meta-language
+namespace transactions
+requires common, keys
+
+// Java module-info.java
+module org.hiero.transactions {
+    requires org.hiero.common;
+    requires org.hiero.keys;
+}
+```
+
+### Constants in Namespaces
+
+Constants defined at namespace level should be placed in a dedicated constants class:
+
+**Meta-language**:
+
+```
+namespace transactions
+
+constant MAX_TRANSACTIONS:int32 = 100
+constant DEFAULT_TIMEOUT:int64 = 30000
+```
+
+**Java Implementation**:
+
+```java
+package org.hiero.transactions;
+
+/**
+ * Constants for the transactions namespace.
+ */
+public final class TransactionConstants {
+
+    /** Maximum number of transactions per batch */
+    public static final int MAX_TRANSACTIONS = 100;
+
+    /** Default timeout in milliseconds */
+    public static final long DEFAULT_TIMEOUT = 30000L;
+
+    private TransactionConstants() {
+        // Prevent instantiation
+        throw new UnsupportedOperationException("Constants class cannot be instantiated");
+    }
+}
+```
+
+### Cross-Namespace References
+
+When types from one namespace reference types from another:
+
+**Meta-language**:
+
+```
+namespace accounts
+requires transactions
+
+Account {
+    lastTransaction: transactions.Transaction
+}
+```
+
+**Java Implementation**:
+
+```java
+// module-info.java
+module org.hiero.accounts {
+    requires org.hiero.transactions;
+    exports org.hiero.accounts;
+}
+
+// Account.java
+package org.hiero.accounts;
+
+        import org.hiero.transactions.Transaction;
+        import org.jspecify.annotations.Nullable;
+
+        public record Account(
+        String id,
+        @Nullable Transaction lastTransaction
+        ){
+        // ...
+        }
+```
+
+**Note**: This creates a dependency, so `org.hiero.transactions` types appear in the public API. Consider whether
+`requires transitive` is needed (see [JPMS section](#java-platform-module-system-jpms)).
 
 ## Questions & Comments
 

@@ -68,7 +68,6 @@ The following example shows a function type without any parameters that is often
 
 execute(action: function<void run()>)
 
-
 ### Complex Types
 
 Complex data types can be defined using the basic data types and other complex data types.
@@ -251,9 +250,10 @@ Here the access is implemented in a language-specific way. That can be a getter 
 
 A mutable attribute can be changed at any time.
 Here a language-specific way to change an attribute is implemented.
-In most languages this is equivalent to a setter method or a native property access. 
+In most languages this is equivalent to a setter method or a native property access.
 
-Please refer to the best practice guideline for a specific language to understand how attribute access (read/write) must be implemented.
+Please refer to the best practice guideline for a specific language to understand how attribute access (read/write) must
+be implemented.
 
 #### Attribute annotations
 
@@ -301,6 +301,39 @@ The following annotations should be used:
 - `@@throws(error-type-a[, ...])`: Indicates that the method can throw an exception/error.
   The error-types should be stable identifiers, not transport-specific.
   Use lowercase-kebab for error identifiers (e.g., `not-found-error`, `parse-error`).
+- `@@threadSafe[(groupName)]`: Indicates that the method can be called concurrently by the SDK and must be implemented
+  in a thread-safe manner. The implementation is free to choose the appropriate strategy (locks, lock-free structures,
+  actors, immutable copies, etc.). The optional `groupName` parameter groups methods that can be called concurrently
+  with each other — the SDK may invoke any combination of methods in the same group at the same time. Without a group
+  name, the method must be safe for concurrent calls on its own. In single-threaded environments (e.g., JavaScript) the
+  annotation serves as documentation of the concurrent intent.
+
+Example:
+
+```
+DataCache {
+    @@threadSafe(cache)
+    void updateCache(data: bytes)
+
+    @@threadSafe(cache)
+    bytes readCache()
+
+    @@threadSafe
+    void resetStats()
+}
+```
+
+In this example, `updateCache` and `readCache` are in the `cache` group, meaning the SDK may call them concurrently
+with each other. `resetStats` has no group and can only be called concurrently with itself. Note that even a single
+method annotated with `@@threadSafe` (without a group) is meaningful — it indicates that the SDK may invoke that method
+multiple times in parallel.
+
+**Important:** `@@threadSafe` describes concurrency requirements between the SDK and the implementation of the annotated
+method — it does not define thread-safety guarantees for end users of the SDK. User-facing thread-safety is addressed
+through other means: preferring immutable types (see [Prefer immutable fields and objects](#prefer-immutable-fields-and-objects))
+ensures that most objects can be shared safely across threads without synchronization. For mutable types, getters and
+setters are not individually annotated with `@@threadSafe` — it is the user's responsibility to synchronize access to
+mutable objects if they choose to share them across threads.
 
 #### Method Parameter annotations
 
@@ -344,6 +377,28 @@ namespace transactions
 requires common, keys
 ...
  ```
+
+#### Cross-namespace type references
+
+When a type is used that is defined in a different namespace, it must be qualified with the namespace name using dot
+notation: `namespace.Type`. Types within the same namespace can be referenced by their simple name.
+
+Example:
+
+```
+namespace orders
+requires common
+
+// AccountId is defined in the `common` namespace, so it must be qualified
+OrderTransaction {
+    @@immutable account: common.AccountId
+    @@immutable status: OrderStatus // same namespace, no prefix needed
+}
+```
+
+This rule also applies to sub-namespaces. A type defined in `keys.io` must be referenced as `keys.io.TypeName` from
+outside that namespace, and a type in the parent `keys` namespace must be referenced as `keys.TypeName` from within
+`keys.io`.
 
 ### Constants
 

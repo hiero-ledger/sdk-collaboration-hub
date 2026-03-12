@@ -18,15 +18,15 @@ constant HEDERA_TESTNET_IDENTIFIER:string = "hedera-testnet" // identifier for t
 // The full configuration to connect to a specific network
 NetworkSetting {
  
-    @@immutable ledger: Ledger // the definition of the ledger
+    @@immutable ledger: common.Ledger // the definition of the ledger
    
     // Returns an immutable set of consensus nodes
     // Modifications to the returned set do not affect the original
-    @@immutable Set<ConsensusNode> getConsensusNodes()
-    
+    @@immutable Set<common.ConsensusNode> getConsensusNodes()
+
     // Returns an immutable set of mirror nodes
     // Modifications to the returned set do not affect the original
-    @@immutable Set<MirrorNode> getMirrorNodes()
+    @@immutable Set<common.MirrorNode> getMirrorNodes()
 
 }
 
