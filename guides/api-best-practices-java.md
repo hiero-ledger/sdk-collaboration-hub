@@ -4,6 +4,32 @@ This document translates the [language-agnostic API meta-definition](api-guideli
 conventions, and ready‑to‑copy code templates.
 It aims to keep SDK APIs consistent, ergonomic, and maintainable across modules.
 
+## Defensive Implementation
+
+SDK implementations should be defensively written to minimize the risk of unexpected failures at runtime — even in
+situations that are not explicitly required by the API contract. However, defensive measures must never come at the cost
+of performance. Only use techniques that have negligible overhead in the normal case.
+
+Examples of good defensive practices:
+
+- **Null checks on public API boundaries** — Validate non-null parameters early with `Objects.requireNonNull` to fail
+  fast with a clear message instead of producing a `NullPointerException` deep in the call stack.
+- **Thread-safe collection types** — Use `CopyOnWriteArrayList`, `CopyOnWriteArraySet`, and `ConcurrentHashMap` for
+  mutable internal collections instead of `ArrayList`, `HashSet`, and `HashMap`. These prevent
+  `ConcurrentModificationException` if a user happens to access the SDK from multiple threads, without requiring
+  explicit locks. The overhead is minimal for collections that are read far more often than written.
+- **Immutable return values** — Return unmodifiable views or copies of internal collections to prevent callers from
+  accidentally modifying SDK state.
+- **Validation of constraints** — Enforce `@@min`, `@@max`, `@@minLength`, `@@maxLength`, and `@@pattern` annotations
+  in constructors and setters to catch invalid data early.
+
+Defensive implementation does **not** mean:
+
+- Adding `synchronized` blocks or locks to every method — this kills performance and is only justified when explicitly
+  required (see `@@threadSafe` in the [API guideline](api-guideline.md)).
+- Catching and silently swallowing exceptions — errors should propagate clearly.
+- Adding redundant checks in internal (non-public) code paths where invariants are already guaranteed.
+
 ## Type Mapping
 
 Use the following canonical mappings when turning meta types into Java:
@@ -655,13 +681,13 @@ possible. `Optional.of(value)` must only be used when the value is guaranteed to
 
 ```java
 // WRONG: Do not use Optional as a parameter
-public void setName(Optional<String> name) { ... }
+public void setName(Optional<String> name) { ...}
 
 // WRONG: Do not use Optional as a field
 private Optional<String> name;
 
 // CORRECT: Use @Nullable for parameters that may be absent
-public void setName(@Nullable final String name) { ... }
+public void setName(@Nullable final String name) { ...}
 
 // CORRECT: Use Optional as a return type
 @NonNull
