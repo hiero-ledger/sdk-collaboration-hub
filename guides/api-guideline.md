@@ -273,6 +273,10 @@ The following annotations should be used:
   at the SDK level.
 - `@@pattern(regex)`: Indicates a regex pattern that the string field must match. Should be included if the value must
   be enforced at the SDK level.
+- `@@threadSafe[(groupName)]`: Indicates that the attribute's accessor (getter and, if mutable, setter) can be called
+  concurrently by the SDK and must be implemented in a thread-safe manner. The optional `groupName` parameter groups
+  attributes (and methods) whose accessors can be called concurrently with each other. See the
+  [method annotation](#method-annotations) section for the full semantics of `@@threadSafe`.
 
 ### Methods
 
