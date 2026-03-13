@@ -273,6 +273,10 @@ The following annotations should be used:
   at the SDK level.
 - `@@pattern(regex)`: Indicates a regex pattern that the string field must match. Should be included if the value must
   be enforced at the SDK level.
+- `@@threadSafe[(groupName)]`: Indicates that the attribute's accessor (getter and, if mutable, setter) can be called
+  concurrently by the SDK and must be implemented in a thread-safe manner. The optional `groupName` parameter groups
+  attributes (and methods) whose accessors can be called concurrently with each other. See the
+  [method annotation](#method-annotations) section for the full semantics of `@@threadSafe`.
 
 ### Methods
 
@@ -294,10 +298,16 @@ void resetCache()
 Method annotations can be used to provide additional information about methods.
 The following annotations should be used:
 
-- `@@async`: Indicates that the method is asynchronous and returns a promise or future.
-  To make APIs easily useable by experts and newcomers, it makes sense to always provide a synchronous version of the
-  method.
-  An API definition in the meta-language does not need to add the synchronous version explicitly.
+- `@@async`: Indicates that the method is non-blocking. The actual work is deferred and executed asynchronously — the
+  method returns immediately with a future or promise that represents the eventual result. In concrete terms, a method
+  declared as `@@async ReturnType doWork()` returns a language-specific future/promise wrapping `ReturnType` (e.g.,
+  `CompletableFuture<ReturnType>` in Java, `Promise<ReturnType>` in TypeScript, `Future<ReturnType>` in Rust).
+  To make APIs easily usable by experts and newcomers, it makes sense to often provide a synchronous version of the
+  method. An API definition in the meta-language does not need to add the synchronous version explicitly.
+  Note: `@@async` applies only to method declarations. It is not used on function types (`function<...>`). Callbacks
+  and futures are two distinct async patterns — a callback is invoked when work completes, while a future represents
+  a pending result. Combining them (e.g., a callback that returns a future) should be avoided as it creates ambiguity
+  about responsibility and completion semantics.
 - `@@throws(error-type-a[, ...])`: Indicates that the method can throw an exception/error.
   The error-types should be stable identifiers, not transport-specific.
   Use lowercase-kebab for error identifiers (e.g., `not-found-error`, `parse-error`).
@@ -330,7 +340,8 @@ multiple times in parallel.
 
 **Important:** `@@threadSafe` describes concurrency requirements between the SDK and the implementation of the annotated
 method — it does not define thread-safety guarantees for end users of the SDK. User-facing thread-safety is addressed
-through other means: preferring immutable types (see [Prefer immutable fields and objects](#prefer-immutable-fields-and-objects))
+through other means: preferring immutable types (
+see [Prefer immutable fields and objects](#prefer-immutable-fields-and-objects))
 ensures that most objects can be shared safely across threads without synchronization. For mutable types, getters and
 setters are not individually annotated with `@@threadSafe` — it is the user's responsibility to synchronize access to
 mutable objects if they choose to share them across threads.
