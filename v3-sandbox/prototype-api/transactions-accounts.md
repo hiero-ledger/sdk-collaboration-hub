@@ -4,21 +4,20 @@ This section defines the API for the account transactions.
 
 ## Description
 
-A concrete Transaction implementation for creating a new account.
+A concrete TransactionBuilder implementation for creating a new account. Demonstrates the builder pattern where
+domain-specific setters live on the builder and `build()` produces a universal `Transaction`.
+
+## API Schema
 
 ```
 namespace transactions-accounts
 requires common, transactions, keys
 
 @@finalType
-AccountCreateTransaction extends transactions.Transaction<AccountCreatePackedTransaction> {
-    @@nullable accountMemo:String
+AccountCreateTransactionBuilder extends transactions.TransactionBuilder<AccountCreateTransactionBuilder> {
+    @@nullable accountMemo:string
     @@default(0) initialBalance:common.Hbar
     key:keys.PublicKey
-}
-
-@@finalType
-AccountCreatePackedTransaction extends transactions.PackedTransaction<AccountCreateTransaction, AccountCreateResponse> {
 }
 
 @@finalType
@@ -37,24 +36,42 @@ AccountCreateRecord extends transactions.Record<AccountCreateReceipt> {
 
 ```
 
-## Example
+## Examples
 
-The following example creates a new account with a balance of 100 hbars.
+### Simple flow
+
+Creates a new account with a balance of 100 hbars using `buildAndExecute` for a single-signer flow.
 
 ```
 HieroClient client = ...
-PrivateKey operatorKey = ...
-
-Hbar initialBalance = new Hbar(100, HbarUnit.HBAR);
 PublicKey keyOfNewAccount = ...
 
-AccountCreateTransaction transaction = new AccountCreateTransaction(keyOfNewAccount, initialBalance);
-AccountId newAccountId = transaction.pack(client)
-           .sign(operatorKey)
-           .execute(client)
-           .sendAndWait(30_000)
-           .queryReceiptAndWait(30_000)
-           .getAccountId();
+AccountCreateResponse response = new AccountCreateTransactionBuilder()
+    .setKey(keyOfNewAccount)
+    .setInitialBalance(new Hbar(100, HbarUnit.HBAR))
+    .buildAndExecute(client);
+
+AccountId newAccountId = response.queryReceipt().getAccountId();
+```
+
+### Multi-party signing
+
+Creates a new account where both the operator and another party need to sign.
+
+```
+HieroClient client = ...
+PublicKey keyOfNewAccount = ...
+
+Transaction tx = new AccountCreateTransactionBuilder()
+    .setKey(keyOfNewAccount)
+    .setInitialBalance(new Hbar(100, HbarUnit.HBAR))
+    .build(client);
+
+tx.sign(operatorKey);
+tx.sign(otherPartyKey);
+
+AccountCreateResponse response = tx.execute(client);
+AccountId newAccountId = response.queryReceipt().getAccountId();
 ```
 
 ## Questions & Comments
