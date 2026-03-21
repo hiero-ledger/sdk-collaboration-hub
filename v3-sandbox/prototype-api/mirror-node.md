@@ -189,13 +189,19 @@ TokenTransfer {
     @@immutable isApproval: bool
 }
 
+// Grouping of sender, receiver, and token for an NFT transfer
+@@finalType
+NftTransferParties {
+    @@immutable senderAccountId: AccountId
+    @@immutable receiverAccountId: AccountId
+    @@immutable tokenId: TokenId
+}
+
 @@finalType
 NftTransfer {
     @@immutable isApproval: bool
-    @@immutable @@nullable senderAccountId: AccountId
-    @@immutable @@nullable receiverAccountId: AccountId
+    @@immutable @@nullable parties: NftTransferParties
     @@immutable serialNumber: int64
-    @@immutable @@nullable tokenId: TokenId
 }
 
 @@finalType
