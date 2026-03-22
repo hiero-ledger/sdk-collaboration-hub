@@ -1,7 +1,7 @@
 name: Beginner Issue Template
 description: Create a beginner issue for contributors ready to learn the codebase and own a small implementation.
 title: "[Beginner]: "
-labels:
+labels: ["Beginner"]
 assignees: []
 body:
   - type: markdown

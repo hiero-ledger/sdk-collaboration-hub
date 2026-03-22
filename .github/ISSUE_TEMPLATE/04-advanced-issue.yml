@@ -1,6 +1,6 @@
 name: Advanced Issue Template
 description: Create a high-impact issue for experienced contributors with deep familiarity with the codebase
-title:
+title: ["Advanced]: "]
 labels: ["advanced"]
 assignees: []
 
