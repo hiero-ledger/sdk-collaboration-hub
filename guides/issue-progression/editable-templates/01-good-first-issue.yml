@@ -1,0 +1,258 @@
+name: Good First Issue Template
+description: Create a Good First Issue
+title:
+labels: ["Good First Issue"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## **Thanks for creating a good first issue!** 😊
+
+        This template is designed to help you create a Good First Issue (GFI) : a small, well-scoped task.
+        
+        Read more:
+        [Applying Good First Issue Label](guides/issue-progression/labelling.md)
+        [Issue Progression Initiative](guides/issue-progression/editable-templates/README.md)
+
+        ---
+
+  - type: textarea
+    id: intro
+    attributes:
+      label: 🆕🐥 Newcomer Friendly
+      description: Who is this issue for?
+      value: |
+        This **[Good First Issue](https://github.com/issues?q=is%3Aopen%20is%3Aissue%20org%3Ahiero-ledger%20archived%3Afalse%20no%3Aassignee%20(label%3A%22good%20first%20issue%22%20OR%20label%3A%22skill%3A%20good%20first%20issue%22)%20(repo%3Ahiero-ledger%2Fhiero-sdk-cpp%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-swift%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-python%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-js%20OR%20repo%3Ahiero-ledger%2Fhiero-website))** is a guided, well-scoped task intended for new human contributors.
+
+        #### What you’ll do
+        - ✅ understand how the repository is structured
+        - ✅ practice the standard contribution workflow
+        - ✅ submit and merge a pull request
+
+        #### Support
+        A maintainer or mentor actively monitors this issue and will help **guide it to completion**.
+
+        > [!IMPORTANT]
+        > **This issue does not require prior domain knowledge.**
+        >
+        > - No Hiero or Hedera experience needed  
+        > - No distributed ledger background required  
+        > - **Basic Python and Git are sufficient**
+
+        > [!NOTE]
+        > ⏱️ **Typical time to complete:** 30–90 minutes (once setup is done)  
+        > 🧩 **Difficulty:** Small, well-contained change  
+        > 🎓 **Best for:** New contributors
+
+        **🏁 Completion**
+        When this issue is complete, you will have:
+
+        - ✅ Solved a real issue
+        - ✅ A merged pull request at Hiero
+        - ✅ Your name in the project history
+        - ✅ Confidence to take on larger issues
+
+  - type: textarea
+    id: issue
+    attributes:
+      label: 👾 Issue description
+      description: |
+        Describe the issue in a way that’s easy for new contributors to understand.
+        Briefly explain why this change is useful or needed, even if the impact seems small.
+        Please avoid assuming prior knowledge of the language, codebase, or Hiero, as Good First Issues are often surfaced to new developers.
+        Links to relevant documentation or code are very welcome.
+      value: |
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: 💡 Proposed Solution
+      description: |
+        Describe what a good solution would look like.
+        Keep this high-level and easy to understand. Implementation details can go in the subsequent Implementation Steps section.
+      value: |
+    validations:
+      required: true
+
+  - type: textarea
+    id: implementation
+    attributes:
+      label: 🛠️ Implementation Steps
+      description: |
+        To make this issue easy to pick up and complete, please include:
+        - Which files need to be changed or added
+        - Any functions, classes, or modules involved
+        - The complete steps to implement the solution
+        - What the final result or output should look like
+        - Links to relevant documentation or code (if helpful)
+        For good first issues, please keep this as guided and clear as possible.
+      value: |
+    validations:
+      required: true
+
+  - type: textarea
+    id: setup_steps
+    attributes:
+      label: 📋 Step-by-Step Setup Procedure
+      description: Provide a step-by-step setup guide for new contributors
+      value: |
+        - [ ] Visual Studio (VS) Code: [Guide](guides/issue-progression/docs/contributor-setup.md#1-setting-up-supporting-infrastructure#visual-studio-code)
+
+        - [ ] GitHub Desktop: [Guide](guides/issue-progression/docs/contributor-setup.md#1-setting-up-supporting-infrastructure#github-desktop)
+
+        - [ ] Hedera Testnet Account with root .env file: [Guide](guides/issue-progression/docs/contributor-setup.md#2-setting-up-a-portal-account)
+
+        - [ ] Create a GPG key linked to GitHub: [Guide](guides/issue-progression/docs/contributor-setup.md#3-set-up-a-gpg-key-for-signing)
+
+        - [ ] **Fork** Create an online and local copy of the repository: [Guide](guides/issue-progression/docs/contributor-setup.md#4-fork-the-repository)
+
+        - [ ] **Connect** origin with upstream: [Guide](guides/issue-progression/docs/contributor-setup.md#5-connect-your-origin-with-upstream)
+
+        - [ ] **Install Packages** and protobufs: [Guide](guides/issue-progression/docs/contributor-setup.md#6-install-packages-and-protobufs) (or [Windows Setup Guide](guides/issue-progression/docs/contributor-setup-windows.md) for Windows users)
+
+        - [ ] **Sync Main** pull any recent upstream changes: [Guide](guides/issue-progression/docs/contributor-setup.md#7-sync-main)
+
+        You are set up! 🎉
+    validations:
+      required: true
+
+  - type: textarea
+    id: workflow_steps
+    attributes:
+      label: 📋 Step-by-step workflow guide
+      description: Provide a contribution workflow suitable for new contributors.
+      value: |
+        #### ✅ Get ready
+        - [ ] **Claim the issue:**  comment `/assign`: [Guide](guides/issue-progression/docs/contributor-workflow.md#1-get-assigned-to-an-issue). Pull requests created without being assigned will be automatically closed.
+
+        - [ ] **Double check the Issue and AI plan:** carefully re-read the issue description and any AI plan below
+
+        - [ ] **Ask questions early:** ask on [Discord](guides/issue-progression/docs/discord.md), and the `@good_first_issue_support_team` (setup and workflow help)
+
+        - [ ] **Sync Main** pull any recent upstream changes: [Guide](guides/issue-progression/docs/contributor-setup.md#7-sync-main)
+
+        - [ ] 💡 Tip: Before coding, you are free to leave a short comment describing what you plan to change. We’ll confirm you’re on the right track.
+
+        #### 🛠️ Solve the Issue
+        - [ ] **Create a branch from `main`:** [Guide](guides/issue-progression/docs/contributor-workflow.md#2-create-a-branch)
+
+        - [ ] **Implement the solution**: follow the implementation steps in the issue description.
+
+        - [ ] **Commit with Conventional format and DCO, GPG signing:**  commit changes using: `git commit -S -s -m "chore: your message"`, [Guide](guides/issue-progression/docs/contributor-workflow.md#3-commit-your-changes)
+
+        - [ ] **Add a `.CHANGELOG.md` entry:** under the appropriate **[UNRELEASED]** section and commit as `git commit -S -s -m "chore: changelog entry"` [Guide](guides/issue-progression/docs/contributor-workflow.md#4-create-a-changelog-entry)
+
+        #### 🚀 Create the pull request
+        - [ ] **Push your commits:**  push your branch to your fork `git push origin your-branch-name` [Guide](guides/issue-progression/docs/contributor-workflow.md#5-submitting-a-pull-request)
+
+        - [ ] **Open a pull request:** [here](https://github.com/hiero-ledger/hiero-sdk-python/pulls) [Guide](guides/issue-progression/docs/contributor-workflow.md#5-submitting-a-pull-request)
+
+        - [ ] **Complete the PR description:**  briefly describe your changes, [Guide](guides/issue-progression/docs/contributor-workflow.md#5-submitting-a-pull-request)
+
+        - [ ] **Link the Issue:**  link the issue the PR solves in the PR description, [Guide](guides/issue-progression/docs/contributor-workflow.md#5-submitting-a-pull-request). Pull requests created without a linked issue will be automatically closed.
+
+        - [ ] **Submit the pull request:**  click `**Create pull request**` and `Ready to Review` 🎉
+
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: ✅ Acceptance criteria
+      description: |
+        Edit or expand this checklist with what is required to merge a pull request for this issue.
+      value: |
+        To be able to close this issue, the following criteria must be met:
+
+        - [ ] **The issue is solved:**  I’ve carefully read and implemented the issue requirements
+
+        - [ ] **I did not add extra changes:**  I did not modify anything beyond what is described in the issue
+
+        - [ ] **Behavior:**  All other existing features continue to work as before
+
+        - [ ] **Checks and feedback:**  All checks pass and any requested changes have been made
+    validations:
+      required: true
+
+  - type: textarea
+    id: getting_help
+    attributes:
+      label: 🧭 Getting help if you’re stuck
+      description: How to get support while working on this issue.
+      value: |
+        If questions come up, don’t spend more than **20 minutes** blocked.
+
+        > [!TIP]
+        >
+        > - Comment on this issue and tag `@good_first_issue_support_team``
+        > - Ask for help in [Discord](guides/issue-progression/docs/discord.md)
+        >
+
+        ---
+
+  - type: textarea
+    id: pr_expectations
+    attributes:
+      label: 🤔 What to expect after submitting a PR
+      description: Explain what happens after a pull request is opened.
+      value: |
+        Once you open a pull request, here’s what happens next.
+
+        **🤖 1. Automated checks**
+        A small set of automated checks must pass before merging (signing, changelog, tests, examples, code quality).
+        Open any failed check to see details.
+
+        **😎 2. Team review**
+        A team member reviews your PR within **7 days**.
+        You may be asked to make changes or your PR may be approved.
+        Approved PRs are usually merged within **one day**.
+
+
+        **🔄 Merge conflicts (sometimes)**
+        Conflicts can happen and are normal as the SDK updates. Resolve using this [Guide](guides/issue-progression/docs/merge_conflicts.md)
+
+        ---
+    validations:
+      required: true
+
+  - type: textarea
+    id: ai_usage_guidelines
+    attributes:
+      label: 🤖 AI usage guidelines
+      description: Guidance on using AI tools responsibly for this issue.
+      value: |
+        Humans are welcome to use AI tools while working on this issue but we do not accept AI bot-authored PRs.
+
+        **Use AI responsibly:**
+        - use it to primarily understand the problem
+        - review suggestions carefully
+        - test as you go
+
+  - type: textarea
+    id: information
+    attributes:
+      label: 🤔 Additional Help
+      description: Provide any extra resources or context for contributors to solve this good first issue
+      value: |
+        #### First Points of Contact:
+        - [Discord](guides/issue-progression/docs/discord.md)
+        - Comment with `@hiero-ledger/hiero-sdk-good-first-issue-support`
+        The more you ask, the more you learn and so do we!
+
+        #### General Documentation:
+        - [New Starter Docs (Signing, Rebasing, Changelog, Merge Conflicts, Workflow, Setup)](guides/issue-progression/docs)
+        - [All Things Github Workflows](guides/issue-progression/docs/github-action-workflows.md)
+
+        #### Other Relevant Docs:
+        - [README.md](https://github.com/hiero-ledger/hiero-sdk-python/blob/main/README.md)
+        - [Project Structure](https://github.com/hiero-ledger/hiero-sdk-python/blob/main/docs/sdk_developers/training/setup/project_structure.md)
+        - [Running Examples](https://github.com/hiero-ledger/hiero-sdk-python/blob/main/docs/sdk_developers/examples.md)
+
+        #### Calls:
+        - Get hands-on-help by our expert team at our [Office Hours](https://zoom-lfx.platform.linuxfoundation.org/meeting/99912667426?password=5b584a0e-1ed7-49d3-b2fc-dc5ddc888338)
+        - Learn, raise issues and provide feedback at [Community Calls](https://zoom-lfx.platform.linuxfoundation.org/meeting/92041330205?password=2f345bee-0c14-4dd5-9883-06fbc9c60581)

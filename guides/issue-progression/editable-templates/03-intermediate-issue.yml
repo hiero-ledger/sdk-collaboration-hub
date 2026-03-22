@@ -1,0 +1,286 @@
+name: Intermediate Issue Template
+description: Create a well-documented issue for contributors ready to own larger tasks independently
+title: 
+labels: ["intermediate"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## **Thanks for creating an intermediate issue!** 😊
+
+        This template is designed to help you create an Intermediate Issue : a well-scoped task that requires independent research and implementation.
+        
+        Read more:
+        [Applying Intermediate Label](guides/issue-progression/labelling.md)
+        [Issue Progression Initiative](guides/issue-progression/editable-templates/README.md)
+        ---
+
+  - type: textarea
+    id: before_you_start
+    attributes:
+      label: 🧩 Intermediate Contributors
+      description: |
+        THIS SECTION IS PRE-FILLED. LEAVE AS-IS UNLESS YOU NEED TO ADD ISSUE-SPECIFIC PREREQUISITES.
+      value: |
+        Welcome! This Intermediate Issue is designed for contributors who have completed beginner-level work and are ready to take on more ownership.
+
+        It nudges you to:
+
+        - Research across multiple files and modules
+        - Own implementation decisions — not just follow a recipe
+        - Write thorough, meaningful tests
+        - Deliver a clean, review-ready pull request
+
+        **Prerequisites:**
+
+        > [!IMPORTANT]
+        > **Before claiming this issue, you must have:**
+        > - Completed at least 1 Good First Issue **and** 1 Beginner Issue
+        > - The contribution workflow nailed: signing, rebasing, CHANGELOG, linking issues
+        > - The ability to operate independently — you may ask high-level architecture questions, but should not need step-by-step guidance
+
+        > [!TIP]
+        > **You should be comfortable with:**
+        > - Navigating multiple modules across `src/`, `tests/`, and `examples/`
+        > - Reading and following [protobuf definitions](https://github.com/hashgraph/hedera-protobufs/tree/main/services) for correct naming, types, and field ordering
+        > - Writing meaningful tests — not just AI-generated tests of AI-generated code
+        > - Identifying and avoiding breaking changes to public APIs
+        > - Self-reviewing your own PR before submitting
+
+        If this feels like too big a step, that is completely fine — try a
+        [Beginner Issue](https://github.com/hiero-ledger/hiero-sdk-python/issues?q=is%3Aissue+state%3Aopen+label%3Abeginner+no%3Aassignee)
+        first. You can always come back when you are ready.
+
+        **Support:** A maintainer is available for high-level guidance — implementation approach, test strategy, or design questions. Don't hesitate to ask.
+
+        ⏱️ Typical time to complete: 1 week part-time / 3 days full-time
+        🧩 Difficulty: Requires investigation, testing, and polish — most time should go to research and refinement, not coding
+        🎓 Best for: Contributors who've completed beginner issues
+
+        ---
+
+        🏁 **When this issue is complete, you will have:**
+
+        ✅ Researched across multiple files and modules
+        ✅ Owned implementation decisions
+        ✅ Written thorough, meaningful tests
+        ✅ Delivered a clean, review-ready pull request
+        ✅ Confidence to take on advanced issues
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 🐞 Problem Description
+      description: |
+        DESCRIBE THE PROBLEM CLEARLY.
+        YOU MAY ASSUME THE READER CAN NAVIGATE src/, tests/, AND examples/.
+        EXPLAIN: WHAT IS WRONG OR MISSING, WHERE IT LIVES, AND WHY IT MATTERS.
+        INCLUDE RELEVANT FILE PATHS AND LINKS.
+        CONSIDER ADDING: EXPECTED TIME (e.g. 1-2 WEEKS), RELEVANT LABELS, AND A NOTE TO CHECK THE CODERABBIT AI PLAN.
+      value: |
+        _Replace this with the problem description._
+
+        **Before claiming:**
+        - Check the issue labels to see what area this touches
+        - Read the CodeRabbit AI plan (posted as a comment) for a rough implementation overview
+        - If this feels like too big a step, try a beginner issue first
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: 💡 Expected Solution
+      description: |
+        BRIEFLY STATE WHAT THE CONTRIBUTOR SHOULD BUILD OR FIX.
+        THIS SHOULD BE A SHORT SUMMARY OF THE EXPECTED OUTCOME — NOT A DETAILED IMPLEMENTATION GUIDE.
+        EXAMPLE: "Add a __repr__ method to AccountId that shows shard, realm, and num."
+      value: |
+        _Replace this with a brief solution summary._
+    validations:
+      required: true
+
+  - type: textarea
+    id: research
+    attributes:
+      label: 🔍 Background Research
+      description: |
+        POINT THE CONTRIBUTOR TOWARD RELEVANT FILES, SIMILAR CODE, PROTOBUF DEFINITIONS, OR PATTERNS TO STUDY.
+        THIS IS THE "INVESTIGATE BEFORE YOU CODE" STEP.
+      value: |
+        _Replace this with research pointers._
+    validations:
+      required: true
+
+  - type: textarea
+    id: implementation
+    attributes:
+      label: 🛠️ Implementation
+      description: |
+        DESCRIBE WHAT THE CONTRIBUTOR SHOULD BUILD AFTER COMPLETING THEIR RESEARCH.
+        KEEP IT HIGH-LEVEL — THEY SHOULD FIGURE OUT THE DETAILS FROM THEIR RESEARCH.
+      value: |
+        _Replace this with implementation guidance._
+    validations:
+      required: true
+
+  - type: textarea
+    id: testing
+    attributes:
+      label: 🧪 Testing Requirements
+      description: |
+        EDIT THIS SECTION TO MATCH THE TYPE OF CHANGE. DELETE CATEGORIES THAT DO NOT APPLY.
+        TESTING IS A MAJOR COMPONENT OF INTERMEDIATE ISSUES — SET CLEAR EXPECTATIONS.
+      value: |
+        How you test depends on the type of change.
+        See the [testing guide](https://github.com/hiero-ledger/hiero-sdk-python/blob/main/docs/sdk_developers/testing.md) for full details.
+
+        > [!IMPORTANT]
+        > At the intermediate level, **testing is a major component** — not an afterthought.
+        > Each method you implement should be verified. Tests should cover happy paths,
+        > edge cases, and error handling. Tests must be understandable and reviewable,
+        > not just generated by AI.
+
+        **Source code changes (e.g. Python files in `src/`):**
+        - Write unit tests covering happy path, edge cases, and error handling
+        - Run tests locally: `uv run pytest tests/unit/<specific_file>_test.py -v`
+        - Verify naming, types, and field ordering match [protobuf definitions](https://github.com/hashgraph/hedera-protobufs/tree/main/services)
+        - Check consistency with similar classes already in the SDK — use the same patterns
+        - Integration tests will run automatically when you push
+
+        **GitHub Actions / workflow changes (e.g. files in `.github/`):**
+        - Test by merging to your fork's `main` and simulating the scenario
+        - Create test issues or PRs as evidence and link them in your PR
+        - Include screenshots of workflow runs where applicable
+
+        **Example script changes (e.g. files in `examples/`):**
+        - Run the example script and confirm output matches expected behavior
+        - Compare your example with similar existing examples for consistency
+        - You will need a [Hedera Portal](https://portal.hedera.com/) account for testnet credentials
+
+        **In your PR, include links to test evidence:** screenshots, terminal output, test issue/PRs, or script results.
+    validations:
+      required: true
+
+  - type: textarea
+    id: quality_standards
+    attributes:
+      label: 🛡️ Quality & Review Standards
+      description: |
+        PRE-FILLED GUIDANCE. LEAVE AS-IS.
+      value: |
+        Intermediate PRs cover more code and touch more sensitive areas. This section helps you
+        deliver a PR that is ready to merge on first or second review.
+
+        **⚠️ Breaking changes**
+        - Before changing any function signature, return type, or public API — stop and check
+        - If a breaking change is unavoidable: add backwards compatibility and get explicit maintainer approval **before** implementing
+        - Run existing tests to verify nothing breaks: `uv run pytest tests/unit/ -v`
+
+        **🤖 AI-assisted code**
+        - AI is a powerful tool — but every suggestion must be verified, not just accepted
+        - Cross-reference AI output against [protobuf definitions](https://github.com/hashgraph/hedera-protobufs/tree/main/services) and similar SDK implementations
+        - Do not submit AI-generated tests that merely test AI-generated code — tests should verify real behavior and edge cases
+        - If AI output and existing SDK patterns disagree, trust the SDK
+
+        **📦 PR packaging**
+        - Self-review your diff line by line before submitting
+        - Clean git history — no rebase artifacts, merge commits, or unrelated files
+        - CHANGELOG entry under `[Unreleased]`
+        - Link test evidence (screenshots, terminal output, test PRs) in your PR description
+        - Ensure all CI checks pass before requesting review
+        - Double and triple check — intermediate PRs are time-consuming to review
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: ✅ Done Checklist
+      description: |
+        EDIT OR ADD CRITERIA SPECIFIC TO THIS ISSUE. THE DEFAULTS COVER THE STANDARD REQUIREMENTS.
+      value: |
+        Before opening your PR, confirm:
+
+        - [ ] My changes fully address the problem described above
+        - [ ] I verified naming, types, and patterns against protobuf definitions and similar SDK classes
+        - [ ] I tested my changes thoroughly (see testing section above) and linked evidence in my PR
+        - [ ] I checked for breaking changes — no existing tests fail, no public APIs changed without approval
+        - [ ] I did not modify files unrelated to this issue
+        - [ ] My commits are signed: `git commit -S -s -m "chore: description"` — [Signing guide](https://github.com/hiero-ledger/hiero-sdk-python/blob/main/docs/sdk_developers/signing.md)
+        - [ ] I added a CHANGELOG.md entry under `[Unreleased]` — [Changelog guide](https://github.com/hiero-ledger/hiero-sdk-python/blob/main/docs/sdk_developers/changelog_entry.md)
+        - [ ] All CI checks pass
+        - [ ] I self-reviewed my PR before requesting review
+    validations:
+      required: true
+
+  - type: textarea
+    id: contribution_steps
+    attributes:
+      label: 📋 Workflow quick reference
+      description: |
+        PRE-FILLED REFERENCE TABLE. LEAVE AS-IS.
+      value: |
+        You know the workflow — here are the links if you need them:
+
+        | Step | Guide |
+        |------|-------|
+        | Claim this issue | Comment `/assign` below |
+        | Sync with main | [Rebasing guide](guides/issue-progression/docs/rebasing.md) |
+        | Open a PR and link this issue | [PR guide](guides/issue-progression/docs/submit_pull_request.md) · [Linking guide](guides/issue-progression/docs/submit_pull_request.md) |
+        | Resolve merge conflicts | [Merge conflicts guide](guides/issue-progression/docs/contributor-workflow.md) |
+        | Testing | [Testing guide](guides/issue-progression/docs/testing.md) |
+
+  - type: textarea
+    id: ai_tips
+    attributes:
+      label: 🤖 Tips for using AI tools
+      description: |
+        PRE-FILLED GUIDANCE. LEAVE AS-IS.
+      value: |
+        Here is how to get the most out of AI tools at the intermediate level:
+
+
+        - Use AI to understand the issue and the codebase, not to write code for you.
+        - Study the codebase to understand existing patterns and styles — this is the best way to get up to speed and write code that fits well with the rest of the project.
+        - Use [Pylance](https://github.com/hiero-ledger/hiero-sdk-python/blob/main/docs/sdk_developers/pylance.md) in VS Code to catch errors and hallucinated methods
+        - Build your solution in small steps — add print statements or logs to confirm each piece works before moving on
+        - If AI output and SDK patterns disagree, trust the SDK
+        - Write tests that verify real behavior, not tests that test AI-generated code
+
+  - type: textarea
+    id: stuck
+    attributes:
+      label: 🆘 Stuck?
+      description: |
+        PRE-FILLED GUIDANCE. LEAVE AS-IS.
+      value: |
+        Intermediate issues can be challenging — it is completely normal to get blocked. Here is what to do:
+
+        - **Comment on this issue** and describe what you have tried. A maintainer will respond.
+        - **Ask on [Discord](guides/issue-progression/docs/discord.md)** in #hiero-python-sdk for quick questions.
+        - **Join [Office Hours](https://zoom-lfx.platform.linuxfoundation.org/meeting/99912667426?password=5b584a0e-1ed7-49d3-b2fc-dc5ddc888338)** (Wednesdays, 2pm UTC) for live, hands-on help with a maintainer — screen sharing welcome.
+
+        At this level, you are expected to research independently — but asking good, high-level questions is a strength, not a weakness. Don't spend more than an hour blocked without asking.
+
+  - type: textarea
+    id: resources
+    attributes:
+      label: 📚 Resources
+      description: |
+        ADD ANY TASK-SPECIFIC RESOURCES BELOW — RELEVANT PROTOBUF DEFINITIONS, PYTHON DOCS, OR SPECIFIC FILES IN THE CODEBASE.
+      value: |
+        **Project references:**
+        - [Project structure](https://github.com/hiero-ledger/hiero-sdk-python/blob/main/docs/sdk_developers/training/setup/project_structure.md)
+        - [CONTRIBUTING.md](https://github.com/hiero-ledger/hiero-sdk-python/blob/main/CONTRIBUTING.md)
+        - [Browse closed intermediate PRs](https://github.com/hiero-ledger/hiero-sdk-python/pulls?q=is%3Apr+is%3Amerged+label%3Aintermediate) — see how others did it
+
+        **Protobuf references:**
+        - [Hedera Protobufs](https://github.com/hashgraph/hedera-protobufs/tree/main/services) — source of truth for field names, types, and ordering
+        - [Protobuf language guide](https://protobuf.dev/programming-guides/proto3/)
+
+        **Python references:**
+        - [Python official docs](https://docs.python.org/3/)
+        - [Data model (dunder methods)](https://docs.python.org/3/reference/datamodel.html)
+        - [Type hints](https://docs.python.org/3/library/typing.html)
+        - [unittest.mock](https://docs.python.org/3/library/unittest.mock.html) — for mocking in tests
