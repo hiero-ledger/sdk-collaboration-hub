@@ -77,6 +77,14 @@ Optionally:
 Some repositories prefer avoiding GFIC and labelling good first issues in candidate stage as:
 `status: awaiting triage`
 
+**⚠️ Warning!**: for the labels to render on the templates, the labels must be exactly:
+`Good First Issue Candidate`
+`Good First Issue`
+`beginner`
+`intermediate`
+`advanced`
+
+You can change these labels to your preferences, but you must change the default label attached to the template
 ---
 
 ### Standard Templates

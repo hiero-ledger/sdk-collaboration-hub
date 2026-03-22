@@ -1,6 +1,6 @@
 name: Good First Issue Candidate Template
 description: Propose a potential Good First Issue (candidate)
-title:
+title: "[Good First Issue Candidate]: "
 labels: ["Good First Issue Candidate"]
 assignees: []
 body:
@@ -81,6 +81,7 @@ body:
         Please avoid assuming prior knowledge of the language, codebase, or Hiero, as Good First Issues are often surfaced to new developers.
         Links to relevant documentation or code are very welcome.
       value: |
+        <!-- Describe the issue here -->
     validations:
       required: true
 
@@ -92,6 +93,7 @@ body:
         Describe what a good solution would look like.
         Keep this high-level and easy to understand. Implementation details can go in the subsequent Implementation Steps section.
       value: |
+        <!-- Describe the proposed solution here -->
     validations:
       required: true
 
@@ -108,6 +110,7 @@ body:
         - Links to relevant documentation or code (if helpful)
         For good first issues, please keep this as guided and clear as possible.
       value: |
+        <!-- Describe the implementation steps here -->
     validations:
       required: true
 
