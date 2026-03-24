@@ -4,8 +4,7 @@ This section defines the API for transactions.
 
 ## Description
 
-The transactions API defines the basic building blocks for transactions.
-It does not define specific transaction types but everything that is common to all transaction types.
+The transactions API defines the basic building blocks for transactions. It does not define specific transaction types but everything that is common to all transaction types.
 
 The transaction lifecycle has two phases, each with its own type:
 
@@ -23,7 +22,7 @@ requires common, keys, client
 // Defines the status of a transaction. Since we can have custom transaction types based on custom
 // services in the consensus node we can not use an enum here anymore.
 abstraction TransactionStatus {
-  @@immutable code:int32
+  @@immutable code:int32 // the status code that should be unique based on the consensus node
 }
 
 // Defines the status codes that are currently used by services that are part of the consensus node repository
@@ -37,85 +36,95 @@ enum BasicTransactionStatus extends TransactionStatus {
 
 // Id of a transaction
 abstraction TransactionId {
-  @@immutable accountId:common.AccountId
-  @@immutable validStart:zonedDateTime
-  @@immutable @@nullable nonce:int32
+  @@immutable accountId:common.AccountId // the account that is the payer of the transaction
+  @@immutable validStart:zonedDateTime // the start time of the transaction
+  @@immutable @@nullable nonce:int32 // nonce of an internal transaction
 
-  string toString()
-  string toStringWithChecksum()
+  string toString() // returns the transaction id as a string
+  string toStringWithChecksum() // returns the transaction id as a string with a checksum
 }
 
 // Helper to allow external signing of transactions
 abstraction TransactionSigner {
-  bytes signTransaction(transactionBytes: bytes)
+  bytes signTransaction(transactionBytes: bytes) // returns the signature as a byte array
 }
 
 // Mutable builder for constructing a transaction body. Concrete transaction builders extend this
 // with domain-specific setters. The generic parameter is self-referential (CRTP) to enable fluent
 // setter chains that return the concrete builder type.
-abstraction TransactionBuilder<$$Transaction extends TransactionBuilder> {
-  @@nullable maxTransactionFee:common.Hbar
-  @@nullable validDuration:long
-  @@nullable memo:string
+abstraction TransactionBuilder<$$Transaction extends TransactionBuilder, $$Response extends Response> {
+  @@nullable maxTransactionFee: common.Hbar
+  @@nullable validDuration: long
+  @@nullable memo: string
+  @@nullable transactionId: TransactionId
+  nodeAccountIds: list<common.AccountId>
 
   // Transitions from build phase to sign/send phase. If a client is provided, transactionId and
   // nodeAccountIds are auto-generated from the client. If no client is provided, they are left
   // unset (for flows like HIP-745 where incomplete transactions are serialized).
-  Transaction build(@@nullable client:client.HieroClient)
+  Transaction build(@@nullable client: client.HieroClient)
 
   // Convenience for simple single-signer flows. Requires a client. Internally does:
   // build(client) -> sign(client.operator) -> execute(client)
-  Response buildAndExecute(client:client.HieroClient)
+  @@async
+  $$Response buildAndExecute(client:client.HieroClient)
 }
 
 // An immutable transaction ready for signing, serialization, and submission. The transaction body
 // cannot be modified after build — only network execution config and signatures can be added.
+@@finalType
 Transaction {
-  @@immutable @@nullable transactionId:TransactionId
-  @@immutable @@nullable nodeAccountIds:list<common.AccountId>
-
   // Network execution config — does not affect the signed transaction body
   @@nullable maxAttempts:int32
   @@nullable maxBackoff:long
   @@nullable minBackoff:long
   @@nullable attemptTimeout:long
+  
+  // Sign the transaction with the given key pair
+  Transaction sign(keyPair: keys.KeyPair)
+  
+  // Sign the transaction using an external signer
+  Transaction sign(publicKey: keys.PublicKey, transactionSigner: TransactionSigner) 
 
-  void sign(keyPair:keys.KeyPair)
-  void sign(publicKey:keys.PublicKey, transactionSigner:TransactionSigner)
+  // Returns the signatures that have been added to this transaction, keyed by node account id and public key
+  map<common.AccountId, map<keys.PublicKey, bytes>> getSignatures()
 
-  @@async Response execute(client:client.HieroClient)
+  // Submit the transaction to the network and return the response
+  @@async
+  Response execute(client:client.HieroClient)
 
-  bytes toBytes()
+  // Serialize the transaction (including signatures) to bytes
+  bytes toBytes() 
+  
+  // Deserialize a transaction from bytes
+  @@static
+  Transaction fromBytes(transactionBytes: bytes)
 
-  // Returns a mutable builder pre-populated with this transaction's body. Signatures are stripped
-  // since any modification would invalidate them.
+  // Returns a mutable builder pre-populated with this transaction's body.
   TransactionBuilder unbuild()
 }
 
-// Factory methods for Transaction
-Transaction fromBytes(transactionBytes:bytes)
-
 // The response of a transaction execution
 Response<$$Receipt extends Receipt, $$Record extends Record> {
-  @@immutable transactionId:TransactionId
+  @@immutable transactionId:TransactionId // the id of the transaction
 
-  @@async $$Receipt queryReceipt()
-  @@async $$Record queryRecord()
+  @@async $$Receipt queryReceipt() // query for the receipt of the transaction
+  @@async $$Record queryRecord() // query for the record of the transaction
 }
 
 // The receipt of a transaction
 Receipt {
-  @@immutable transactionId:TransactionId
-  @@immutable status:TransactionStatus
-  @@immutable exchangeRate:common.HBarExchangeRate
-  @@immutable nextExchangeRate:common.HBarExchangeRate
+  @@immutable transactionId:TransactionId // the id of the transaction
+  @@immutable status:TransactionStatus // the status of the transaction
+  @@immutable exchangeRate:common.HBarExchangeRate // the exchange rate at the time of the transaction
+  @@immutable nextExchangeRate:common.HBarExchangeRate // the next exchange rate
 }
 
 // The record of a transaction
 Record<$$Receipt extends Receipt> {
-  @@immutable transactionId:TransactionId
-  @@immutable consensusTimestamp:zonedDateTime
-  @@immutable receipt:$$Receipt
+  @@immutable transactionId:TransactionId // the id of the transaction
+  @@immutable consensusTimestamp:zonedDateTime // the consensus time of the transaction
+  @@immutable receipt:$$Receipt // the receipt of the transaction
 }
 
 // Factory methods for TransactionId
