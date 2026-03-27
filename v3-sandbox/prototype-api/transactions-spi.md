@@ -9,6 +9,9 @@ The consensus node supports adding custom services next to the services that are
 Since new and custom services can provide new transaction types, the SDKs must be able to handle these new transaction types.
 The transactions SPI API defines the interface that must be implemented by the custom service that provides new transaction types.
 
+In the `TransactionBuilder`/`Transaction` model, the domain-specific type is the builder (e.g. `AccountCreateTransactionBuilder`).
+`Transaction` itself is universal and has no domain-specific subclasses. Therefore, the SPI converts between protobuf types and the concrete `TransactionBuilder` subclass.
+
 ## API Schema
 
 ```
@@ -16,15 +19,15 @@ namespace transactions-spi
 requires transactions, grpc, hiero-proto
 
 // TransactionSupport is the interface that must be implemented per custom transaction type
-abstraction TransactionSupport<$$Transaction, $$Response, $$Receipt, $$Record> {
+abstraction TransactionSupport<$$TransactionBuilder, $$Response, $$Receipt, $$Record> {
 
-    type getTransactionType() // defines the transaction type ($$Transaction) the concrete TransactionSupport implementation supports
+    type getTransactionType() // defines the transaction builder type ($$TransactionBuilder) the concrete TransactionSupport implementation supports
 
     grpc.MethodDescriptor getMethodDescriptor() // defines the gRPC method
 
-    hiero-proto.TransactionBody updateBody(transaction:$$Transaction, protoBody:hiero-proto.TransactionBody) // updates a proto TransactionBody with the transaction details
+    hiero-proto.TransactionBody updateBody(transactionBuilder:$$TransactionBuilder, protoBody:hiero-proto.TransactionBody) // updates a proto TransactionBody with the builder's domain fields
 
-    $$Transaction convert(protoBody:hiero-proto.TransactionBody) // converts a proto TransactionBody to a Transaction
+    $$TransactionBuilder convert(protoBody:hiero-proto.TransactionBody) // converts a proto TransactionBody to a TransactionBuilder
 
     $$Response convert(protoResponse:hiero-proto.TransactionResponse) // converts a proto TransactionResponse to a Response
 
