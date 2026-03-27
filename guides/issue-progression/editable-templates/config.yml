@@ -1,0 +1,6 @@
+blank_issues_enabled: true # Enables blank issue templates.
+
+contact_links:
+  - name: Hiero Discord # TODO: update this name
+    url: https://github.com/hiero-ledger/hiero-sdk-python/blob/main/docs/discord.md # TODO: update this link
+    about: Please ask and answer questions here. # Statement the reader will see
