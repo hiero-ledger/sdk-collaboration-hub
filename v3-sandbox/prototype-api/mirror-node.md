@@ -10,16 +10,15 @@ All domain models are read-only DTOs (`@@finalType` with `@@immutable` fields) r
 
 ```
 namespace mirrorNode
-requires common
+requires common, keys
 
-// Additional ID types (should ultimately live in common)
-TokenId extends Address {
+TokenId extends common.Address {
 }
 
-TopicId extends Address {
+TopicId extends common.Address {
 }
 
-ContractId extends Address {
+ContractId extends common.Address {
 }
 
 // Paginated result set mapping to the REST API links.next cursor pattern
@@ -144,9 +143,9 @@ TokenInfo {
     @@immutable modifiedTimestamp: zonedDateTime
     @@immutable @@nullable expiryTimestamp: zonedDateTime
     @@immutable supplyType: TokenSupplyType
-    @@immutable initialSupply: string   // string to avoid int64 overflow
-    @@immutable totalSupply: string
-    @@immutable maxSupply: string
+    @@immutable initialSupply: int256
+    @@immutable totalSupply: int256
+    @@immutable maxSupply: int256
     @@immutable treasuryAccountId: AccountId
     @@immutable deleted: bool
     @@immutable customFees: CustomFee
@@ -190,13 +189,19 @@ TokenTransfer {
     @@immutable isApproval: bool
 }
 
+// Grouping of sender, receiver, and token for an NFT transfer
+@@finalType
+NftTransferParties {
+    @@immutable senderAccountId: AccountId
+    @@immutable receiverAccountId: AccountId
+    @@immutable tokenId: TokenId
+}
+
 @@finalType
 NftTransfer {
     @@immutable isApproval: bool
-    @@immutable @@nullable senderAccountId: AccountId
-    @@immutable @@nullable receiverAccountId: AccountId
+    @@immutable @@nullable parties: NftTransferParties
     @@immutable serialNumber: int64
-    @@immutable @@nullable tokenId: TokenId
 }
 
 @@finalType
@@ -212,15 +217,15 @@ TransactionInfo {
     @@immutable chargedTxFee: int64
     @@immutable consensusTimestamp: zonedDateTime
     @@immutable @@nullable entityId: string
-    @@immutable maxFee: string
+    @@immutable maxFee: int64
     @@immutable memo: bytes
     @@immutable name: TransactionType
     @@immutable nonce: int32
     @@immutable @@nullable node: string
     @@immutable @@nullable parentConsensusTimestamp: zonedDateTime
-    @@immutable result: string
+    @@immutable result: TransactionResult
     @@immutable scheduled: bool
-    @@immutable validDurationSeconds: string
+    @@immutable validDurationSeconds: int64
     @@immutable validStartTimestamp: zonedDateTime
     @@immutable transfers: list<Transfer>
     @@immutable tokenTransfers: list<TokenTransfer>
@@ -231,16 +236,16 @@ TransactionInfo {
 @@finalType
 Topic {
     @@immutable topicId: TopicId
-    @@immutable @@nullable adminKey: string
-    @@immutable @@nullable submitKey: string
-    @@immutable @@nullable feeScheduleKey: string
+    @@immutable @@nullable adminKey: keys.PublicKey
+    @@immutable @@nullable submitKey: keys.PublicKey
+    @@immutable @@nullable feeScheduleKey: keys.PublicKey
     @@immutable @@nullable autoRenewAccount: AccountId
     @@immutable autoRenewPeriod: int32
     @@immutable createdTimestamp: zonedDateTime
     @@immutable deleted: bool
     @@immutable memo: string
     @@immutable fixedFees: list<FixedFee>
-    @@immutable @@nullable feeExemptKeyList: list<string>
+    @@immutable @@nullable feeExemptKeyList: list<keys.PublicKey>
     @@immutable fromTimestamp: zonedDateTime
     @@immutable toTimestamp: zonedDateTime
 }
@@ -269,7 +274,7 @@ TopicMessage {
 @@finalType
 Contract {
     @@immutable contractId: ContractId
-    @@immutable @@nullable adminKey: string
+    @@immutable @@nullable adminKey: keys.PublicKey
     @@immutable @@nullable autoRenewAccount: AccountId
     @@immutable autoRenewPeriod: int32
     @@immutable createdTimestamp: zonedDateTime
@@ -327,8 +332,8 @@ NetworkStake {
 
 @@finalType
 NetworkSupplies {
-    @@immutable releasedSupply: string
-    @@immutable totalSupply: string
+    @@immutable releasedSupply: int256
+    @@immutable totalSupply: int256
 }
 
 abstraction AccountRepository {
@@ -441,23 +446,22 @@ MirrorNodeClient createMirrorNodeClient(mirrorNode: MirrorNode)
 
 ```
 mirrorNode = MirrorNode(restBaseUrl: "https://mainnet.mirrornode.hedera.com/api/v1")
-client = createMirrorNodeClient(mirrorNode)
+client = await createMirrorNodeClient(mirrorNode)
 
 // Look up an account
-accountInfo = client.accounts.findById(fromString("0.0.1234"))
+accountInfo = await client.accounts.findById(fromString("0.0.1234"))
 
 // Iterate paginated NFTs
-page = client.nfts.findByOwner(fromString("0.0.5678"))
+page = await client.nfts.findByOwner(fromString("0.0.5678"))
 while page.hasNext() {
-    page = page.next()
+    page = await page.next()
 }
 
 // Query transactions by type
-txns = client.transactions.findByAccountAndType(accountId, TransactionType.CRYPTO_TRANSFER)
+txns = await client.transactions.findByAccountAndType(accountId, TransactionType.CRYPTO_TRANSFER)
 ```
 
 ## Questions & Comments
 
-- Should `TokenId`, `TopicId`, and `ContractId` live in the `common` namespace?
-- Should keys be typed as `PublicKey` (from `keys` namespace) instead of `string`?
-- Should transaction filtering use a query builder pattern instead of separate methods?
+- Should `transactionId` be moved to the `common` namespace so `mirrorNode` can reference it without depending on `transactions`?
+- Should the API be defined as `@@async` by default or synchronous by default?
