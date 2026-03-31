@@ -10,18 +10,19 @@ body:
         ---
         ## **Thanks for creating a beginner issue!** 😊
 
-        This template is designed to help you create a Beginner Issue : a small, well-scoped task.
+        Beginner issues are small, well-scoped tasks to learn the codebase and own a small implementation. 
         
         Read more:
-        [Applying Beginner Label](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-maintainers/labelling.md)
-        [Issue Progression Initiative](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-maintainers/README.md)
+        > [Applying Beginner Label](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-maintainers/labelling.md)
+        > [Issue Progression Initiative](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-maintainers/README.md)
         ---
 
   - type: textarea
     id: intro
     attributes:
       label: 🧑‍🎓 Beginner Issue
-      description: Who is this issue for?
+      description: |
+        Prefilled introduction to explain what a beginner issue is and who it’s for.
       value : |
         This **[Beginner Issue](https://github.com/issues?q=is%3Aopen%20is%3Aissue%20org%3Ahiero-ledger%20archived%3Afalse%20no%3Aassignee%20(label%3A%22beginner%22%20OR%20label%3A%22skill%3A%20beginner%22)%20(repo%3Ahiero-ledger%2Fhiero-sdk-cpp%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-swift%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-python%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-js%20OR%20repo%3Ahiero-ledger%2Fhiero-website))** is a small task intended for beginner contributors who have completed good first issues and are ready to learn the codebase and own a small implementation.
         This issue will challenge you to research and learn the patterns in our codebase.
