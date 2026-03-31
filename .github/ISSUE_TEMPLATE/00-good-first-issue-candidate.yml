@@ -82,7 +82,7 @@ body:
         <!-- Describe the implementation steps here -->
     validations:
       required: true
-  
+   
   - type: textarea
     id: post-intro
     attributes:
