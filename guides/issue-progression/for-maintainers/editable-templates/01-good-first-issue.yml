@@ -1,7 +1,7 @@
-name: Good First Issue Template
-description: Create a Good First Issue
-title: "[Good First Issue]: "
-labels: ["Good First Issue"]
+name: Good First Issue Candidate Template
+description: Propose a potential Good First Issue (candidate)
+title: "[Good First Issue Candidate]: "
+labels: ["Good First Issue Candidate"]
 assignees: []
 body:
   - type: markdown
@@ -10,49 +10,21 @@ body:
         ---
         ## **Thanks for creating a good first issue!** 😊
 
-        This template is designed to help you create a Good First Issue (GFI) : a small, well-scoped task.
+        This template is designed to help you create a Good First Issue (GFI) : a small, well-scoped task that may be missing some documentation or there is uncertainty if it is a good fit for a GFI.
         
         Read more:
-        [Applying Good First Issue Label](guides/issue-progression/labelling.md)
-        [Issue Progression Initiative](guides/issue-progression/editable-templates/README.md)
-
+        [Applying Good First Issue Label](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-maintainers/labelling-issues-examples.md)
+        [Issue Progression Initiative](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-maintainers/README.md)
         ---
 
   - type: textarea
     id: intro
     attributes:
-      label: 🆕🐥 Newcomer Friendly
+      label: 🐥 Good First Issue
       description: Who is this issue for?
-      value: |
+      value : |
         This **[Good First Issue](https://github.com/issues?q=is%3Aopen%20is%3Aissue%20org%3Ahiero-ledger%20archived%3Afalse%20no%3Aassignee%20(label%3A%22good%20first%20issue%22%20OR%20label%3A%22skill%3A%20good%20first%20issue%22)%20(repo%3Ahiero-ledger%2Fhiero-sdk-cpp%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-swift%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-python%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-js%20OR%20repo%3Ahiero-ledger%2Fhiero-website))** is a guided, well-scoped task intended for new human contributors.
-
-        #### What you’ll do
-        - ✅ understand how the repository is structured
-        - ✅ practice the standard contribution workflow
-        - ✅ submit and merge a pull request
-
-        #### Support
-        A maintainer or mentor actively monitors this issue and will help **guide it to completion**.
-
-        > [!IMPORTANT]
-        > **This issue does not require prior domain knowledge.**
-        >
-        > - No Hiero or Hedera experience needed  
-        > - No distributed ledger background required  
-        > - **Basic Python and Git are sufficient**
-
-        > [!NOTE]
-        > ⏱️ **Typical time to complete:** 30–90 minutes (once setup is done)  
-        > 🧩 **Difficulty:** Small, well-contained change  
-        > 🎓 **Best for:** New contributors
-
-        **🏁 Completion**
-        When this issue is complete, you will have:
-
-        - ✅ Solved a real issue
-        - ✅ A merged pull request at Hiero
-        - ✅ Your name in the project history
-        - ✅ Confidence to take on larger issues
+        Please read the issue requirements and guides carefully.
 
   - type: textarea
     id: issue
@@ -62,7 +34,6 @@ body:
         Describe the issue in a way that’s easy for new contributors to understand.
         Briefly explain why this change is useful or needed, even if the impact seems small.
         Please avoid assuming prior knowledge of the language, codebase, or Hiero, as Good First Issues are often surfaced to new developers.
-        Links to relevant documentation or code are very welcome.
       value: |
         <!-- Describe the issue here -->
     validations:
@@ -96,6 +67,40 @@ body:
         <!-- Describe the implementation steps here -->
     validations:
       required: true
+  
+  - type: textarea
+    id: intro
+    attributes:
+      label: 🆕🐥 Newcomer Friendly
+      description: Who is this issue for?
+      value: |
+        #### What you’ll do
+        - ✅ understand how the repository is structured
+        - ✅ practice the standard contribution workflow
+        - ✅ submit and merge a pull request
+
+        #### Support
+        A maintainer or mentor actively monitors this issue and will help **guide it to completion**.
+
+        > [!IMPORTANT]
+        > **This issue does not require prior domain knowledge.**
+        >
+        > - No Hiero or Hedera experience needed  
+        > - No distributed ledger background required  
+        > - **Basic Python and Git are sufficient**
+
+        > [!NOTE]
+        > ⏱️ **Typical time to complete:** 30–90 minutes (once setup is done)  
+        > 🧩 **Difficulty:** Small, well-contained change  
+        > 🎓 **Best for:** New contributors
+
+        **🏁 Completion**
+        When this issue is complete, you will have:
+
+        - ✅ Solved a real issue
+        - ✅ A merged pull request at Hiero
+        - ✅ Your name in the project history
+        - ✅ Confidence to take on larger issues
 
   - type: textarea
     id: setup_steps
@@ -103,21 +108,21 @@ body:
       label: 📋 Step-by-Step Setup Procedure
       description: Provide a step-by-step setup guide for new contributors
       value: |
-        - [ ] Visual Studio (VS) Code: [Guide](guides/issue-progression/docs/contributor-setup.md#1-setting-up-supporting-infrastructure#visual-studio-code)
+        - [ ] Visual Studio (VS) Code: [Guide](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-developers/contributor-setup.md#1-setting-up-supporting-infrastructure#visual-studio-code)
 
-        - [ ] GitHub Desktop: [Guide](guides/issue-progression/docs/contributor-setup.md#1-setting-up-supporting-infrastructure#github-desktop)
+        - [ ] GitHub Desktop: [Guide](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-developers/contributor-setup.md#1-setting-up-supporting-infrastructure#github-desktop)
 
-        - [ ] Hedera Testnet Account with root .env file: [Guide](guides/issue-progression/docs/contributor-setup.md#2-setting-up-a-portal-account)
+        - [ ] Hedera Testnet Account with root .env file: [Guide](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-developers/contributor-setup.md#2-setting-up-a-portal-account)
 
-        - [ ] Create a GPG key linked to GitHub: [Guide](guides/issue-progression/docs/contributor-setup.md#3-set-up-a-gpg-key-for-signing)
+        - [ ] Create a GPG key linked to GitHub: [Guide](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-developers/contributor-setup.md#3-set-up-a-gpg-key-for-signing)
 
-        - [ ] **Fork** Create an online and local copy of the repository: [Guide](guides/issue-progression/docs/contributor-setup.md#4-fork-the-repository)
+        - [ ] **Fork** Create an online and local copy of the repository: [Guide](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-developers/contributor-setup.md#4-fork-the-repository)
 
-        - [ ] **Connect** origin with upstream: [Guide](guides/issue-progression/docs/contributor-setup.md#5-connect-your-origin-with-upstream)
+        - [ ] **Connect** origin with upstream: [Guide](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-developers/contributor-setup.md#5-connect-your-origin-with-upstream)
 
-        - [ ] **Install Packages** and protobufs: [Guide](guides/issue-progression/docs/contributor-setup.md#6-install-packages-and-protobufs) (or [Windows Setup Guide](guides/issue-progression/docs/contributor-setup-windows.md) for Windows users)
+        - [ ] **Install Packages** and protobufs: [Guide](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-developers/contributor-setup.md#6-install-packages-and-protobufs) (or [Windows Setup Guide](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-developers/contributor-setup-windows.md) for Windows users)
 
-        - [ ] **Sync Main** pull any recent upstream changes: [Guide](guides/issue-progression/docs/contributor-setup.md#7-sync-main)
+        - [ ] **Sync Main** pull any recent upstream changes: [Guide](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-developers/contributor-setup.md#7-sync-main)
 
         You are set up! 🎉
     validations:
@@ -130,33 +135,33 @@ body:
       description: Provide a contribution workflow suitable for new contributors.
       value: |
         #### ✅ Get ready
-        - [ ] **Claim the issue:**  comment `/assign`: [Guide](guides/issue-progression/docs/contributor-workflow.md#1-get-assigned-to-an-issue). Pull requests created without being assigned will be automatically closed.
+        - [ ] **Claim the issue:**  comment `/assign`: [Guide](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-developers/contributor-workflow.md#1-get-assigned-to-an-issue). Pull requests created without being assigned will be automatically closed.
 
         - [ ] **Double check the Issue and AI plan:** carefully re-read the issue description and any AI plan below
 
-        - [ ] **Ask questions early:** ask on [Discord](guides/issue-progression/docs/discord.md), and the `@good_first_issue_support_team` (setup and workflow help)
+        - [ ] **Ask questions early:** ask on [Discord](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-developers/discord.md), and the `@good_first_issue_support_team` (setup and workflow help)
 
-        - [ ] **Sync Main** pull any recent upstream changes: [Guide](guides/issue-progression/docs/contributor-setup.md#7-sync-main)
+        - [ ] **Sync Main** pull any recent upstream changes: [Guide](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-developers/contributor-setup.md#7-sync-main)
 
         - [ ] 💡 Tip: Before coding, you are free to leave a short comment describing what you plan to change. We’ll confirm you’re on the right track.
 
         #### 🛠️ Solve the Issue
-        - [ ] **Create a branch from `main`:** [Guide](guides/issue-progression/docs/contributor-workflow.md#2-create-a-branch)
+        - [ ] **Create a branch from `main`:** [Guide](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-developers/contributor-workflow.md#2-create-a-branch)
 
         - [ ] **Implement the solution**: follow the implementation steps in the issue description.
 
-        - [ ] **Commit with Conventional format and DCO, GPG signing:**  commit changes using: `git commit -S -s -m "chore: your message"`, [Guide](guides/issue-progression/docs/contributor-workflow.md#3-commit-your-changes)
+        - [ ] **Commit with Conventional format and DCO, GPG signing:**  commit changes using: `git commit -S -s -m "chore: your message"`, [Guide](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-developers/contributor-workflow.md#3-commit-your-changes)
 
-        - [ ] **Add a `.CHANGELOG.md` entry:** under the appropriate **[UNRELEASED]** section and commit as `git commit -S -s -m "chore: changelog entry"` [Guide](guides/issue-progression/docs/contributor-workflow.md#4-create-a-changelog-entry)
+        - [ ] **Add a `.CHANGELOG.md` entry:** under the appropriate **[UNRELEASED]** section and commit as `git commit -S -s -m "chore: changelog entry"` [Guide](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-developers/contributor-workflow.md#4-create-a-changelog-entry)
 
         #### 🚀 Create the pull request
-        - [ ] **Push your commits:**  push your branch to your fork `git push origin your-branch-name` [Guide](guides/issue-progression/docs/contributor-workflow.md#5-submitting-a-pull-request)
+        - [ ] **Push your commits:**  push your branch to your fork `git push origin your-branch-name` [Guide](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-developers/contributor-workflow.md#5-submitting-a-pull-request)
 
-        - [ ] **Open a pull request:** [here](https://github.com/hiero-ledger/hiero-sdk-python/pulls) [Guide](guides/issue-progression/docs/contributor-workflow.md#5-submitting-a-pull-request)
+        - [ ] **Open a pull request:** [here](https://github.com/hiero-ledger/hiero-sdk-python/pulls) [Guide](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-developers/contributor-workflow.md#5-submitting-a-pull-request)
 
-        - [ ] **Complete the PR description:**  briefly describe your changes, [Guide](guides/issue-progression/docs/contributor-workflow.md#5-submitting-a-pull-request)
+        - [ ] **Complete the PR description:**  briefly describe your changes, [Guide](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-developers/contributor-workflow.md#5-submitting-a-pull-request)
 
-        - [ ] **Link the Issue:**  link the issue the PR solves in the PR description, [Guide](guides/issue-progression/docs/contributor-workflow.md#5-submitting-a-pull-request). Pull requests created without a linked issue will be automatically closed.
+        - [ ] **Link the Issue:**  link the issue the PR solves in the PR description, [Guide](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-developers/contributor-workflow.md#5-submitting-a-pull-request). Pull requests created without a linked issue will be automatically closed.
 
         - [ ] **Submit the pull request:**  click `**Create pull request**` and `Ready to Review` 🎉
 
@@ -193,9 +198,8 @@ body:
         > [!TIP]
         >
         > - Comment on this issue and tag `@good_first_issue_support_team``
-        > - Ask for help in [Discord](guides/issue-progression/docs/discord.md)
+        > - Ask for help in [Discord](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-developers/discord.md)
         >
-
         ---
 
   - type: textarea
@@ -217,7 +221,7 @@ body:
 
 
         **🔄 Merge conflicts (sometimes)**
-        Conflicts can happen and are normal as the SDK updates. Resolve using this [Guide](guides/issue-progression/docs/merge_conflicts.md)
+        Conflicts can happen and are normal as the SDK updates. Resolve using this [Guide](guides/issue-progression/for-developers/merge_conflicts.md)
 
         ---
     validations:
@@ -243,13 +247,13 @@ body:
       description: Provide any extra resources or context for contributors to solve this good first issue
       value: |
         #### First Points of Contact:
-        - [Discord](guides/issue-progression/docs/discord.md)
+        - [Discord](guides/issue-progression/for-developers/discord.md)
         - Comment with `@hiero-ledger/hiero-sdk-good-first-issue-support`
         The more you ask, the more you learn and so do we!
 
         #### General Documentation:
-        - [New Starter Docs (Signing, Rebasing, Changelog, Merge Conflicts, Workflow, Setup)](guides/issue-progression/docs)
-        - [All Things Github Workflows](guides/issue-progression/docs/github-action-workflows.md)
+        - [New Starter Docs (Signing, Rebasing, Changelog, Merge Conflicts, Workflow, Setup)](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-developers)
+        - [All Things Github Workflows](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-developers/github-action-workflows.md)
 
         #### Other Relevant Docs:
         - [README.md](https://github.com/hiero-ledger/hiero-sdk-python/blob/main/README.md)
