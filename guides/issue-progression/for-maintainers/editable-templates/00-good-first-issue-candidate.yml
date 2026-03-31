@@ -83,7 +83,7 @@ body:
       required: true
   
   - type: textarea
-    id: intro
+    id: post-intro
     attributes:
       label: 🆕🐥 Newcomer Friendly
       description: Who is this issue for?
