@@ -13,16 +13,64 @@ body:
         This template is designed to help you create a Beginner Issue : a small, well-scoped task.
         
         Read more:
-        [Applying Beginner Label](guides/issue-progression/labelling.md)
-        [Issue Progression Initiative](guides/issue-progression/editable-templates/README.md)
+        [Applying Beginner Label](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-maintainers/labelling.md)
+        [Issue Progression Initiative](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-maintainers/README.md)
         ---
+
+  - type: textarea
+    id: intro
+    attributes:
+      label: 🧑‍🔬 Beginner Issue
+      description: Who is this issue for?
+      value : |
+        This **[Beginner Issue](https://github.com/issues?q=is%3Aopen%20is%3Aissue%20org%3Ahiero-ledger%20archived%3Afalse%20no%3Aassignee%20(label%3A%22beginner%22%20OR%20label%3A%22skill%3A%20beginner%22)%20(repo%3Ahiero-ledger%2Fhiero-sdk-cpp%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-swift%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-python%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-js%20OR%20repo%3Ahiero-ledger%2Fhiero-website))** is a small task intended for beginner contributors who have completed good first issues and are ready to learn the codebase and own a small implementation.
+        This issue will challenge you to research and learn the patterns in our codebase.
+
+  - type: textarea
+    id: task
+    attributes:
+      label: 👾 Description of the issue
+      description: |
+        Describe the issue so it is easy for a beginner contributor to understand what needs to be done and why. 
+        Include which file(s) to look at, what the current behaviour is, and what the desired behaviour is.
+      value: |
+        <!-- Describe the issue here -->
+
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: 💡 Solution
+      description: |
+        Briefly state what the contributor should build or fix. 
+        Example: "Add a __repr__ method to AccountId that shows shard, realm, and num."
+      value: |
+        <!-- State the solution here -->
+    validations:
+      required: true
+
+  - type: textarea
+    id: research
+    attributes:
+      label: 🔍 Research Pointers
+      description: |
+        Point the contributor toward relevant files, similar code, docs, or patterns to study.
+        This is the "investigate before you code" step.
+        Think: what would a colleague tell you if you asked "where do I start?"
+        Include links to language documentation if the task involves a language concept.
+      value: |
+        <!-- Replace this with research pointers. -->
+    validations:
+      required: true
 
   - type: textarea
     id: before_you_start
     attributes:
       label: 🐥 Beginner Friendly
       description: |
-        THIS SECTION IS PRE-FILLED. LEAVE AS-IS UNLESS YOU NEED TO ADD ISSUE-SPECIFIC PREREQUISITES.
+        This section is pre-filled. Leave as-is unless you need to add issue-specific prerequisites.
       value: |
         Welcome! This Beginner Issue is designed to be a natural next step after good first issues.
 
@@ -35,7 +83,7 @@ body:
         **Difficulty:**
 
         - Requires knowledge of our workflow
-        - Beginner to intermediate Python and Git
+        - Beginner to intermediate Coding skills
         - Beginner DLT/Blockchain experience
 
         > [!IMPORTANT]
@@ -46,12 +94,12 @@ body:
         > - Forking, branching, committing (with DCO + GPG signing), and opening a pull request without a tutorial
         > - Reading beginner Python code you did not write and following its patterns
         > - Handling simple merge conflicts in CHANGELOG.md
-        > - Keeping your fork up to date with main by [rebasing](https://github.com/hiero-ledger/hiero-sdk-python/blob/main/docs/sdk_developers/rebasing.md)
+        > - Keeping your fork up to date with main by [rebasing](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-developer/rebasing.md)
         > - Looking things up on your own before asking for help
 
         If any of that feels unfamiliar, good first issues might still be the most rewarding path
         for you right now —
-        [find one here](https://github.com/hiero-ledger/hiero-sdk-python/issues?q=is%3Aissue+state%3Aopen+label%3A%22Good+First+Issue%22+no%3Aassignee).
+        [find one here](https://github.com/issues?q=is%3Aopen%20is%3Aissue%20org%3Ahiero-ledger%20archived%3Afalse%20no%3Aassignee%20(label%3A%22good%20first%20issue%22%20OR%20label%3A%22skill%3A%20good%20first%20issue%22)%20(repo%3Ahiero-ledger%2Fhiero-sdk-cpp%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-swift%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-python%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-js%20OR%20repo%3Ahiero-ledger%2Fhiero-website)).
         You can always come back when you are ready.
 
         **Support:** A maintainer actively monitors this issue and will help guide your implementation ideas.
@@ -70,71 +118,11 @@ body:
         ✅ Created basic tests
 
   - type: textarea
-    id: task
-    attributes:
-      label: 👾 Description of the issue
-      description: |
-        DESCRIBE WHAT NEEDS TO CHANGE AND WHY.
-        INCLUDE WHICH FILE(S) TO LOOK AT, WHAT THE CURRENT BEHAVIOR IS, AND WHAT THE DESIRED BEHAVIOR IS.
-        DO NOT WRITE A STEP-BY-STEP RECIPE. POINT THEM TOWARD THE RIGHT AREA AND LET THEM FIGURE OUT THE APPROACH.
-        IF A COPY-PASTE RECIPE WOULD SUFFICE, THIS IS A GOOD FIRST ISSUE, NOT A BEGINNER ISSUE.
-        PROVIDE ENOUGH CONTEXT SO THE CONTRIBUTOR CAN JUDGE WHETHER THEY ARE READY FOR THIS ISSUE.
-        CONSIDER ADDING: EXPECTED TIME (e.g. 2-4 HOURS), RELEVANT LABELS, AND A NOTE TO CHECK THE CODERABBIT AI PLAN.
-      value: |
-        _Replace this with the task description._
-
-        **Before claiming:**
-        - Check the issue labels to see what area this touches
-        - Read the CodeRabbit AI plan (posted as a comment) for a rough implementation overview
-        - If this feels like too big a step, that is fine — try another beginner issue or a Good First Issue first
-    validations:
-      required: true
-
-  - type: textarea
-    id: solution
-    attributes:
-      label: 💡 Solution
-      description: |
-        BRIEFLY STATE WHAT THE CONTRIBUTOR SHOULD BUILD OR FIX.
-        THIS SHOULD BE A SHORT SUMMARY OF THE EXPECTED OUTCOME — NOT A DETAILED IMPLEMENTATION GUIDE.
-        EXAMPLE: "Add a __repr__ method to AccountId that shows shard, realm, and num."
-      value: |
-        _Replace this with a brief solution summary._
-    validations:
-      required: true
-
-  - type: textarea
-    id: research
-    attributes:
-      label: 🔍 Background Research
-      description: |
-        POINT THE CONTRIBUTOR TOWARD RELEVANT FILES, SIMILAR CODE, PYTHON DOCS, OR PATTERNS TO STUDY.
-        THIS IS THE "INVESTIGATE BEFORE YOU CODE" STEP.
-        THINK: WHAT WOULD A COLLEAGUE TELL YOU IF YOU ASKED "WHERE DO I START?"
-        INCLUDE LINKS TO PYTHON DOCUMENTATION IF THE TASK INVOLVES A LANGUAGE CONCEPT.
-      value: |
-        _Replace this with research pointers._
-    validations:
-      required: true
-
-  - type: textarea
-    id: implementation
-    attributes:
-      label: 🛠️ Implementation
-      description: |
-        DESCRIBE WHAT THE CONTRIBUTOR SHOULD BUILD AFTER COMPLETING THEIR RESEARCH.
-        KEEP IT HIGH-LEVEL — THEY SHOULD FIGURE OUT THE DETAILS FROM THEIR RESEARCH.
-      value: |
-        _Replace this with implementation guidance._
-    validations:
-      required: true
-
-  - type: textarea
     id: testing
     attributes:
       label: 🧪 Testing your changes
       description: |
-        EDIT THIS SECTION TO MATCH THE TYPE OF CHANGE. DELETE CATEGORIES THAT DO NOT APPLY.
+        Edit or add testing requirements specific to this issue.
       value: |
         How you test depends on the type of change.
         See the [testing guide](https://github.com/hiero-ledger/hiero-sdk-python/blob/main/docs/sdk_developers/testing.md) for full details.
@@ -151,21 +139,22 @@ body:
         **Workflow / GitHub Actions changes (e.g. files in `.github/`):**
         - Where possible, test by merging to your fork's `main` and simulating the scenario (e.g. creating a test issue or PR)
         - Link to any test issues or PRs you created as evidence
-        - See the [workflow testing guide](guides/issue-progression/docs/contributor-workflow.md)
+        - See the [workflow testing guide](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-developers/github-action-workflows.md)
 
   - type: textarea
     id: acceptance
     attributes:
       label: ✅ Done Checklist
       description: |
-        EDIT OR ADD CRITERIA SPECIFIC TO THIS ISSUE. THE DEFAULTS COVER THE STANDARD REQUIREMENTS.
+        Edit or add acceptance criteria specific to this issue. 
+        These are the requirements that must be met for a PR to be considered complete. The defaults cover the standard requirements for a beginner issue, but feel free to add any issue-specific criteria.
       value: |
         Before opening your PR, confirm:
 
         - [ ] My changes address what the issue asked for — nothing more, nothing less
         - [ ] I tested my changes locally (if relevant — see testing section above)
-        - [ ] My commits are signed: `git commit -S -s -m "chore: description"` — [Signing guide](guides/issue-progression/docs/contributor-signing.md)
-        - [ ] I added a CHANGELOG.md entry under `[Unreleased]` — [Changelog guide](guides/issue-progression/docs/changelog-guide.md
+        - [ ] My commits are signed: `git commit -S -s -m "chore: description"` — [Signing guide](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-developers/signing.md)
+        - [ ] I added a CHANGELOG.md entry under `[Unreleased]` — [Changelog guide](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/docs/changelog-guide.md)
         - [ ] All CI checks pass
 
   - type: textarea
@@ -180,22 +169,20 @@ body:
         | Step | Guide |
         |------|-------|
         | Claim this issue | Comment `/assign` below |
-        | Sync with main | [Rebasing guide](guides/issue-progression/docs/rebasing.md) |
-        | Open a PR and link this issue | [PR guide](guides/issue-progression/docs/contributor-workflow.md) · [Linking guide](guides/issue-progression/docs/contributor-workflow.md) |
-        | Resolve merge conflicts | [Merge conflicts guide](guides/issue-progression/docs/merge_conflicts.md) |
+        | Sync with main | [Rebasing guide](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-developers/rebasing.md) |
+        | Open a PR and link this issue | [PR guide](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-developers/contributor-workflow.md) · [Linking guide](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-developers/contributor-workflow.md) |
+        | Resolve merge conflicts | [Merge conflicts guide](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-developers/merge_conflicts.md) |
 
   - type: textarea
     id: ai_tips
     attributes:
       label: 🤖 Tips for using AI tools
       description: |
-        PRE-FILLED GUIDANCE. LEAVE AS-IS.
+        Pre-filled guidance.
       value: |
         Here is how to get the most out of AI tools:
 
         - Use AI to understand the issue and the codebase, not to write code for you.
-        - Study the codebase to understand existing patterns and styles — this is the best way to get up to speed and write code that fits well with the rest of the project.
-        - Use [Pylance](https://github.com/hiero-ledger/hiero-sdk-python/blob/main/docs/sdk_developers/pylance.md) in VS Code to catch errors and hallucinated methods
         - Build your solution in small steps — add print statements or logs to confirm each piece works before moving on
         - If AI output and SDK patterns disagree, trust the SDK
 
@@ -204,12 +191,12 @@ body:
     attributes:
       label: 🆘 Stuck?
       description: |
-        PRE-FILLED GUIDANCE. LEAVE AS-IS.
+        Pre-filled guidance.
       value: |
         Beginner issues can be tricky — it is completely normal to get blocked. Here is what to do:
 
         - **Comment on this issue** and describe what you have tried. A maintainer will respond.
-        - **Ask on [Discord](guides/issue-progression/docs/discord.md)**
+        - **Ask on [Discord](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-developers/discord.md)**
         - **Join [Office Hours](https://zoom-lfx.platform.linuxfoundation.org/meeting/99912667426?password=5b584a0e-1ed7-49d3-b2fc-dc5ddc888338)** (Wednesdays, 2pm UTC) for live, hands-on help with a maintainer — screen sharing welcome.
 
         Do not spend more than 30 minutes blocked without asking. Asking good questions is a skill too.
