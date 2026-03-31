@@ -10,18 +10,19 @@ body:
         ---
         ## **Thanks for creating an intermediate issue!** 😊
 
-        This template is designed to help you create an Intermediate Issue : a well-scoped task that requires independent research and implementation.
+        Intermediate issues are broad and complex requiring independent research and fine-tuned implementation.
         
         Read more:
-        [Applying Intermediate Label](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-maintainers/labelling.md)
-        [Issue Progression Initiative](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-maintainers/README.md)
+        > [Applying Intermediate Label](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-maintainers/labelling.md)
+        > [Issue Progression Initiative](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-maintainers/README.md)
         ---
 
   - type: textarea
     id: intro
     attributes:
       label: 🧑‍💻 Intermediate Issue
-      description: Who is this issue for?
+      description: |
+        Prefilled introduction to explain what an intermediate issue is and who it’s for.
       value : |
         This **[Intermediate Issue](https://github.com/issues?q=is%3Aopen%20is%3Aissue%20org%3Ahiero-ledger%20archived%3Afalse%20no%3Aassignee%20(label%3A%22intermediate%22%20OR%20label%3A%22skill%3A%20intermediate%22)%20(repo%3Ahiero-ledger%2Fhiero-sdk-cpp%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-swift%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-python%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-js%20OR%20repo%3Ahiero-ledger%2Fhiero-website))** is a well-scoped task intended for intermediate contributors who have completed beginner issues and are ready to take on more ownership.
         This issue will challenge you to research and implement substantial solutions, independently.

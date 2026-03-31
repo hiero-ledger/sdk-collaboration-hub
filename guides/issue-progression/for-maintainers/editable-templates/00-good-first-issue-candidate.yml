@@ -10,11 +10,11 @@ body:
         ---
         ## **Thanks for creating a good first issue candidate!** 😊
 
-        This template is designed to help you create a Good First Issue Candidate (GFIC) : a small, well-scoped task that may be missing some documentation or there is uncertainty if it is a good fit for a GFI.
-        
+        Good First Issues are very small, well-defined tasks, suited for new contributors to learn the workflow.
+
         Read more:
-        [Applying Good First Issue Candidate Label](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-maintainers/labelling-issues-examples.md)
-        [Issue Progression Initiative](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-maintainers/README.md)
+        > [Applying Good First Issue Candidate Label](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-maintainers/labelling-issues-examples.md)
+        > [Issue Progression Initiative](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-maintainers/README.md)
         ---
 
   - type: textarea
@@ -32,10 +32,11 @@ body:
 
 
   - type: textarea
-    id: intro
+    id: welcome
     attributes:
       label: 🐥 Good First Issue
-      description: Who is this issue for?
+      description: |
+        Prefilled introduction to explain what a good first issue is and who it’s for.
       value : |
         This **[Good First Issue](https://github.com/issues?q=is%3Aopen%20is%3Aissue%20org%3Ahiero-ledger%20archived%3Afalse%20no%3Aassignee%20(label%3A%22good%20first%20issue%22%20OR%20label%3A%22skill%3A%20good%20first%20issue%22)%20(repo%3Ahiero-ledger%2Fhiero-sdk-cpp%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-swift%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-python%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-js%20OR%20repo%3Ahiero-ledger%2Fhiero-website))** is a guided, well-scoped task intended for new human contributors.
         Please read the issue requirements and guides carefully.

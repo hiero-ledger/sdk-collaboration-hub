@@ -12,18 +12,19 @@ body:
         ---
         ## **Thanks for creating an advanced issue!** 😊
 
-        This template is designed to help you create an Advanced Issue : a broad or complex task that requires expert-level architectural understanding and significant independent research. Advanced issues are intended for contributors who have completed multiple intermediate issues and are ready to take on high-ownership work that may impact core SDK architecture or cross-cutting concerns.
-        
+        Advanced issues are high-ownership, high-impact tasks requiring expert-level architectural understanding and significant independent research.
+
         Read more:
-        [Applying Advanced Label](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-maintainers/labelling.md)
-        [Issue Progression Initiative](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-maintainers/README.md)
+        > [Applying Advanced Label](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-maintainers/labelling.md)
+        > [Issue Progression Initiative](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-maintainers/README.md)
         ---
 
   - type: textarea
     id: intro
     attributes:
       label: 🧑‍🔬 Advanced Issue
-      description: Who is this issue for?
+      description: |
+        Prefilled introduction to explain what an advanced issue is and who it’s for.
       value : |
         This **[Advanced Issue](https://github.com/issues?q=is%3Aopen%20is%3Aissue%20org%3Ahiero-ledger%20archived%3Afalse%20no%3Aassignee%20(label%3A%22advanced%22%20OR%20label%3A%22skill%3A%20advanced%22)%20(repo%3Ahiero-ledger%2Fhiero-sdk-cpp%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-swift%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-python%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-js%20OR%20repo%3Ahiero-ledger%2Fhiero-website))** is a well-scoped task intended for advanced contributors who have completed multiple intermediate issues and are ready to take on high-ownership work that may impact core SDK architecture or cross-cutting concerns.
         This issue will require significant independent research, a deep understanding of the codebase, and careful attention to maintainability, security, and architectural fit.
@@ -33,7 +34,7 @@ body:
     attributes:
       label: 🐞 Problem Description
       description: |
-        Describe the current limitation or architectural risk here.
+        Describe the current limitation or architectural risk here. The solution may be unclear or require significant research. The goal is to clearly articulate the problem(s) and its impact, even if the implementation approach is not yet defined.
       value: |
         <!-- Describe the issue here -->      
     validations:
@@ -43,6 +44,10 @@ body:
     id: implementation
     attributes:
       label: 🛠️ Implementation Notes
+      description: |
+        Describe any implementation ideas or approaches that may be useful to consider.
+        Clarify what is unknown or uncertain about the implementation
+        If any risks are known that may require additional research or careful attention, highlight them here.
       value: |
         <!-- Describe the implementation notes or domains here -->      
 
@@ -60,7 +65,7 @@ body:
     attributes:
       label: 🧠 Advanced Contributors — Prerequisites & Expectations
       description: |
-        REQUIRED: Contributors must meet these thresholds before claiming.
+        Contributors must meet these thresholds before claiming. Adapt as needed.
       value: |
         > [!CAUTION]
         > **Advanced issues are the highest-risk work in this project. We will reject PRs that do not meet these standards.**
@@ -75,7 +80,7 @@ body:
         > **Workflow Exception:** For issues focused on **GitHub Actions / Workflows**, the repo-specific thresholds above may be waived if the contributor demonstrates expert-level proficiency in CI/CD security and automation.
 
         ### ⚠️ AI Usage Policy
-        Using AI to generate code for Advanced issues is **strictly forbidden**. AI may be used only to help explain file relationships. Submitting AI-mined code or unvalidated generated output is grounds for **immediate rejection**.
+        Using AI to generate code for Advanced issues is **strictly discouraged**. AI may be used only to help explain file relationships. Submitting AI-mined code or unvalidated generated output is grounds for **immediate rejection**.
 
         ### ⏱️ Timeline & Workflow
         - **Typical time:** ~1 month / ~50 hours.
@@ -88,8 +93,10 @@ body:
     id: quality_standards
     attributes:
       label: 🛡️ Quality & Review Standards
+      description: |
+        Prefilled guidance on the quality standards expected for advanced PRs. Adapt as needed.
       value: |
-        The bar for advanced PRs is **"safe, maintainable, architecturally sound, and production-ready."**
+        Advanced PRs must be **"safe, maintainable, architecturally sound, and production-ready."**
 
         ### Defining "Production Ready"
         1. **Architectural Fit:** The solution must fit naturally into the existing SDK abstractions. Avoid "hacks" or isolated logic that bypasses the core execution model.
@@ -110,7 +117,7 @@ body:
         - [ ] I understand the system-wide impact of these changes on affected modules and performance.
         - [ ] The system design fits with current Hiero SDK architectural approaches.
         - [ ] I have tested my changes extensively against both local and network environments.
-        - [ ] I have verified naming, types, and field ordering against pinned Protobufs (v0.72.0-rc.2).
+        - [ ] I have verified naming, types, and field ordering against pinned Protobufs.
         - [ ] Every line of code is personally understood and explainable (no unvalidated AI code).
 
   - type: textarea
