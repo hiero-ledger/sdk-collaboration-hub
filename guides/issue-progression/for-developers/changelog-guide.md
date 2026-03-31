@@ -2,7 +2,7 @@
 
 This document explains how to add a changelog entries.
 
-> ⚠️ **WARNING: Do not blindly follow this guide**. Some repositories may have different approaches.
+> ⚠️ **WARNING: Not all repositories use a changelog**
 
 ## Contents
 

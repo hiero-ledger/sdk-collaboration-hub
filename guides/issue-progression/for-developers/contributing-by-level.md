@@ -1,4 +1,4 @@
-## Contributing Effectively by Difficulty Level
+# Contributing Effectively by Difficulty Level
 
 - [Good First Issue (GFI)](#good-first-issue-gfi)
 - [Beginner](#beginner)
@@ -9,7 +9,7 @@
 - [Final Rule](#final-rule)
 
 
-### Purpose
+## Purpose
 
 This guide helps contributors understand how to:
 - produce high-quality pull requests  
@@ -34,29 +34,27 @@ This guide helps contributors understand how to:
 - Do not introduce unrelated changes  
 - Keep PRs focused and minimal  
 - Ensure DCO and GPG key signing
-- Ensure a changelog entry if relevant
+- Ensure a changelog entry (if relevant)
 - Read the issue carefully before starting  
 
 ---
 
-# Good First Issue (GFI)
-
-## Goal
+## Good First Issue (GFI)
 
 Execute the task exactly as described.
 
 ---
 
-## How to Approach
+### How to Approach
 
 - Read the issue carefully  
 - Follow each step exactly  
 - Do not improvise or optimize  
-- Do not make extra good-to-have changes, they are out of scope
+- Do not make extra good-to-have changes, they should be a separate issue
 
 ---
 
-## What a Good PR Looks Like
+### What a Good PR Looks Like
 
 - change matches instructions exactly  
 - correct file and location  
@@ -65,55 +63,43 @@ Execute the task exactly as described.
 
 ---
 
-## Common Mistakes
+### Common Mistakes
 
 - changing unrelated code  
 - not following instructions exactly  
 - signing errors
 
-**Important!!**: please check the pull request once it is created for errors before requesting a review.
+**Important!!** please check the pull request once it is created for errors before requesting a review.
 
 ---
 
-## How to Get Approved Quickly
-
-- do exactly what the issue says  
-- double-check your change before submitting  
-
----
-
-# Beginner
-
-## Goal
+## Beginner
 
 Apply an existing pattern correctly.
 
 ---
 
-## How to Approach
+### How to Approach
 
-- identify the reference pattern in the issue  
 - study similar implementations and research their methods
 - work to understand the code
 - apply the pattern carefully
 
 ---
 
-## What a Good PR Looks Like
+### What a Good PR Looks Like
 
 - follows existing patterns  
-- consistent with similar code, but applied 
 - clear and readable  
-- small and focused  
+- well researched
 
 ---
 
-## Common Mistakes
+### Common Mistakes
 
-- inventing new approaches  
 - inconsistent implementation  
-- using AI to 'study' reference examples instead of studying the code
-- not double checking the precision
+- using AI without studying the code
+- not testing the code
 
 ---
 
@@ -125,45 +111,46 @@ Apply an existing pattern correctly.
 
 ---
 
-# Intermediate
-
-## Goal
+## Intermediate
 
 Implement a solution that meets defined outcomes and quality expectations.
 
 ---
 
-## How to Approach
+### How to Approach
 
 - understand the expected outcome fully  
 - identify constraints (APIs, patterns, behavior)  
-- explore relevant parts of the codebase  
+- take time to thoroughly understand relevant parts of the codebase  
 - choose an approach deliberately  
+
+At this level, 50% of the time should be spent researching and testing.
 
 ---
 
-## What a Good PR Looks Like
+### What a Good PR Looks Like
 
 - meets the expected outcome  
 - respects all constraints  
-- clean, maintainable code  
-- includes meaningful tests  
+- clean, maintainable code, that goes beyond 'it works'
+- robustly tested
 - handles edge cases  
 
 ---
 
-## Common Mistakes
+### Common Mistakes
 
-- unclear or incomplete implementation  
-- ignoring constraints  
+- functional errors or incomplete implementation  
+- not sufficient research to understand how the solution fits in the current systems
 - weak or missing tests  
 - “it works” but poor quality such as hard-to-read code with obscure methods
 
 ---
 
-## How to Get Approved Quickly
+### How to Get Approved Quickly
 
-- think before coding  
+- Invest at least 25% of time researching
+- Plan your approach and optimize the solution
 - verify your solution against requirements  
 - write tests early  
 - polish the code before submitting
@@ -171,24 +158,24 @@ Implement a solution that meets defined outcomes and quality expectations.
 
 ---
 
-# Advanced
+## Advanced
 
-## Goal
-
-Design and implement a solution that fits the system.
+Architect a solution when the problem or approach is not fully understood.
 
 ---
 
-## How to Approach
+### How to Approach
 
 - understand the system and architecture  
 - evaluate multiple approaches  
 - consider trade-offs and risks  
 - plan before coding  
 
+70% of time should be spent researching and planning.
+
 ---
 
-## What a Good PR Looks Like
+### What a Good PR Looks Like
 
 - clear and justified design  
 - aligned with architecture  
@@ -196,18 +183,20 @@ Design and implement a solution that fits the system.
 - safe and backward-compatible  
 - thoroughly tested  
 
+Advanced PRs often discuss architectural approach before starting coding.
+
 ---
 
-## Common Mistakes
+### Common Mistakes
 
 - jumping straight into coding  
-- “it works” without design thinking  
+- inefficient or inappropriate design
 - introducing risk or breaking changes  
-- over-reliance on AI without understanding  
+- not enough research into understanding methods
 
 ---
 
-## How to Get Approved Quickly
+### How to Get Approved Quickly
 
 - propose your approach before implementing  
 - explain your design decisions  
@@ -218,11 +207,11 @@ Design and implement a solution that fits the system.
 
 ## Final Advice
 
-> The fastest way to get merged is to meet the expectations of the level — not exceed or bypass them.
+> The fastest way to get merged is to meet the expectations of the level.
 
-- Don’t overcomplicate simple issues  
-- Don’t under-deliver on complex ones  
-- Progress step by step through levels  
+- Read the issue requirements carefully
+- Think beyond 'it works'
+- Research and testing are key components requiring careful decisions
 
 ---
 
@@ -238,3 +227,4 @@ Design and implement a solution that fits the system.
 ## Final Rule
 
 > High-quality, well-scoped PRs get merged faster than ambitious but incomplete ones.
+> Maintainers will direct overly-ambitious PRs to more suitable levels

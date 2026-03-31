@@ -37,6 +37,7 @@ Key steps:
 Once assigned, you are ready to work.
 
 > ⚠️ **WARNING: Wait for assignment**. Commence work only after assigned.
+
 > ⚠️ **WARNING: If the issue is already assigned, it is claimed and PR's will be closed**. We will not re-assign unless the issue is stale.
 
 
@@ -225,6 +226,7 @@ to the **pull request description**:
 Example:
 ```
 Fixes #123
+```
 
 This helps reviewers understand the context of the change and allows
 GitHub to automatically manage issue state.
@@ -237,6 +239,7 @@ We have several security and quality checks.
 Please review and check they all pass.
 
 **⚠️ WARNING** You will have to wait for some workflows to be approved by maintainers
+
 **⚠️ WARNING** Assignment checks may fail until maintainer intervention. This is normal and you have to wait.
 
 If checks are solving and you require help, you can:
