@@ -224,10 +224,7 @@ Rules and guidelines for `@@alias`:
 - An alias may refer to any type expression, including generic instantiations.
 - Aliases must not be used to introduce new behavior. If any field or method is needed, define a new
   complex type using `extends` instead.
-- Language implementations translate `@@alias` to the most idiomatic alias mechanism available
-  (e.g. `type` in TypeScript/Rust/Go, `typealias` in Swift, `using` in C++). Languages without a
-  native alias mechanism (e.g. Java) must implement the alias as an empty `final` class or record
-  that extends the target type. The language-specific best practice guide specifies the exact pattern.
+- Language implementations translate `@@alias` according to their language-specific best practice guide.
 
 ### Enumerations
 

@@ -237,38 +237,38 @@ specific transaction type. After creating an account, for example, the user must
 and accept that all other fields are null. The compiler cannot help, and documentation cannot fully
 substitute for type safety.
 
-### Why receipts are typed (risk: ~5%)
+### Why receipts are typed
 
-The concern with per-type receipts is that a future protocol change could add a field to an existing
-transaction type that previously had no typed receipt — changing its `queryReceipt()` return type, which is
-a breaking change in languages without subtype polymorphism (Go, Rust).
+The concern with per-type receipts is that a future protocol change could add a receipt field to an
+existing transaction type that previously had no typed receipt, changing its `queryReceipt()` return type.
+This is a real risk and the decision to use typed receipts should be revisited with broader community input
+before V3 is finalized.
 
-An analysis of the actual `transaction_receipt.proto` evolution across 7 years of mainnet history shows
-this risk is effectively theoretical:
+That said, the historical evidence from `transaction_receipt.proto` across 7 years of mainnet is
+encouraging:
 
 - Every new receipt field introduced since genesis has been tied to a **new transaction type** (HCS, HTS,
   scheduled transactions, NFTs, node management, etc.).
-- The only cross-cutting addition — `block_number` (added Mar 2026, block stream work) — applies to
-  **all** transactions and therefore lives on the base `Receipt` type. It does not affect any typed receipt
-  subtype.
-- There is no historical precedent for an existing "action" transaction (CryptoTransfer, AccountUpdate,
-  TokenBurn, etc.) gaining a receipt-specific field.
+- The one cross-cutting addition — `block_number` (added Mar 2026, block stream work) — applies to
+  **all** transactions and therefore lives on the base `Receipt` type. It does not require changes to any
+  typed receipt subtype.
+- There is no historical precedent for an existing transaction type that returns only a base `Receipt`
+  gaining a transaction-specific receipt field after the fact.
 
 This pattern holds because the receipt's purpose is narrow: "what entity was created, and did it succeed?"
-That question is answered at the time a transaction type is designed, not later.
+That question is answered at the time a transaction type is designed, not later. The set of transactions
+needing typed receipts is listed below and should be treated as a working draft pending broader review.
 
-Typed receipts are therefore safe, and the set of transactions that need them is effectively closed to the
-entity-creating transactions listed below.
-
-### Why responses are named (risk: ~3%)
+### Why responses are named
 
 The protobuf `TransactionResponse` — the immediate gRPC reply from the consensus node — has exactly two
 fields (`nodeTransactionPrecheckCode`, `cost`) and has had **zero structural changes** in 7+ years of
-mainnet. It is a pure pre-consensus acknowledgement: "the node received your transaction and will gossip it."
-There is no transaction-specific data in it and there never has been. The risk of named SDK `Response`
-subtypes causing breaking changes from protocol evolution is negligible.
+mainnet. It is a pure pre-consensus acknowledgement: "the node received your transaction and will gossip
+it." There is no transaction-specific data in it and there never has been. The risk of named SDK `Response`
+aliases causing breaking changes from protocol evolution is low, though the same caution applied to typed
+receipts applies here as well.
 
-Named response subtypes exist purely for ergonomics. There is a meaningful difference between a *structural
+Named response aliases exist for ergonomics. There is a meaningful difference between a *structural
 description* and a *name*:
 
 ```
@@ -276,26 +276,21 @@ Response<AccountCreateReceipt> response = builder.buildAndExecute(client);  // s
 AccountCreateResponse response = builder.buildAndExecute(client);           // named, clear intent
 ```
 
-The named type appears in IDE completions, method signatures, error messages, and documentation in a way
-that immediately tells the user what kind of operation produced it. In Rust and Swift, it also enables
-type-based dispatch and pattern matching. The block stream `TransactionOutput` proto independently arrived
-at the same conclusion — a `oneof` with named per-transaction outputs — and while it pruned some variants
-that turned out redundant, it did not abandon the named-type approach.
+The named type appears in call sites, method signatures, error messages, and documentation in a way that
+immediately tells the user what kind of operation produced it.
 
-Named `Response` subtypes **must remain empty** (no fields). All transaction-specific data lives on the
-typed `Receipt` or the universal `Record`. Adding any fields to a `Response` subtype would be wrong —
-the `Response`'s only job is to carry the transaction ID and provide the async poll methods.
+Response types are declared using `@@alias` (see `guides/api-guideline.md`), which communicates that these
+are names for parameterizations of `Response<$$Receipt>` rather than distinct type extensions. See each
+language's best practice guide for the implementation pattern.
 
-Response types are declared using `@@alias` (defined in `guides/api-guideline.md`). This correctly
-communicates that these are names for parameterizations of `Response<$$Receipt>`, not distinct type
-extensions. Language implementations translate `@@alias` to their native alias mechanism where available;
-languages without one (Java) use an empty final class. See each language's best practice guide for the
-exact pattern.
+Named response aliases **must have no fields or methods**. All transaction-specific data lives on the
+typed `Receipt` or the universal `Record`. The `Response`'s only job is to carry the transaction ID and
+provide the async poll methods.
 
-Every transaction type gets a named response, including action transactions. For entity-creating
-transactions the response is parameterized with a typed receipt (`AccountCreateResponse` →
-`Response<AccountCreateReceipt>`). For action transactions it is parameterized with the base receipt
-(`AccountUpdateResponse` → `Response<Receipt>`). Either way the user gets a named type.
+Every transaction type gets a named response alias. Transactions with receipt-specific output are
+parameterized with a typed receipt (`AccountCreateResponse` = `Response<AccountCreateReceipt>`).
+Transactions without are parameterized with the base receipt (`AccountUpdateResponse` = `Response<Receipt>`).
+Either way the user gets a named type.
 
 ### Why records are NOT typed (risk: ~60%)
 
@@ -308,8 +303,8 @@ across subsets of **existing** transaction types:
   types today, with the subset expected to expand over time
 
 If named record subtypes existed for these transaction types, each expansion would change the
-`queryRecord()` return type for newly-affected transactions — a breaking change in Go and Rust.
-Even in Java and TypeScript, it would require updating all 7 SDKs in lockstep.
+`queryRecord()` return type for newly-affected transactions — a breaking change across all SDK
+implementations.
 
 The record is the protocol's extension surface. Protocol-specific record data belongs as nullable fields
 on the universal `Record<$$Receipt>` base type, not in named subtypes. This keeps additions non-breaking
@@ -328,9 +323,10 @@ by design.
 | TokenMint (NFT)          | `serials`, `totalSupply`                  |
 | TopicMessageSubmit       | `topicSequenceNumber`, `topicRunningHash` |
 
-All other transactions ("action" transactions: updates, deletes, transfers, burns, associates, etc.)
-still get a named `Response` subtype — see the rationale section above — but parameterized with the base
-`Receipt` rather than a typed one.
+Transactions not listed above — those whose receipts carry no transaction-specific output fields — still
+get a named `Response` alias but are parameterized with the base `Receipt` rather than a typed one. Note
+that this table is a working draft: which transactions belong here should be validated with broader
+community input before V3 is finalized.
 
 ### How to define a typed transaction in practice
 
@@ -350,7 +346,7 @@ FooReceipt extends transactions.Receipt {
 }
 ```
 
-For an action transaction (base receipt, named response):
+For a transaction with no receipt-specific output (base receipt, named response):
 
 ```
 @@finalType
