@@ -20,12 +20,9 @@ AccountCreateTransactionBuilder extends transactions.TransactionBuilder<AccountC
     key: keys.PublicKey
 }
 
-@@finalType
-// Named response type for ergonomics — intentionally empty. The named type appears in IDE completions,
-// method signatures, and docs in a way that `Response<AccountCreateReceipt>` does not. All
-// transaction-specific data lives on AccountCreateReceipt, not here.
-AccountCreateResponse extends transactions.Response<AccountCreateReceipt> {
-}
+// Named alias for ergonomics. Appears in IDE completions, method signatures, and docs in a way that
+// Response<AccountCreateReceipt> does not. All transaction-specific data lives on AccountCreateReceipt.
+@@alias AccountCreateResponse = transactions.Response<AccountCreateReceipt>
 
 @@finalType
 // Extends the base Receipt with the account ID assigned by the consensus node.

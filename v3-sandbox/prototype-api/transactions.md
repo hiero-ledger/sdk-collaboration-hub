@@ -286,6 +286,12 @@ Named `Response` subtypes **must remain empty** (no fields). All transaction-spe
 typed `Receipt` or the universal `Record`. Adding any fields to a `Response` subtype would be wrong —
 the `Response`'s only job is to carry the transaction ID and provide the async poll methods.
 
+Response types are declared using `@@alias` (defined in `guides/api-guideline.md`). This correctly
+communicates that these are names for parameterizations of `Response<$$Receipt>`, not distinct type
+extensions. Language implementations translate `@@alias` to their native alias mechanism where available;
+languages without one (Java) use an empty final class. See each language's best practice guide for the
+exact pattern.
+
 Every transaction type gets a named response, including action transactions. For entity-creating
 transactions the response is parameterized with a typed receipt (`AccountCreateResponse` →
 `Response<AccountCreateReceipt>`). For action transactions it is parameterized with the base receipt
@@ -336,10 +342,7 @@ FooTransactionBuilder extends transactions.TransactionBuilder<FooTransactionBuil
     // domain-specific fields
 }
 
-@@finalType
-// Named for ergonomics — must remain empty. All entity-specific data is on FooReceipt.
-FooResponse extends transactions.Response<FooReceipt> {
-}
+@@alias FooResponse = transactions.Response<FooReceipt>
 
 @@finalType
 FooReceipt extends transactions.Receipt {
@@ -355,10 +358,7 @@ BazTransactionBuilder extends transactions.TransactionBuilder<BazTransactionBuil
     // domain-specific fields
 }
 
-@@finalType
-// Named for ergonomics — must remain empty. Base Receipt is sufficient; no entity-specific data.
-BazResponse extends transactions.Response<transactions.Receipt> {
-}
+@@alias BazResponse = transactions.Response<transactions.Receipt>
 
 ## Questions & Comments
 
