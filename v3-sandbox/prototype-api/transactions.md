@@ -50,9 +50,13 @@ abstraction TransactionSigner {
 }
 
 // Mutable builder for constructing a transaction body. Concrete transaction builders extend this
-// with domain-specific setters. The generic parameter is self-referential (CRTP) to enable fluent
-// setter chains that return the concrete builder type.
-abstraction TransactionBuilder<$$Transaction extends TransactionBuilder, $$Response extends Response> {
+// with domain-specific setters.
+//
+// Two generic parameters:
+//   $$Builder  — self-referential (CRTP) so fluent setter chains return the concrete builder type.
+//   $$Response — the typed response produced by this transaction. Use Response<Receipt>
+//                for transactions that do not add entity-specific receipt fields.
+abstraction TransactionBuilder<$$Builder extends TransactionBuilder, $$Response extends Response> {
   @@nullable maxTransactionFee: common.Hbar
   @@nullable validDuration: long
   @@nullable memo: string
@@ -62,69 +66,91 @@ abstraction TransactionBuilder<$$Transaction extends TransactionBuilder, $$Respo
   // Transitions from build phase to sign/send phase. If a client is provided, transactionId and
   // nodeAccountIds are auto-generated from the client. If no client is provided, they are left
   // unset (for flows like HIP-745 where incomplete transactions are serialized).
-  Transaction build(@@nullable client: client.HieroClient)
+  Transaction<$$Response> build(@@nullable client: client.HieroClient)
 
   // Convenience for simple single-signer flows. Requires a client. Internally does:
   // build(client) -> sign(client.operator) -> execute(client)
   @@async
-  $$Response buildAndExecute(client:client.HieroClient)
+  $$Response buildAndExecute(client: client.HieroClient)
 }
 
 // An immutable transaction ready for signing, serialization, and submission. The transaction body
 // cannot be modified after build — only network execution config and signatures can be added.
+//
+// The generic parameter $$Response carries the typed response produced when the transaction is
+// executed. This ensures that the typed return value is preserved through the full
+// build() → sign() → execute() chain, including multi-party signing flows.
 @@finalType
-Transaction {
+Transaction<$$Response extends Response> {
   // Network execution config — does not affect the signed transaction body
-  @@nullable maxAttempts:int32
-  @@nullable maxBackoff:long
-  @@nullable minBackoff:long
-  @@nullable attemptTimeout:long
-  
-  // Sign the transaction with the given key pair
-  Transaction sign(keyPair: keys.KeyPair)
-  
-  // Sign the transaction using an external signer
-  Transaction sign(publicKey: keys.PublicKey, transactionSigner: TransactionSigner) 
+  @@nullable maxAttempts: int32
+  @@nullable maxBackoff: long
+  @@nullable minBackoff: long
+  @@nullable attemptTimeout: long
+
+  // Sign the transaction with the given key pair. Returns self to allow chaining.
+  Transaction<$$Response> sign(keyPair: keys.KeyPair)
+
+  // Sign the transaction using an external signer. Returns self to allow chaining.
+  Transaction<$$Response> sign(publicKey: keys.PublicKey, transactionSigner: TransactionSigner)
 
   // Returns the signatures that have been added to this transaction, keyed by node account id and public key
   map<common.AccountId, map<keys.PublicKey, bytes>> getSignatures()
 
-  // Submit the transaction to the network and return the response
+  // Submit the transaction to the network and return the typed response
   @@async
-  Response execute(client:client.HieroClient)
+  $$Response execute(client: client.HieroClient)
 
   // Serialize the transaction (including signatures) to bytes
-  bytes toBytes() 
-  
-  // Deserialize a transaction from bytes
-  @@static
-  Transaction fromBytes(transactionBytes: bytes)
+  bytes toBytes()
 
-  // Returns a mutable builder pre-populated with this transaction's body.
+  // Deserialize a transaction from bytes. Returns a raw Transaction<Response> because the response
+  // type cannot be inferred from bytes alone. If the transaction type is known at the call site
+  // (e.g. in a multi-party signing flow), language implementations may provide typed overloads
+  // or allow an explicit cast to the expected Transaction<$$Response>.
+  @@static
+  Transaction<Response> fromBytes(transactionBytes: bytes)
+
+  // Returns a mutable builder pre-populated with this transaction's body. Because Transaction is
+  // generic but TransactionBuilder requires two type parameters (the concrete builder type is not
+  // recoverable from bytes alone), this returns the base TransactionBuilder. Callers that know
+  // the concrete builder type may cast to it.
   TransactionBuilder unbuild()
 }
 
-// The response of a transaction execution
-Response<$$Receipt extends Receipt, $$Record extends Record> {
-  @@immutable transactionId:TransactionId // the id of the transaction
+// The response of a transaction execution. Parameterized by the typed receipt only.
+//
+// Records are NOT parameterized here by design: the TransactionRecord protobuf evolves with
+// cross-cutting protocol features (assessed_custom_fees, paid_staking_rewards,
+// high_volume_pricing_multiplier, etc.) that apply to subsets of existing transaction types and
+// expand over time. Named record subtypes would create breaking changes whenever a new protocol
+// feature extends to additional transaction types. queryRecord() therefore always returns the
+// universal Record<$$Receipt>, with nullable fields on the base Record for protocol-specific data.
+//
+// See the "Design Rationale" section for the full analysis.
+Response<$$Receipt extends Receipt> {
+  @@immutable transactionId: TransactionId // the id of the transaction
 
-  @@async $$Receipt queryReceipt() // query for the receipt of the transaction
-  @@async $$Record queryRecord() // query for the record of the transaction
+  @@async $$Receipt queryReceipt()          // query for the receipt of the transaction
+  @@async Record<$$Receipt> queryRecord()   // query for the record of the transaction
 }
 
-// The receipt of a transaction
+// The receipt of a transaction. Subtype this only when the transaction creates an entity or
+// returns meaningful data in the receipt (e.g. AccountCreate → accountId, TokenMint → serials).
+// For all other transactions, use this base type directly.
 Receipt {
-  @@immutable transactionId:TransactionId // the id of the transaction
-  @@immutable status:TransactionStatus // the status of the transaction
-  @@immutable exchangeRate:common.HBarExchangeRate // the exchange rate at the time of the transaction
-  @@immutable nextExchangeRate:common.HBarExchangeRate // the next exchange rate
+  @@immutable transactionId: TransactionId     // the id of the transaction
+  @@immutable status: TransactionStatus        // the status of the transaction
+  @@immutable exchangeRate: common.HBarExchangeRate     // the exchange rate at the time of the transaction
+  @@immutable nextExchangeRate: common.HBarExchangeRate // the next exchange rate
 }
 
-// The record of a transaction
+// The record of a transaction. Named subtypes of Record are intentionally not used — see the
+// "Design Rationale" section. All protocol-specific record fields are nullable on this base type.
 Record<$$Receipt extends Receipt> {
-  @@immutable transactionId:TransactionId // the id of the transaction
-  @@immutable consensusTimestamp:zonedDateTime // the consensus time of the transaction
-  @@immutable receipt:$$Receipt // the receipt of the transaction
+  @@immutable transactionId: TransactionId          // the id of the transaction
+  @@immutable consensusTimestamp: zonedDateTime      // the consensus time of the transaction
+  @@immutable receipt: $$Receipt                     // the typed receipt of the transaction
 }
 
 // Factory methods for TransactionId
@@ -138,11 +164,12 @@ TransactionId generateTransactionId(accountId:common.AccountId)
 ### Simple flow (single signer)
 
 The most common case. `buildAndExecute` handles build, signing with the client operator, and execution in one call.
+The typed response is inferred directly from the builder's `$$Response` parameter.
 
 ```
 HieroClient client = ...
 
-Response response = new FooTransactionBuilder()
+FooResponse response = new FooTransactionBuilder()
     .setBar("baz")
     .buildAndExecute(client);
 
@@ -151,34 +178,40 @@ FooReceipt receipt = response.queryReceipt();
 
 ### Multi-party signing
 
-For transactions requiring multiple signatures. `build(client)` auto-generates `transactionId` and `nodeAccountIds`, then the transaction is serialized and sent to other parties for signing.
+For transactions requiring multiple signatures. `build(client)` returns a `Transaction<$$Response>`, preserving the
+typed response through the signing chain. This is the key benefit of the generic parameter on `Transaction`.
 
 ```
 HieroClient client = ...
 
-// Alice builds and signs
-Transaction tx = new TransferTransactionBuilder()
-    .addTransfer(alice, Hbar.from(-5))
-    .addTransfer(bob, Hbar.from(5))
+// Alice builds — Transaction<AccountCreateResponse> carries the type forward
+Transaction<AccountCreateResponse> tx = new AccountCreateTransactionBuilder()
+    .setKey(keyOfNewAccount)
+    .setInitialBalance(new Hbar(100, HbarUnit.HBAR))
     .build(client);
 
 tx.sign(aliceKey);
 bytes txBytes = tx.toBytes();
 // send txBytes to Bob
 
-// Bob receives, signs, executes
-Transaction tx2 = Transaction.fromBytes(txBytes);
+// Bob receives and signs. fromBytes() returns Transaction<Response> (raw — type cannot be inferred
+// from bytes). Because Bob knows the transaction type out of band, he may cast explicitly.
+Transaction<AccountCreateResponse> tx2 = (Transaction<AccountCreateResponse>) Transaction.fromBytes(txBytes);
 tx2.sign(bobKey);
-Response response = tx2.execute(client);
+
+AccountCreateResponse response = tx2.execute(client);
+AccountId newAccountId = response.queryReceipt().getAccountId();
 ```
 
 ### HIP-745 (dApp to wallet, incomplete transaction)
 
-For flows where a dApp builds a transaction without a transactionId or nodeAccountIds and sends it to a wallet for completion.
+For flows where a dApp builds a transaction without a transactionId or nodeAccountIds and sends it to a wallet for
+completion. Both sides treat the transaction as raw (`Transaction<Response>`) because the wallet operates on
+arbitrary transaction types.
 
 ```
 // dApp builds without a client — no transactionId or nodeAccountIds generated
-Transaction tx = new TransferTransactionBuilder()
+Transaction<Response> tx = new TransferTransactionBuilder()
     .addTransfer(alice, Hbar.from(-10))
     .addTransfer(bob, Hbar.from(10))
     .build();
@@ -188,10 +221,144 @@ bytes txBytes = tx.toBytes();
 
 // Wallet receives, unbuilds to modify, then rebuilds with its own client
 TransactionBuilder builder = Transaction.fromBytes(txBytes).unbuild();
-Transaction tx2 = builder.build(walletClient);
+Transaction<Response> tx2 = builder.build(walletClient);
 tx2.sign(walletKey);
 tx2.execute(walletClient);
 ```
+
+## Design Rationale: Typed Receipts, Universal Records
+
+### The problem with a single base Receipt
+
+The v2 SDKs use a single `TransactionReceipt` with roughly 15 optional/nullable fields — `accountId`,
+`fileId`, `contractId`, `topicId`, `tokenId`, `scheduleId`, `scheduledTransactionId`, `serials`,
+`topicSequenceNumber`, `topicRunningHash`, and more. Every field is nullable because it only applies to a
+specific transaction type. After creating an account, for example, the user must know to read `.accountId`
+and accept that all other fields are null. The compiler cannot help, and documentation cannot fully
+substitute for type safety.
+
+### Why receipts are typed (risk: ~5%)
+
+The concern with per-type receipts is that a future protocol change could add a field to an existing
+transaction type that previously had no typed receipt — changing its `queryReceipt()` return type, which is
+a breaking change in languages without subtype polymorphism (Go, Rust).
+
+An analysis of the actual `transaction_receipt.proto` evolution across 7 years of mainnet history shows
+this risk is effectively theoretical:
+
+- Every new receipt field introduced since genesis has been tied to a **new transaction type** (HCS, HTS,
+  scheduled transactions, NFTs, node management, etc.).
+- The only cross-cutting addition — `block_number` (added Mar 2026, block stream work) — applies to
+  **all** transactions and therefore lives on the base `Receipt` type. It does not affect any typed receipt
+  subtype.
+- There is no historical precedent for an existing "action" transaction (CryptoTransfer, AccountUpdate,
+  TokenBurn, etc.) gaining a receipt-specific field.
+
+This pattern holds because the receipt's purpose is narrow: "what entity was created, and did it succeed?"
+That question is answered at the time a transaction type is designed, not later.
+
+Typed receipts are therefore safe, and the set of transactions that need them is effectively closed to the
+entity-creating transactions listed below.
+
+### Why responses are named (risk: ~3%)
+
+The protobuf `TransactionResponse` — the immediate gRPC reply from the consensus node — has exactly two
+fields (`nodeTransactionPrecheckCode`, `cost`) and has had **zero structural changes** in 7+ years of
+mainnet. It is a pure pre-consensus acknowledgement: "the node received your transaction and will gossip it."
+There is no transaction-specific data in it and there never has been. The risk of named SDK `Response`
+subtypes causing breaking changes from protocol evolution is negligible.
+
+Named response subtypes exist purely for ergonomics. There is a meaningful difference between a *structural
+description* and a *name*:
+
+```
+Response<AccountCreateReceipt> response = builder.buildAndExecute(client);  // structural, verbose
+AccountCreateResponse response = builder.buildAndExecute(client);           // named, clear intent
+```
+
+The named type appears in IDE completions, method signatures, error messages, and documentation in a way
+that immediately tells the user what kind of operation produced it. In Rust and Swift, it also enables
+type-based dispatch and pattern matching. The block stream `TransactionOutput` proto independently arrived
+at the same conclusion — a `oneof` with named per-transaction outputs — and while it pruned some variants
+that turned out redundant, it did not abandon the named-type approach.
+
+Named `Response` subtypes **must remain empty** (no fields). All transaction-specific data lives on the
+typed `Receipt` or the universal `Record`. Adding any fields to a `Response` subtype would be wrong —
+the `Response`'s only job is to carry the transaction ID and provide the async poll methods.
+
+Every transaction type gets a named response, including action transactions. For entity-creating
+transactions the response is parameterized with a typed receipt (`AccountCreateResponse` →
+`Response<AccountCreateReceipt>`). For action transactions it is parameterized with the base receipt
+(`AccountUpdateResponse` → `Response<Receipt>`). Either way the user gets a named type.
+
+### Why records are NOT typed (risk: ~60%)
+
+The `TransactionRecord` protobuf tells a different story. Its fields evolve with protocol features that cut
+across subsets of **existing** transaction types:
+
+- `assessed_custom_fees` (field 13) — applies to CryptoTransfer and token transfers
+- `paid_staking_rewards` (field 18) — applies to practically every transaction that adjusts stake
+- `high_volume_pricing_multiplier` (field 23, added Feb 2026, HIP-1313) — applies to ~14 transaction
+  types today, with the subset expected to expand over time
+
+If named record subtypes existed for these transaction types, each expansion would change the
+`queryRecord()` return type for newly-affected transactions — a breaking change in Go and Rust.
+Even in Java and TypeScript, it would require updating all 7 SDKs in lockstep.
+
+The record is the protocol's extension surface. Protocol-specific record data belongs as nullable fields
+on the universal `Record<$$Receipt>` base type, not in named subtypes. This keeps additions non-breaking
+by design.
+
+### Transactions needing typed receipts
+
+| Transaction              | New receipt field(s)                      |
+|--------------------------|-------------------------------------------|
+| AccountCreate            | `accountId`                               |
+| FileCreate               | `fileId`                                  |
+| ContractCreate           | `contractId`                              |
+| TopicCreate              | `topicId`                                 |
+| TokenCreate              | `tokenId`                                 |
+| ScheduleCreate           | `scheduleId`, `scheduledTransactionId`    |
+| TokenMint (NFT)          | `serials`, `totalSupply`                  |
+| TopicMessageSubmit       | `topicSequenceNumber`, `topicRunningHash` |
+
+All other transactions ("action" transactions: updates, deletes, transfers, burns, associates, etc.)
+still get a named `Response` subtype — see the rationale section above — but parameterized with the base
+`Receipt` rather than a typed one.
+
+### How to define a typed transaction in practice
+
+For a transaction that creates an entity (typed receipt, named response):
+
+```
+@@finalType
+FooTransactionBuilder extends transactions.TransactionBuilder<FooTransactionBuilder, FooResponse> {
+    // domain-specific fields
+}
+
+@@finalType
+// Named for ergonomics — must remain empty. All entity-specific data is on FooReceipt.
+FooResponse extends transactions.Response<FooReceipt> {
+}
+
+@@finalType
+FooReceipt extends transactions.Receipt {
+    @@immutable fooId: common.FooId  // the only new field
+}
+```
+
+For an action transaction (base receipt, named response):
+
+```
+@@finalType
+BazTransactionBuilder extends transactions.TransactionBuilder<BazTransactionBuilder, BazResponse> {
+    // domain-specific fields
+}
+
+@@finalType
+// Named for ergonomics — must remain empty. Base Receipt is sufficient; no entity-specific data.
+BazResponse extends transactions.Response<transactions.Receipt> {
+}
 
 ## Questions & Comments
 

@@ -14,24 +14,24 @@ namespace transactions-accounts
 requires common, transactions, keys
 
 @@finalType
-AccountCreateTransactionBuilder extends transactions.TransactionBuilder<AccountCreateTransactionBuilder> {
-    @@nullable accountMemo:string
-    @@default(0) initialBalance:common.Hbar
-    key:keys.PublicKey
+AccountCreateTransactionBuilder extends transactions.TransactionBuilder<AccountCreateTransactionBuilder, AccountCreateResponse> {
+    @@nullable accountMemo: string
+    @@default(0) initialBalance: common.Hbar
+    key: keys.PublicKey
 }
 
 @@finalType
-AccountCreateResponse extends transactions.Response<AccountCreateReceipt, AccountCreateRecord> {
+// Named response type for ergonomics — intentionally empty. The named type appears in IDE completions,
+// method signatures, and docs in a way that `Response<AccountCreateReceipt>` does not. All
+// transaction-specific data lives on AccountCreateReceipt, not here.
+AccountCreateResponse extends transactions.Response<AccountCreateReceipt> {
 }
 
 @@finalType
+// Extends the base Receipt with the account ID assigned by the consensus node.
+// This is the only new field: everything else (status, exchangeRate, etc.) lives on Receipt.
 AccountCreateReceipt extends transactions.Receipt {
-    @@immutable accountId:common.AccountId
-}
-
-@@finalType
-AccountCreateRecord extends transactions.Record<AccountCreateReceipt> {
-    @@immutable accountId:common.AccountId
+    @@immutable accountId: common.AccountId
 }
 
 ```
@@ -41,6 +41,7 @@ AccountCreateRecord extends transactions.Record<AccountCreateReceipt> {
 ### Simple flow
 
 Creates a new account with a balance of 100 hbars using `buildAndExecute` for a single-signer flow.
+The return type is `AccountCreateResponse` — no cast or extraction needed.
 
 ```
 HieroClient client = ...
@@ -56,13 +57,14 @@ AccountId newAccountId = response.queryReceipt().getAccountId();
 
 ### Multi-party signing
 
-Creates a new account where both the operator and another party need to sign.
+Creates a new account where both the operator and another party need to sign. Because `build()` returns
+`Transaction<AccountCreateResponse>`, the typed response is preserved through the signing chain.
 
 ```
 HieroClient client = ...
 PublicKey keyOfNewAccount = ...
 
-Transaction tx = new AccountCreateTransactionBuilder()
+Transaction<AccountCreateResponse> tx = new AccountCreateTransactionBuilder()
     .setKey(keyOfNewAccount)
     .setInitialBalance(new Hbar(100, HbarUnit.HBAR))
     .build(client);
