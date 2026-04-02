@@ -226,89 +226,18 @@ tx2.sign(walletKey);
 tx2.execute(walletClient);
 ```
 
-## Design Rationale: Typed Receipts, Universal Records
+## Design Rationale
 
-### The problem with a single base Receipt
+Receipts are typed per-transaction because the receipt's purpose is narrow ("what entity was created?")
+and 7 years of mainnet history show that receipt fields have always been introduced alongside new
+transaction types, never added to existing ones after the fact. Records are intentionally not typed
+because the `TransactionRecord` protobuf evolves with cross-cutting protocol features that expand to new
+transaction types over time — named record subtypes would produce breaking changes as that set grows.
+Named response aliases (`@@alias`) exist for ergonomics only and carry no fields or methods.
 
-The v2 SDKs use a single `TransactionReceipt` with roughly 15 optional/nullable fields — `accountId`,
-`fileId`, `contractId`, `topicId`, `tokenId`, `scheduleId`, `scheduledTransactionId`, `serials`,
-`topicSequenceNumber`, `topicRunningHash`, and more. Every field is nullable because it only applies to a
-specific transaction type. After creating an account, for example, the user must know to read `.accountId`
-and accept that all other fields are null. The compiler cannot help, and documentation cannot fully
-substitute for type safety.
-
-### Why receipts are typed
-
-The concern with per-type receipts is that a future protocol change could add a receipt field to an
-existing transaction type that previously had no typed receipt, changing its `queryReceipt()` return type.
-This is a real risk and the decision to use typed receipts should be revisited with broader community input
-before V3 is finalized.
-
-That said, the historical evidence from `transaction_receipt.proto` across 7 years of mainnet is
-encouraging:
-
-- Every new receipt field introduced since genesis has been tied to a **new transaction type** (HCS, HTS,
-  scheduled transactions, NFTs, node management, etc.).
-- The one cross-cutting addition — `block_number` (added Mar 2026, block stream work) — applies to
-  **all** transactions and therefore lives on the base `Receipt` type. It does not require changes to any
-  typed receipt subtype.
-- There is no historical precedent for an existing transaction type that returns only a base `Receipt`
-  gaining a transaction-specific receipt field after the fact.
-
-This pattern holds because the receipt's purpose is narrow: "what entity was created, and did it succeed?"
-That question is answered at the time a transaction type is designed, not later. The set of transactions
-needing typed receipts is listed below and should be treated as a working draft pending broader review.
-
-### Why responses are named
-
-The protobuf `TransactionResponse` — the immediate gRPC reply from the consensus node — has exactly two
-fields (`nodeTransactionPrecheckCode`, `cost`) and has had **zero structural changes** in 7+ years of
-mainnet. It is a pure pre-consensus acknowledgement: "the node received your transaction and will gossip
-it." There is no transaction-specific data in it and there never has been. The risk of named SDK `Response`
-aliases causing breaking changes from protocol evolution is low, though the same caution applied to typed
-receipts applies here as well.
-
-Named response aliases exist for ergonomics. There is a meaningful difference between a *structural
-description* and a *name*:
-
-```
-Response<AccountCreateReceipt> response = builder.buildAndExecute(client);  // structural, verbose
-AccountCreateResponse response = builder.buildAndExecute(client);           // named, clear intent
-```
-
-The named type appears in call sites, method signatures, error messages, and documentation in a way that
-immediately tells the user what kind of operation produced it.
-
-Response types are declared using `@@alias` (see `guides/api-guideline.md`), which communicates that these
-are names for parameterizations of `Response<$$Receipt>` rather than distinct type extensions. See each
-language's best practice guide for the implementation pattern.
-
-Named response aliases **must have no fields or methods**. All transaction-specific data lives on the
-typed `Receipt` or the universal `Record`. The `Response`'s only job is to carry the transaction ID and
-provide the async poll methods.
-
-Every transaction type gets a named response alias. Transactions with receipt-specific output are
-parameterized with a typed receipt (`AccountCreateResponse` = `Response<AccountCreateReceipt>`).
-Transactions without are parameterized with the base receipt (`AccountUpdateResponse` = `Response<Receipt>`).
-Either way the user gets a named type.
-
-### Why records are NOT typed
-
-The `TransactionRecord` protobuf tells a different story. Its fields evolve with protocol features that cut
-across subsets of **existing** transaction types:
-
-- `assessed_custom_fees` (field 13) — applies to CryptoTransfer and token transfers
-- `paid_staking_rewards` (field 18) — applies to practically every transaction that adjusts stake
-- `high_volume_pricing_multiplier` (field 23, added Feb 2026, HIP-1313) — applies to ~14 transaction
-  types today, with the subset expected to expand over time
-
-If named record subtypes existed for these transaction types, each expansion would change the
-`queryRecord()` return type for newly-affected transactions — a breaking change across all SDK
-implementations.
-
-The record is the protocol's extension surface. Protocol-specific record data belongs as nullable fields
-on the universal `Record<$$Receipt>` base type, not in named subtypes. This keeps additions non-breaking
-by design.
+**This is a working draft.** Typed receipts and responses carry real protocol-evolution risk and these
+decisions should be validated with broader community input before V3 is finalized. See the PR for the
+full analysis and open questions.
 
 ### Transactions needing typed receipts
 
@@ -355,6 +284,7 @@ BazTransactionBuilder extends transactions.TransactionBuilder<BazTransactionBuil
 }
 
 @@alias BazResponse = transactions.Response<transactions.Receipt>
+```
 
 ## Questions & Comments
 
