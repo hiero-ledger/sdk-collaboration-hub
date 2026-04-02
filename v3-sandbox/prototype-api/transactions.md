@@ -236,8 +236,7 @@ transaction types over time — named record subtypes would produce breaking cha
 Named response aliases (`@@alias`) exist for ergonomics only and carry no fields or methods.
 
 **This is a working draft.** Typed receipts and responses carry real protocol-evolution risk and these
-decisions should be validated with broader community input before V3 is finalized. See the PR for the
-full analysis and open questions.
+decisions should be validated with broader community input before V3 is finalized.
 
 ### Transactions needing typed receipts
 
