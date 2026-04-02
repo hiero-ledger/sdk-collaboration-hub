@@ -292,7 +292,7 @@ parameterized with a typed receipt (`AccountCreateResponse` = `Response<AccountC
 Transactions without are parameterized with the base receipt (`AccountUpdateResponse` = `Response<Receipt>`).
 Either way the user gets a named type.
 
-### Why records are NOT typed (risk: ~60%)
+### Why records are NOT typed
 
 The `TransactionRecord` protobuf tells a different story. Its fields evolve with protocol features that cut
 across subsets of **existing** transaction types:
