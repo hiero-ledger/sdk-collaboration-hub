@@ -27,12 +27,12 @@ body:
       value: |
         Welcome! This is an **[Intermediate Issue](https://github.com/issues?q=is%3Aopen%20is%3Aissue%20org%3Ahiero-ledger%20archived%3Afalse%20no%3Aassignee%20(label%3A%22intermediate%22%20OR%20label%3A%22skill%3A%20intermediate%22)%20(repo%3Ahiero-ledger%2Fhiero-sdk-cpp%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-swift%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-python%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-js%20OR%20repo%3Ahiero-ledger%2Fhiero-website))** touching core SDK architecture.
 
-        It nudges you to:
+        🏁 **When this issue is complete, you will have:**
 
-        - Research across multiple files and modules
-        - Own implementation decisions
-        - Write thorough, meaningful tests
-        - Deliver a clean, review-ready pull request
+        ✅ Researched across multiple files and modules
+        ✅ Owned implementation decisions
+        ✅ Written thorough, meaningful tests
+        ✅ Delivered a clean, review-ready pull request
 
   - type: textarea
     id: problem
@@ -91,6 +91,57 @@ body:
       required: true
 
   - type: textarea
+    id: domains
+    attributes:
+      label: 🔬 Technical Domains
+      description: |
+        Adapt as needed. Technical areas this issue touches to help developers self-select based on expertise.
+      value: |
+        <!-- Edit Technical Domains If needed -->      
+
+        ### Technical domains involved in this issue:
+        - [ ] **Intermediate to Advanced Programming** (Object oriented design, inheritance, complex type systems)
+        - [ ] **File Specific Knowledge** (request → serialization → execution → response mapping)
+        - [ ] **Backward Compatibility** (preserving method signatures, defaults, and return types)
+        - [ ] **Protobuf Alignment** (reading `.proto` files, `_to_proto()` / `_from_proto()` correctness)
+        - [ ] **Testing** (unit, integration, mocking, test coverage for edge cases and failure modes)
+
+
+  - type: textarea
+    id: intermediate_contributors
+    attributes:
+      label: 🧠 Intermediate Contributors — Prerequisites & Expectations
+      description: |
+        Adapt as needed. Concrete requirements before claiming this intermediate issue. Adapt as needed.
+      value: |
+        > [!CAUTION]
+        > **Intermediate issues are high-risk. We expect more than just a 'working solution' and will recommend beginner issues if the PR does not meet these standards.**
+  
+        ### 🏁 Concrete Prerequisites
+        - **Advanced Programming Language:** Higher level intermediate or advanced programming language.
+        - **Expertise:** Strong understanding of files related to this issue (research before claiming!).
+        - **Proven History:** Successfully completed **≥ 5 beginner issues** in this repo.
+
+        > [!NOTE]
+        > **CI/CD Exception:** For issues focused on **GitHub Actions / Workflows**, the repo-specific thresholds above may be waived if the contributor demonstrates intermediate-level proficiency in CI/CD.
+
+        If this feels like too big a step, that is completely fine — try a
+        [Beginner Issue](https://github.com/issues?q=is%3Aopen%20is%3Aissue%20org%3Ahiero-ledger%20archived%3Afalse%20no%3Aassignee%20(label%3A%22beginner%22%20OR%20label%3A%22skill%3A%20beginner%22)%20(repo%3Ahiero-ledger%2Fhiero-sdk-cpp%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-swift%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-python%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-js%20OR%20repo%3Ahiero-ledger%2Fhiero-website)) first or a different **[Intermediate Issue](https://github.com/issues?q=is%3Aopen%20is%3Aissue%20org%3Ahiero-ledger%20archived%3Afalse%20no%3Aassignee%20(label%3A%22intermediate%22%20OR%20label%3A%22skill%3A%20intermediate%22)%20(repo%3Ahiero-ledger%2Fhiero-sdk-cpp%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-swift%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-python%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-js%20OR%20repo%3Ahiero-ledger%2Fhiero-website))**. You can always come back when you are ready.
+
+        ### ⚠️ AI Usage Policy
+
+        - Using AI to generate code for Intermediate issues is **strictly discouraged**
+        - Using AI as the main source of research is **strictly discouraged**, refer to language and library documentation, protobuf definitions and other SDKs.
+        - Submitting unvalidated, loosely-researched, AI-generated code is grounds for **immediate closure**
+        
+        ### ⏱️ Timeline & Workflow
+        - **Typical time:** ~2 weeks / ~25 hours.
+        - 🔴 Completing an intermediate issue in 1–3 days is a **red flag**.
+
+        > [!TIP]
+        > **Suggested:** share your proposed implementation approach as a comment before writing code to get early feedback and avoid wasted effort.
+
+  - type: textarea
     id: testing
     attributes:
       label: 🧪 Testing Requirements
@@ -126,73 +177,15 @@ body:
 
         **In your PR, include links to test evidence:** screenshots, terminal output, test issue/PRs, or script results.
 
-
-  - type: textarea
-    id: intermediate_contributors
-    attributes:
-      label: 🧠 Intermediate Contributors — Prerequisites & Expectations
-      description: |
-        Adapt as needed. Concrete requirements before claiming this intermediate issue. Adapt as needed.
-      value: |
-        > [!CAUTION]
-        > **Intermediate issues are high-risk. We expect more than just a 'working solution' and will recommend beginner issues if the PR does not meet these standards.**
-  
-        ### 🏁 Concrete Prerequisites
-        - **Advanced Programming Language:** Higher level intermediate or advanced programming language.
-        - **Expertise:** Strong understanding of files related to this issue (research before claiming!).
-        - **Proven History:** Successfully completed **≥ 5 beginner issues** in this repo.
-
-        > [!NOTE]
-        > **CI/CD Exception:** For issues focused on **GitHub Actions / Workflows**, the repo-specific thresholds above may be waived if the contributor demonstrates intermediate-level proficiency in CI/CD.
-
-        If this feels like too big a step, that is completely fine — try a
-        [Beginner Issue](https://github.com/issues?q=is%3Aopen%20is%3Aissue%20org%3Ahiero-ledger%20archived%3Afalse%20no%3Aassignee%20(label%3A%22beginner%22%20OR%20label%3A%22skill%3A%20beginner%22)%20(repo%3Ahiero-ledger%2Fhiero-sdk-cpp%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-swift%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-python%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-js%20OR%20repo%3Ahiero-ledger%2Fhiero-website)
-        first or a different **[Intermediate Issue](https://github.com/issues?q=is%3Aopen%20is%3Aissue%20org%3Ahiero-ledger%20archived%3Afalse%20no%3Aassignee%20(label%3A%22intermediate%22%20OR%20label%3A%22skill%3A%20intermediate%22)%20(repo%3Ahiero-ledger%2Fhiero-sdk-cpp%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-swift%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-python%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-js%20OR%20repo%3Ahiero-ledger%2Fhiero-website))**. You can always come back when you are ready.
-
-        ### ⚠️ AI Usage Policy
-
-        - Using AI to generate code for Intermediate issues is **strictly discouraged**
-        - AI may be used to help explain file relationships, but cannot be the main source of research.
-        - Submitting unvalidated AI-generated code is grounds for **immediate closure**
-        
-        ### ⏱️ Timeline & Workflow
-        - **Typical time:** ~2 weeks / ~25 hours.
-        - 🔴 Completing an intermediate issue in 1–3 days is a **red flag** and will likely be rejected.
-        - **Suggested:** Post your proposed implementation as a comment and wait for maintainer feedback **before writing any code.**
-
-        🏁 **When this issue is complete, you will have:**
-
-        ✅ Researched across multiple files and modules
-        ✅ Owned implementation decisions
-        ✅ Written thorough, meaningful tests
-        ✅ Delivered a clean, review-ready pull request
-
-  - type: textarea
-    id: domains
-    attributes:
-      label: 🔬 Technical Domains
-      description: |
-        Adapt as needed. Technical areas this issue touches to help developers self-select based on expertise.
-      value: |
-        <!-- Edit Technical Domains If needed -->      
-
-        ### Technical domains involved in this issue:
-        - [ ] **Intermediate to Advanced Programming** (Object oriented design, inheritance, complex type systems)
-        - [ ] **File Specific Knowledge** (request → serialization → execution → response mapping)
-        - [ ] **Backward Compatibility** (preserving method signatures, defaults, and return types)
-        - [ ] **Protobuf Alignment** (reading `.proto` files, `_to_proto()` / `_from_proto()` correctness)
-        - [ ] **Testing** (unit, integration, mocking, test coverage for edge cases and failure modes)
-
   - type: textarea
     id: quality_standards
     attributes:
       label: 🛡️ Quality & Review Standards
       description: |
         Adapt as needed. The quality standards expected for intermediate PRs.
-      value: |
-        Intermediate PRs cover more code and touch more sensitive areas. This section helps you deliver a PR that is ready to merge on first or second review.
-        
+      value: |        
         Intermediate PRs must be **"working, maintainable, and aligned with SDK architecture."**
+
           1. **Working:** The implementation must solve the problem and meet the acceptance criteria.
           2. **Maintainable:** Code should be clear and concise enough for others to understand and debug without your assistance.
           3. **SDK Alignment:** The solution should fit well with existing SDK patterns and abstractions.
@@ -205,8 +198,8 @@ body:
         - All existing tests should pass as-is.
 
         **🤖 AI notes**
-        - AI is often incorrect with repo-specific patterns and logic and protobuf schemes - use with extreme caution and always verify.
-        - AI generated code will often not match SDK best practices.
+        - AI often has out-dated real-world knowledge: it will not be able to identify current packages.
+        - AI has gaps or incorrect understanding of repo-specific patterns, logic, and protobuf schemes.
 
         **📦 PR packaging**
         - Self-review your diff line by line before submitting
@@ -245,15 +238,12 @@ body:
     attributes:
       label: 📚 Resources & Support
       value: |
-        Intermediate issues can be challenging to implement — it is completely normal to get blocked. Here is what to do:
-
-        - **Comment on this issue** and describe what you have tried. A maintainer will respond.
-
         **References:**
         - [Hedera Protobufs](https://github.com/hashgraph/hedera-protobufs)
 
         **🆘 Stuck?**
+        > [!TIP]
+        > **Comment on this issue:** and describe what you have tried. A maintainer will respond.
+
         - [Community Calls](https://zoom-lfx.platform.linuxfoundation.org/meetings/hiero?view=week)
         - [Discord](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-developers/discord.md)
-
-        At this level, you are expected to research independently — but asking good, high-level questions is a strength, not a weakness. Don't spend more than an hour blocked without asking.
