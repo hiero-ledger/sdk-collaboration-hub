@@ -97,15 +97,13 @@ body:
         > 🧩 **Difficulty:** Small, well-contained change  
         > 🎓 **Best for:** New contributors
 
-        > [!IMPORTANT]
-        > We expect pull requests to use our workflow and meet the quality standards outlined in this issue.
-        - 🔴 Completing a good first issue in under 30 minutes is a **red flag** and your PR might be closed if it does not meet the quality standards.
-
-        ### 🤖 AI Usage Policy
+        ####🤖 AI Usage Policy
 
         - Good First Issues are open for humans, AI bot-authored PRs will be rejected.
         - Refer to our set-up and workflow guides, AI may make mistakes.
 
+        > [!WARNING]
+        > We expect pull requests to use our workflow and meet the quality standards outlined in this issue.
 
   - type: textarea
     id: setup_steps
@@ -113,7 +111,6 @@ body:
       label: 📋 Step-by-Step Setup Procedure
       description: Provide a step-by-step setup guide for new contributors
       value: |
-        
         - [ ] Visual Studio (VS) Code: [Guide](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-developers/contributor-setup.md#1-setting-up-supporting-infrastructure#visual-studio-code)
 
         - [ ] GitHub Desktop: [Guide](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-developers/contributor-setup.md#1-setting-up-supporting-infrastructure#github-desktop)
@@ -192,6 +189,7 @@ body:
 
         Issue Requirement:
         - [ ] The issue is solved: I’ve carefully read and implemented the issue requirements
+        ---
 
   - type: textarea
     id: pr_expectations
@@ -202,14 +200,14 @@ body:
         Once you open a pull request, here’s what happens next.
 
         **🤖 1. Automated checks**
-        A small set of automated checks must pass before merging. You'll see the runs and results at the bottom of your PR.
-        Open any failed check to see details. Ask for help if you don’t understand a failure or how to fix it.
+        Automated checks will run and all must pass before merging.
+        Open any failed check at the bottom of the PR to see details. Ask for help if you don’t understand a failure or how to fix it.
 
         **😎 2. Initial Team review**
-        Once your tests pass, a team member reviews your PR usually within a few days. They will check if the workflow PR Quality checklist was followed. If not, they may close your pull request and ask you to follow the workflow.
+        Once tests pass, a team member will check if your PR follows the workflow.
 
         **✅ 2. Team review**
-        Once your tests pass and the workflow is confirmed, a team member will review the implementation. 
+        Once your tests pass and the workflow is followed, a team member will review the implementation. 
         You may be asked to make changes or your PR may be approved.
         Approved PRs are usually merged within **one day**.
 
@@ -217,7 +215,7 @@ body:
         Conflicts can happen and are normal as the SDK updates. Resolve using this [Guide](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-developers/merge_conflicts.md)
 
         > [!TIP]
-        > **Follow the workflow and check the issue is solved before opening:** 
+        > **Follow the workflow and double check your work** 
         > This is the best way to ensure a fast review and merge process.
         ---
 
@@ -228,8 +226,6 @@ body:
       description: How to get support while working on this issue.
       value: |
         **🆘 Stuck?**
-        Don’t spend more than **20 minutes** blocked.
-        The more you ask, the more you learn and so do we!
 
         > [!TIP]
         >
