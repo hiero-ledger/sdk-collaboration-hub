@@ -15,8 +15,8 @@ body:
         Advanced issues are high-ownership, high-impact tasks requiring expert-level architectural understanding and significant independent research.
 
         Read more:
-        > [Applying Advanced Label](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-maintainers/labelling.md)
-        > [Issue Progression Initiative](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-maintainers/README.md)
+        > [Applying Advanced Label](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-maintainers/labelling-issues-examples.md)
+        > [Issue Progression System](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-maintainers/README.md)
         ---
 
   - type: textarea
@@ -24,7 +24,7 @@ body:
     attributes:
       label: 🧑‍🔬 Advanced Issue
       description: |
-        Prefilled introduction to explain what an advanced issue is and who it’s for.
+        Prefilled welcome message.
       value : |
         This **[Advanced Issue](https://github.com/issues?q=is%3Aopen%20is%3Aissue%20org%3Ahiero-ledger%20archived%3Afalse%20no%3Aassignee%20(label%3A%22advanced%22%20OR%20label%3A%22skill%3A%20advanced%22)%20(repo%3Ahiero-ledger%2Fhiero-sdk-cpp%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-swift%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-python%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-js%20OR%20repo%3Ahiero-ledger%2Fhiero-website))** is a well-scoped task intended for advanced contributors who have completed multiple intermediate issues and are ready to take on high-ownership work that may impact core SDK architecture or cross-cutting concerns.
         This issue will require significant independent research, a deep understanding of the codebase, and careful attention to maintainability, security, and architectural fit.
@@ -34,7 +34,7 @@ body:
     attributes:
       label: 🐞 Problem Description
       description: |
-        Describe the current limitation or architectural risk here. The solution may be unclear or require significant research. The goal is to clearly articulate the problem(s) and its impact, even if the implementation approach is not yet defined.
+        Clearly articulate the problem and its impact. The solution may be unclear or require significant research.
       value: |
         <!-- Describe the issue here -->      
     validations:
@@ -45,39 +45,35 @@ body:
     attributes:
       label: 🛠️ Implementation Notes
       description: |
-        Describe any implementation ideas or approaches that may be useful to consider.
-        Clarify what is unknown or uncertain about the implementation
-        If any risks are known that may require additional research or careful attention, highlight them here.
+        Advanced developers are expected to architect safe, maintainable, and production-ready solutions but will benefit from context and guidance.
+        
+        Add:
+        > Implementation ideas 
+        > Clarify what is unknown or uncertain about the implementation
+        > Highlight any key risks or complexities that require careful attention
       value: |
-        <!-- Describe the implementation notes or domains here -->      
-
-        ### Technical domains involved in this issue:
-        - [ ] **API Client Architecture** (request → serialization → execution → response mapping)
-        - [ ] **Backward Compatibility** (preserving method signatures, defaults, and return types)
-        - [ ] **Protobuf Alignment** (reading `.proto` files, `_to_proto()` / `_from_proto()` correctness)
-        - [ ] **State & Immutability** (correct usage of guards like `_require_not_frozen`)
-        - [ ] **Execution Boundaries** (retry logic, backoff, node selection, gRPC deadlines)
+        <!-- Describe the implementation notes -->      
     validations:
-      required: false
+      required: true
 
   - type: textarea
     id: advanced_contributors
     attributes:
       label: 🧠 Advanced Contributors — Prerequisites & Expectations
       description: |
-        Contributors must meet these thresholds before claiming. Adapt as needed.
+        Prefilled requirements before claiming this advanced issue. Adapt as needed.
       value: |
         > [!CAUTION]
         > **Advanced issues are the highest-risk work in this project. We will reject PRs that do not meet these standards.**
 
         ### 🏁 Concrete Prerequisites
-        - **Proven History:** Successfully completed **≥ 10 non-trivial intermediate issues** in this repo.
-        - **Consistency:** **≥ 3–4 months** of active, human-led contributions to this SDK.
+        - **Advanced Language:** Proficient with the programming language.
         - **Expertise:** Deep architectural understanding of `_Executable`, `Transaction`, and `Query` base classes.
-        - **Advanced Python:** Demonstrated proficiency with complex patterns (e.g., async concurrency, decorators, or state management) used in the core SDK.
+        - **Proven History:** Successfully completed **≥ 10 intermediate issues** in this repo.
+        - **Consistency:** **≥ 3–4 months** of active, human-led contributions to this SDK.
 
         > [!NOTE]
-        > **Workflow Exception:** For issues focused on **GitHub Actions / Workflows**, the repo-specific thresholds above may be waived if the contributor demonstrates expert-level proficiency in CI/CD security and automation.
+        > **CI/CD Exception:** For issues focused on **GitHub Actions / Workflows**, the repo-specific thresholds above may be waived if the contributor demonstrates advanced-level proficiency in CI/CD.
 
         ### ⚠️ AI Usage Policy
         Using AI to generate code for Advanced issues is **strictly discouraged**. AI may be used only to help explain file relationships. Submitting AI-mined code or unvalidated generated output is grounds for **immediate rejection**.
@@ -86,8 +82,24 @@ body:
         - **Typical time:** ~1 month / ~50 hours.
         - 🔴 Completing an advanced issue in 1–3 days is a **red flag** and will likely be rejected.
         - **Suggested:** Post your proposed architectural approach as a comment and wait for explicit maintainer approval **before writing any code.**
-    validations:
-      required: false
+
+  - type: textarea
+    id: domains
+    attributes:
+      label: 🔬 Technical Domains
+      description: |
+        Prefilled information on the technical domains involved in this issue. 
+        Adapt to ensure the developer understands the specific areas of the codebase and expertise required to solve this issue.
+      value: |
+        <!-- Edit Technical Domains If needed -->      
+
+        ### Technical domains involved in this issue:
+        - [ ] **API Client Architecture** (request → serialization → execution → response mapping)
+        - [ ] **Backward Compatibility** (preserving method signatures, defaults, and return types)
+        - [ ] **Protobuf Alignment** (reading `.proto` files, `_to_proto()` / `_from_proto()` correctness)
+        - [ ] **State & Immutability** (correct usage of guards like `_require_not_frozen`)
+        - [ ] **Execution Boundaries** (retry logic, backoff, node selection, gRPC deadlines)
+        - [ ] **Testing** (unit, integration, mocking, test coverage for edge cases and failure modes)
 
   - type: textarea
     id: quality_standards
@@ -99,12 +111,11 @@ body:
         Advanced PRs must be **"safe, maintainable, architecturally sound, and production-ready."**
 
         ### Defining "Production Ready"
-        1. **Architectural Fit:** The solution must fit naturally into the existing SDK abstractions. Avoid "hacks" or isolated logic that bypasses the core execution model.
-        2. **Security & Correctness:** Evaluate all logic for injection risks, state corruption, or thread-safety issues. Every line of code must be manually verified.
-        3. **Maintainability:** Code must be clear enough for any other maintainer to debug without your assistance. Prefer standard patterns over "clever" one-liners.
+        1. **Architectural Fit:** The solution must fit naturally into the existing SDK abstractions.
+        2. **Security & Correctness:** Evaluate all logic for injection risks, state corruption, or thread-safety issues. 
+        3. **Maintainability:** Code must be short and clear enough for any other maintainer to debug without your assistance. 
         4. **Backward Compatibility:** Public API signatures must be preserved. If a breaking change is required, it must be explicitly managed through a deprecation cycle.
-    validations:
-      required: false
+        5. **Comprehensive Testing:** Must include unit and integration tests covering all new logic paths, edge cases, and failure modes. AI generated tests based on AI generated code is grounds for immediate rejection.
 
   - type: textarea
     id: acceptance
@@ -114,6 +125,7 @@ body:
         Pre-filled guidance. These are the standards the contributor must meet before opening a PR.
       value: |
         Before opening your PR, the contributor must confirm:
+        - [ ] I have spent the majority of my time researching the problem and solution space extensively, including reviewing relevant code, documentation, and external resources.
         - [ ] I understand the system-wide impact of these changes on affected modules and performance.
         - [ ] The system design fits with current Hiero SDK architectural approaches.
         - [ ] I have tested my changes extensively against both local and network environments.
@@ -125,13 +137,9 @@ body:
     attributes:
       label: 📚 Resources & Support
       value: |
-        **Project References:**
-        - [SDK Project Structure](https://github.com/hiero-ledger/hiero-sdk-python/blob/main/docs/sdk_developers/training/setup/project_structure.md)
-        - [Transaction Lifecycle](https://github.com/hiero-ledger/hiero-sdk-python/blob/main/docs/sdk_developers/training/transaction_lifecycle.md)
-        - [Hedera Protobufs (v0.72.0-rc.2)](https://github.com/hashgraph/hedera-protobufs/tree/v0.72.0-rc.2/services)
+        **References:**
+        - [Hedera Protobufs](https://github.com/hashgraph/hedera-protobufs)
 
         **🆘 Stuck?**
-        - [Office Hours](https://zoom-lfx.platform.linuxfoundation.org/meeting/99912667426?password=5b584a0e-1ed7-49d3-b2fc-dc5ddc888338) (Wednesdays, 2pm UTC)
-        - [Discord #hiero-python-sdk](https://github.com/hiero-ledger/hiero-sdk-python/blob/main/docs/discord.md)
-    validations:
-      required: false
+        - [Community Calls](https://zoom-lfx.platform.linuxfoundation.org/meetings/hiero?view=week)
+        - [Discord](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-developers/discord.md)
