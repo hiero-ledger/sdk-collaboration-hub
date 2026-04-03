@@ -96,7 +96,6 @@ body:
       value: |
         <!-- Edit Technical Domains If needed -->      
 
-        ### Technical domains involved in this issue:
         - [ ] **API Client Architecture** (request → serialization → execution → response mapping)
         - [ ] **Backward Compatibility** (preserving method signatures, defaults, and return types)
         - [ ] **Protobuf Alignment** (reading `.proto` files, `_to_proto()` / `_from_proto()` correctness)
