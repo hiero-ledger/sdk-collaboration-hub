@@ -8,14 +8,22 @@ This guide makes it as easy as possible for you to set up your GPG key and DCO a
 
 ## Table of Contents
 
-- [Commit Signing Guidelines (DCO + GPG)](#commit-signing-guidelines-dco--gpg)
 - [Definitions](#definitions)
-- [Step-by-Step Setup](#step-by-step-setup)
-- [Final Checklist](#final-checklist)
-- [Fixing Unsigned Commits](#fixing-unsigned-commits)
-- [Rebasing and Signing](#rebasing-and-signing)
-- [Still Need Help?](#still-need-help)
 
+- [Step-by-Step Setup](#step-by-step-setup)
+  - [1. Generate a GPG Key](#1-generate-a-gpg-key)
+  - [2. Add Your GPG Key to GitHub](#2-add-your-gpg-key-to-github)
+  - [3. Configure Git to Use Your GPG Key](#3-configure-git-to-use-your-gpg-key)
+  - [4. Make Signed Commits](#4-make-signed-commits)
+  - [5. Verify Signed Status of Commits](#5-verify-signed-status-of-commits)
+
+- [Final Checklist](#final-checklist)
+
+- [Fixing Unsigned Commits](#fixing-unsigned-commits)
+  - [1. Soft Reverting Commits (Recommended for New Contributors)](#1-soft-reverting-commits-recommended-for-new-contributors)
+  - [2. Retroactively Signing Commits](#2-retroactively-signing-commits)
+
+- [Rebasing and Signing](#rebasing-and-signing)
 
 ---
 
@@ -166,7 +174,7 @@ This is difficult and you may run into problems, for example, if you have merged
 
 ## Rebasing and Signing
 
-Rebase operations will be required when your branch is behind the upstream main. We do not recommend merging from main, rebasing is strongly suggested. See [Rebasing Guide](./rebasing.md) for instructions on how to keep your main branch up to date and how to rebase.
+Rebase operations will be required when your branch is behind the upstream main. We do not recommend merging from main, rebasing is strongly suggested. See [Rebasing Guide](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-developers/rebasing.md) for instructions on how to keep your main branch up to date and how to rebase.
 
 When rebasing, you must use this command to ensure your commits remain DCO and GPG signed:
 

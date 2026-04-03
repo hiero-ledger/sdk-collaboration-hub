@@ -73,7 +73,7 @@ NOTE: Developers should be encouraged to identify appropriate issues for their s
 
 It is helpful for issues to be documented to suit developers at the level they are at.
 
-For the most seemless experience, the we recommend:
+For the most seamless experience, the we recommend:
 
 - Issue templates tailored for each level
 - Complementary documentation (signing, workflow, testing, etc) linked in the templates

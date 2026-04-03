@@ -6,16 +6,14 @@ It covers tooling, repository setup, branching, commit standards, testing, and s
 ## Table of Contents
 
 - [1. Get Assigned to an Issue](#1-get-assigned-to-an-issue)
-
 - [2. Create a Branch](#2-create-a-branch)
-
-- [3. Commit Your Changes](#3-commit-your-changes)
+- [3. Create a Changelog Entry](#3-create-a-changelog-entry)
+- [4. Commit Your Changes](#4-commit-your-changes)
   - [Achieving Conventionally Named Commits](#achieving-conventionally-named-commits)
   - [DCO and GPG Signing Commits](#dco-and-gpg-signing-commits)
   - [Breaking Changes](#breaking-changes)
     - [Identifying Whether Your Pull Request Introduces a Breaking Change](#identifying-whether-your-pull-request-introduces-a-breaking-change)
     - [What to Do If a Breaking Change Is Unavoidable](#what-to-do-if-a-breaking-change-is-unavoidable)
-- [4. Add Changelog Entry](#4-create-a-changelog-entry)
 - [5. Submitting a Pull Request](#5-submitting-a-pull-request)
 ---
 
@@ -78,10 +76,10 @@ Eventually, you'll need to regularly rebase to keep your branch in sync with the
 
 ## 3. Create a Changelog Entry
 
-Create a changelog entry by reading [Guide](guides/issue-progression/docs/changelog-guide.md)
+Create a changelog entry by reading [Guide](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-developers/changelog-guide.md)
 
 
-## 3. Commit Your Changes
+## 4. Commit Your Changes
 Solve the issue and commit your changes.
 
 Make sure to:
@@ -90,7 +88,7 @@ Make sure to:
 
 As you commit, make sure the commits are:
 - ✅ Conventionally Named [Guide](https://www.conventionalcommits.org/en/v1.0.0/#summary)
-- ✅ Signed correctly [Guide](guides/issue-progression/docs/signing.md)
+- ✅ Signed correctly [Guide](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-developers/signing.md)
 
 ### Achieving Conventionally Named Commits
 A conventionally named commit is one that summarises in words what was just commited with a suitable pre-fix.
@@ -109,7 +107,7 @@ git commit -S -s -m "looks like its mostly working now"
 
 Read about conventional commit messages here: [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/#summary)
 
-## DCO and GPG Signing Commits
+### DCO and GPG Signing Commits
 **Each** commit in a pull request needs to be:
 - `DCO` signed with an `-s` flag
 - `GPG` key signed with an `-S` flag and a GPG key set up
@@ -119,13 +117,13 @@ For example:
 git commit -S -s -m "chore: changelog entry for TokenCreateTransaction"
 ```
 
-Follow our [Signing Guide](signing.md) with step-by-step instructions.
+Follow our [Signing Guide](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-developers/signing.md) with step-by-step instructions.
 
 **⚠️ WARNING**: using the default commit button on GitHub desktop or VS Studio will result in un-signed commits.
 
 **⚠️ WARNING** any merge or rebase operations will cause a loss of signing status unless you preserve signing: `git rebase main -S`
 
-## Breaking Changes
+### Breaking Changes
 
 Breaking changes are generally not acceptable. This is because they can:
 - Stop existing code from working
@@ -243,9 +241,8 @@ Please review and check they all pass.
 **⚠️ WARNING** Assignment checks may fail until maintainer intervention. This is normal and you have to wait.
 
 If checks are solving and you require help, you can:
-- Contact us on [discord](discord.md)
-- Attend [Office Hours](https://zoom-lfx.platform.linuxfoundation.org/meeting/99912667426?password=5b584a0e-1ed7-49d3-b2fc-dc5ddc888338) 
-- Attend [Community Calls](https://zoom-lfx.platform.linuxfoundation.org/meeting/92041330205?password=2f345bee-0c14-4dd5-9883-06fbc9c60581)
+- Contact us on [discord](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-developers/discord.md)
+- Attend [Community Calls](https://zoom-lfx.platform.linuxfoundation.org/meetings/hiero?view=week)
 - Ask for help on the pull request
 
 5. Once approved

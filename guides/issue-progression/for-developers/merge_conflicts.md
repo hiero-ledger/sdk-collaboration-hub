@@ -7,9 +7,11 @@ Merge conflicts are caused by working on out-dated versions of the codebase, or 
 ## Table of Contents
 
 - [Resolving CHANGELOG.md Conflicts Using GitHub's Web Editor](#resolving-changelogmd-conflicts-using-githubs-web-editor)
-- [Step-by-Step Guide to Resolve Merge Conflicts Locally](#step-by-step-guide-to-resolve-merge-conflicts-locally)
-- [Recovery Tips](#recovery-tips)
 
+- [Step-by-Step Guide to Resolve Merge Conflicts Locally](#step-by-step-guide-to-resolve-merge-conflicts-locally)
+
+- [Recovery Tips](#recovery-tips)
+  - [If you are completely stuck](#if-you-are-completely-stuck)
 
 ## Resolving CHANGELOG.md Conflicts Using GitHub's Web Editor
 

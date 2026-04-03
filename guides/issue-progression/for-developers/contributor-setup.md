@@ -1,20 +1,20 @@
 # Setting up as a Developer
 
-1. [Setting Up Supporting Infrastructure](#1-setting-up-supporting-infrastructure)  
-   - [GitHub Desktop](#github-desktop)  
-   - [Visual Studio Code](#visual-studio-code)  
+1. [Setting Up Supporting Infrastructure](#1-setting-up-supporting-infrastructure)
+   - [GitHub Desktop](#github-desktop)
+   - [Visual Studio Code](#visual-studio-code)
 
-2. [Setting up a Portal Account](#2-setting-up-a-portal-account)  
+2. [Setting Up a Portal Account](#2-setting-up-a-portal-account)
 
-3. [Set up a GPG key for Signing](#3-set-up-a-gpg-key-for-signing)  
+3. [Set Up a GPG Key for Signing](#3-set-up-a-gpg-key-for-signing)
 
-4. [Fork the Repository](#4-fork-the-repository)  
+4. [Fork the Repository](#4-fork-the-repository)
 
-5. [Connect Your Origin With Upstream](#5-connect-your-origin-with-upstream)  
+5. [Connect Your Origin With Upstream](#5-connect-your-origin-with-upstream)
 
-6. [Install Packages and Protobufs](#6-install-packages-and-protobufs)  
+6. [Install Packages and Protobufs](#6-install-packages-and-protobufs)
 
-7. [Sync Main](#7-sync-main)  
+7. [Sync Main](#7-sync-main)
 
 ## 1. Setting Up Supporting Infrastructure
 
@@ -81,7 +81,7 @@ NETWORK=testnet
 We have added `.env` to `.gitignore` to help ensure its never committed.
 
 ## 3. Set up a GPG key for Signing
-Follow [Signing Guide](guides/issue-progression/docs/signing.md)
+Follow [Signing Guide](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-developers/signing.md)
 
 Ensure you later [add the GPG key to Github](https://github.com/settings/gpg/new)
 
@@ -105,8 +105,9 @@ GitHub will prompt you to confirm:
 Click Create fork.
 
 Your new fork will appear at:
-`https://github.com/<your-username>/REPOSITORY-NAME`
-
+```
+https://github.com/<your-username>/REPOSITORY-NAME
+```
 This is your copy of the repository. You can work on this safely without fear of impacting the original repository. 
 
 You now have an **online** copy of the repository but you also need a local copy to work on the code.
@@ -132,7 +133,7 @@ cd hiero-sdk-python
 git remote add upstream https://github.com/hiero-ledger/hiero-sdk-python.git
 ```
 
-### 6. Install Packages and Protobufs
+## 6. Install Packages and Protobufs
 This installs the package manager uv:
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -151,5 +152,5 @@ Run:
 uv run python generate_proto.py
 ```
 
-### 7. Sync Main
-Always work on an up to date copy of main by following [Rebasing Guide](guides/issue-progression/docs/rebasing.md)
+## 7. Sync Main
+Always work on an up to date copy of main by following [Rebasing Guide](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-developers/rebasing.md)

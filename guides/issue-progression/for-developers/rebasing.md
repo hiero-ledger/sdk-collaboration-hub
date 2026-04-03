@@ -56,9 +56,9 @@ Verify after the rebase operation, your commits are still signed correctly:
 git log -n 5 --pretty=format:'%h %an %G? %s'
 ```
 Replacing 5 with the number of commits you want to check back in history.
-You should see `G` (valid signature). If you experience signing issues, read [Signing Guide](signing.md)
+You should see `G` (valid signature). If you experience signing issues, read [Signing Guide](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-developers/signing.md)
 
 ## Handling Conflicts:
-If conflicts occur during rebase, See [Merge Conflict Guide](./merge_conflicts.md) for detailed guidance.
+If conflicts occur during rebase, See [Merge Conflict Guide](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-developers/merge_conflicts.md) for detailed guidance.
 
 > ⚠️ **Regularly** rebase your branch to avoid merge conflicts
