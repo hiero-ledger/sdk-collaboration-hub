@@ -2,11 +2,43 @@
 
 ### Purpose
 
-This document provides concrete, practical guidance on how to label issues at difficulty each level.
+This document provides concrete, practical guidance and examples on how to label issues at difficulty each level.
 
 ---
 
-## Overview
+## Creating the Labels
+
+Maintainers, create the labels by visting
+```
+https://github.com/hiero-ledger/<<REPOSITORY>>/labels
+```
+
+We suggest a colour-blind friendly palette with high-contrast:
+
+| Level         | Colour   |
+|--------------|----------|
+| `Good First Issue Candidate`         | #66C2A5  
+| `Good First Issue`         | #66C2A5  
+| `beginner`    | #8DA0CB  
+| `intermediate` | #FFD92F  
+| `advanced`     | #E78AC3  
+
+or, to have them grouped together:
+
+| Level         | Colour   |
+|--------------|----------|
+| `skill: good first issue candidate`         | #66C2A5  
+| `skill: good first issue`         | #66C2A5  
+| `skill: beginner`    | #8DA0CB  
+| `skill: intermediate` | #FFD92F  
+| `skill: advanced`     | #E78AC3  
+
+The disadvantage is Github will not market `skill: good first issue` but it will `Good First Issue`.
+
+
+## Meaning of the Difficulty Labels
+
+Apply one label to each issue reflecting different levels of responsbility:
 
 | Level        | Responsibility Focus                              | Key Trait                          |
 |--------------|--------------------------------------------------|-----------------------------------|
@@ -17,9 +49,11 @@ This document provides concrete, practical guidance on how to label issues at di
 
 ---
 
-## Good First Issue (GFI)
+## Examples
 
-### What It Looks Like
+### Good First Issue (GFI)
+
+#### What It Looks Like
 
 - fully specified task  
 - exact instructions provided  
@@ -33,20 +67,20 @@ The contributor should not need to:
 
 ---
 
-### Good First Issue Candidates:
+#### Good First Issue Candidates:
 - Typo and grammar fixes
 - Light file renames or movements
 - Specified type fixes
 - Specified package updates
 - URL fixes
 
-### Good First Issue: Good Fit
+#### Good First Issue: Good Fit
 
 ```markdown
 ✅ Fix a typo in `README.md`: change “enviroment” to “environment”
 ```
 
-### Good First Issue: Too Difficult
+#### Good First Issue: Too Difficult
 
 ```markdown
 ❌Add a `toString()` method to `TokenId`, following the implementation used in `AccountId`
@@ -54,9 +88,9 @@ The contributor should not need to:
  
 **Note:** use `Good First Issue Candidate` instead or append `awaiting triage` label if in doubt.
 
-## Beginner
+### Beginner
 
-### What It Looks Like
+#### What It Looks Like
 
 - clear outcome is defined  
 - a reference pattern exists in the codebase  
@@ -75,7 +109,7 @@ The contributor should not need to:
 
 ---
 
-### Beginner Issue Candidates
+#### Beginner Issue Candidates
 
 - adding a method following an existing class pattern  
 - adding validation using an existing validation approach  
@@ -85,7 +119,7 @@ The contributor should not need to:
 
 ---
 
-### Beginner: Good Fit
+#### Beginner: Good Fit
 
 ```markdown
 ✅ Add a `toString()` method to `TokenId`, following the implementation used in `AccountId`
@@ -99,14 +133,14 @@ The contributor should not need to:
 ✅ Refactor duplicated logic in `transaction_builder.py` (lines 45–70 and 120–150) into a helper function, following existing helper patterns
 ```
 
-### Beginner: Too Easy (Should Be Good First Issue)
+#### Beginner: Too Easy (Should Be Good First Issue)
 ```
 ❌ Change the type of isTokenId from str to bool in line 100
 ```
 
-## Intermediate
+### Intermediate
 
-### What It Looks Like
+#### What It Looks Like
 
 - the problem is clearly defined  
 - the expected outcome is specified  
@@ -131,7 +165,7 @@ The contributor should not:
 
 ---
 
-### Intermediate Issue Candidates
+#### Intermediate Issue Candidates
 
 - extending existing functionality without a direct pattern  
 - implementing workflows or automations similar to others
@@ -140,7 +174,7 @@ The contributor should not:
 
 ---
 
-### Intermediate: Good Fit
+#### Intermediate: Good Fit
 
 ```markdown
 ✅ Extend `TokenCreateTransaction` to support NFTs, ensuring compatibility with existing transaction patterns and adding appropriate validation and tests
@@ -150,15 +184,15 @@ The contributor should not:
 ✅ Implement a workflow that notifies `team-abc` when the label `discussion` is added to a pull request, aligning with existing CI workflows
 ```
 
-### Intermediate: Too Easy (Should Be Beginner)
+#### Intermediate: Too Easy (Should Be Beginner)
 ```
 ❌ Add a `toString()` method to `TokenId`, following the implementation used in `AccountId`
 ```
 
 
-## Advanced
+### Advanced
 
-### What It Looks Like
+#### What It Looks Like
 
 - the problem is defined, but the solution is not  
 - no clear pattern exists in the codebase  
@@ -186,7 +220,7 @@ The contributor should not:
 
 ---
 
-### Advanced Issue Candidates
+#### Advanced Issue Candidates
 
 - implementing features without an existing pattern  
 - introducing or evolving abstractions  
@@ -196,7 +230,7 @@ The contributor should not:
 
 ---
 
-### Advanced: Good Fit
+#### Advanced: Good Fit
 
 ```markdown
 ✅ Implement HIP-1027 across the SDK, ensuring alignment with existing abstractions and maintaining backward compatibility
@@ -206,7 +240,7 @@ The contributor should not:
 ✅ Redesign the event subscription system to improve scalability and reliability while maintaining compatibility with existing APIs
 ```
 
-### Advanced: Too Easy (Should Be Intermediate)
+#### Advanced: Too Easy (Should Be Intermediate)
 ```
 ❌ Extend `TokenCreateTransaction` to support NFTs, ensuring compatibility with existing transaction patterns and adding appropriate validation and tests
 ```
