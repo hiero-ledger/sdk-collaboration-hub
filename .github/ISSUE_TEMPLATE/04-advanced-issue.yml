@@ -24,10 +24,11 @@ body:
     attributes:
       label: 🧑‍🔬 Advanced Issue
       description: |
-        Prefilled welcome message.
-      value : |
-        This **[Advanced Issue](https://github.com/issues?q=is%3Aopen%20is%3Aissue%20org%3Ahiero-ledger%20archived%3Afalse%20no%3Aassignee%20(label%3A%22advanced%22%20OR%20label%3A%22skill%3A%20advanced%22)%20(repo%3Ahiero-ledger%2Fhiero-sdk-cpp%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-swift%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-python%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-js%20OR%20repo%3Ahiero-ledger%2Fhiero-website))** is a well-scoped task intended for advanced contributors who have completed multiple intermediate issues and are ready to take on high-ownership work that may impact core SDK architecture or cross-cutting concerns.
-        This issue will require significant independent research, a deep understanding of the codebase, and careful attention to maintainability, security, and architectural fit.
+        Adapt as needed. Welcome message.
+      value: |
+        Welcome! This is an **[Advanced Issue](https://github.com/issues?q=is%3Aopen%20is%3Aissue%20org%3Ahiero-ledger%20archived%3Afalse%20no%3Aassignee%20(label%3A%22advanced%22%20OR%20label%3A%22skill%3A%20advanced%22)%20(repo%3Ahiero-ledger%2Fhiero-sdk-cpp%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-swift%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-python%20OR%20repo%3Ahiero-ledger%2Fhiero-sdk-js%20OR%20repo%3Ahiero-ledger%2Fhiero-website))** touching core SDK architecture.
+
+        It is designed for expert contributors who have demonstrated deep architectural understanding and a proven track record of high-quality contributions.
 
   - type: textarea
     id: problem
@@ -45,12 +46,12 @@ body:
     attributes:
       label: 🛠️ Implementation Notes
       description: |
-        Advanced developers are expected to architect safe, maintainable, and production-ready solutions but will benefit from context and guidance.
-        
+        Provide implementation context to understand the complexity and possible approaches.
+
         Add:
-        > Implementation ideas 
-        > Clarify what is unknown or uncertain about the implementation
-        > Highlight any key risks or complexities that require careful attention
+        - Implementation ideas
+        - Clarify what is unknown or uncertain about the implementation
+        - Highlight any key risks or complexities
       value: |
         <!-- Describe the implementation notes -->      
     validations:
@@ -61,7 +62,7 @@ body:
     attributes:
       label: 🧠 Advanced Contributors — Prerequisites & Expectations
       description: |
-        Prefilled requirements before claiming this advanced issue. Adapt as needed.
+        Adapt as needed. Concrete requirements before claiming this advanced issue. Adapt as needed.
       value: |
         > [!CAUTION]
         > **Advanced issues are the highest-risk work in this project. We will reject PRs that do not meet these standards.**
@@ -76,8 +77,11 @@ body:
         > **CI/CD Exception:** For issues focused on **GitHub Actions / Workflows**, the repo-specific thresholds above may be waived if the contributor demonstrates advanced-level proficiency in CI/CD.
 
         ### ⚠️ AI Usage Policy
-        Using AI to generate code for Advanced issues is **strictly discouraged**. AI may be used only to help explain file relationships. Submitting AI-mined code or unvalidated generated output is grounds for **immediate rejection**.
 
+        - Using AI to generate code for Advanced issues is **strictly discouraged**
+        - AI may be used to help explain file relationships
+        - Submitting AI-generated or unvalidated code is grounds for **immediate closure**
+        
         ### ⏱️ Timeline & Workflow
         - **Typical time:** ~1 month / ~50 hours.
         - 🔴 Completing an advanced issue in 1–3 days is a **red flag** and will likely be rejected.
@@ -88,8 +92,7 @@ body:
     attributes:
       label: 🔬 Technical Domains
       description: |
-        Prefilled information on the technical domains involved in this issue. 
-        Adapt to ensure the developer understands the specific areas of the codebase and expertise required to solve this issue.
+        Adapt as needed. Technical areas this issue touches to help developers self-select based on expertise.
       value: |
         <!-- Edit Technical Domains If needed -->      
 
@@ -106,11 +109,10 @@ body:
     attributes:
       label: 🛡️ Quality & Review Standards
       description: |
-        Prefilled guidance on the quality standards expected for advanced PRs. Adapt as needed.
+        Adapt as needed. The quality standards expected for advanced PRs.
       value: |
         Advanced PRs must be **"safe, maintainable, architecturally sound, and production-ready."**
 
-        ### Defining "Production Ready"
         1. **Architectural Fit:** The solution must fit naturally into the existing SDK abstractions.
         2. **Security & Correctness:** Evaluate all logic for injection risks, state corruption, or thread-safety issues. 
         3. **Maintainability:** Code must be short and clear enough for any other maintainer to debug without your assistance. 
@@ -122,7 +124,7 @@ body:
     attributes:
       label: ✅ PR Quality Checklist
       description: |
-        Pre-filled guidance. These are the standards the contributor must meet before opening a PR.
+        Adapt as needed. These are the standards the contributor must meet before opening a PR.
       value: |
         Before opening your PR, the contributor must confirm:
         - [ ] I have spent the majority of my time researching the problem and solution space extensively, including reviewing relevant code, documentation, and external resources.
@@ -130,7 +132,7 @@ body:
         - [ ] The system design fits with current Hiero SDK architectural approaches.
         - [ ] I have tested my changes extensively against both local and network environments.
         - [ ] I have verified naming, types, and field ordering against pinned Protobufs.
-        - [ ] Every line of code is personally understood and explainable (no unvalidated AI code).
+        - [ ] Every line of code is personally understood and explainable.
 
   - type: textarea
     id: resources
