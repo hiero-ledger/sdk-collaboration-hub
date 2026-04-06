@@ -104,12 +104,12 @@ Transaction<$$Response extends Response> {
   // Serialize the transaction (including signatures) to bytes
   bytes toBytes()
 
-  // Deserialize a transaction from bytes. Returns a raw Transaction<Response> because the response
+  // Deserialize a transaction from bytes. Returns Transaction<Response<Receipt>> because the response
   // type cannot be inferred from bytes alone. If the transaction type is known at the call site
   // (e.g. in a multi-party signing flow), language implementations may provide typed overloads
   // or allow an explicit cast to the expected Transaction<$$Response>.
   @@static
-  Transaction<Response> fromBytes(transactionBytes: bytes)
+  Transaction<Response<Receipt>> fromBytes(transactionBytes: bytes)
 
   // Returns a mutable builder pre-populated with this transaction's body. Because Transaction is
   // generic but TransactionBuilder requires two type parameters (the concrete builder type is not
@@ -194,8 +194,8 @@ tx.sign(aliceKey);
 bytes txBytes = tx.toBytes();
 // send txBytes to Bob
 
-// Bob receives and signs. fromBytes() returns Transaction<Response> (raw — type cannot be inferred
-// from bytes). Because Bob knows the transaction type out of band, he may cast explicitly.
+// Bob receives and signs. fromBytes() returns Transaction<Response<Receipt>> (raw — type cannot be
+// inferred from bytes). Because Bob knows the transaction type out of band, he may cast explicitly.
 Transaction<AccountCreateResponse> tx2 = (Transaction<AccountCreateResponse>) Transaction.fromBytes(txBytes);
 tx2.sign(bobKey);
 
@@ -206,12 +206,12 @@ AccountId newAccountId = response.queryReceipt().getAccountId();
 ### HIP-745 (dApp to wallet, incomplete transaction)
 
 For flows where a dApp builds a transaction without a transactionId or nodeAccountIds and sends it to a wallet for
-completion. Both sides treat the transaction as raw (`Transaction<Response>`) because the wallet operates on
+completion. Both sides treat the transaction as `Transaction<Response<Receipt>>` because the wallet operates on
 arbitrary transaction types.
 
 ```
 // dApp builds without a client — no transactionId or nodeAccountIds generated
-Transaction<Response> tx = new TransferTransactionBuilder()
+Transaction<Response<Receipt>> tx = new TransferTransactionBuilder()
     .addTransfer(alice, Hbar.from(-10))
     .addTransfer(bob, Hbar.from(10))
     .build();
@@ -221,7 +221,7 @@ bytes txBytes = tx.toBytes();
 
 // Wallet receives, unbuilds to modify, then rebuilds with its own client
 TransactionBuilder builder = Transaction.fromBytes(txBytes).unbuild();
-Transaction<Response> tx2 = builder.build(walletClient);
+Transaction<Response<Receipt>> tx2 = builder.build(walletClient);
 tx2.sign(walletKey);
 tx2.execute(walletClient);
 ```
@@ -240,16 +240,19 @@ decisions should be validated with broader community input before V3 is finalize
 
 ### Transactions needing typed receipts
 
-| Transaction              | New receipt field(s)                      |
-|--------------------------|-------------------------------------------|
-| AccountCreate            | `accountId`                               |
-| FileCreate               | `fileId`                                  |
-| ContractCreate           | `contractId`                              |
-| TopicCreate              | `topicId`                                 |
-| TokenCreate              | `tokenId`                                 |
-| ScheduleCreate           | `scheduleId`, `scheduledTransactionId`    |
-| TokenMint (NFT)          | `serials`, `totalSupply`                  |
-| TopicMessageSubmit       | `topicSequenceNumber`, `topicRunningHash` |
+| Transaction              | New receipt field(s)                                                |
+|--------------------------|---------------------------------------------------------------------|
+| AccountCreate            | `accountId`                                                         |
+| FileCreate               | `fileId`                                                            |
+| ContractCreate           | `contractId`                                                        |
+| TopicCreate              | `topicId`                                                           |
+| TokenCreate              | `tokenId`                                                           |
+| ScheduleCreate           | `scheduleId`, `scheduledTransactionId`                              |
+| TokenMint                | `newTotalSupply`; `@@nullable serials` (NFT mints only)             |
+| TokenBurn                | `newTotalSupply`                                                    |
+| TokenWipe                | `newTotalSupply`                                                    |
+| NodeCreate               | `nodeId`                                                            |
+| TopicMessageSubmit       | `topicSequenceNumber`, `topicRunningHash`                           |
 
 Transactions not listed above — those whose receipts carry no transaction-specific output fields — still
 get a named `Response` alias but are parameterized with the base `Receipt` rather than a typed one. Note
