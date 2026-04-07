@@ -233,33 +233,6 @@ enum EnumName {
 }
 ```
 
-### Type Aliases
-
-A type alias gives a name to an existing type expression without creating a new, distinct type. Aliases
-are useful for naming specific instantiations of generic types so that the name appears in call sites,
-IDE completions, and documentation instead of the raw generic expression.
-
-Use the following syntax to declare a type alias:
-
-```
-@@alias AliasName = TargetType
-```
-
-A concrete example:
-
-```
-@@alias StringList = list<string>
-@@alias AccountCreateResponse = Response<AccountCreateReceipt>
-```
-
-Rules and guidelines for `@@alias`:
-
-- An alias declaration has no body — it cannot declare fields or methods.
-- An alias may refer to any type expression, including generic instantiations.
-- Aliases must not be used to introduce new behavior. If any field or method is needed, define a new
-  complex type using `extends` instead.
-- Language implementations translate `@@alias` according to their language-specific best practice guide.
-
 ### Attributes
 
 Attributes can be defined using the following syntax:

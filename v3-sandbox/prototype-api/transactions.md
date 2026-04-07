@@ -169,7 +169,7 @@ The typed response is inferred directly from the builder's `$$Response` paramete
 ```
 HieroClient client = ...
 
-FooResponse response = new FooTransactionBuilder()
+Response<FooReceipt> response = new FooTransactionBuilder()
     .setBar("baz")
     .buildAndExecute(client);
 
@@ -178,14 +178,14 @@ FooReceipt receipt = response.queryReceipt();
 
 ### Multi-party signing
 
-For transactions requiring multiple signatures. `build(client)` returns a `Transaction<$$Response>`, preserving the
+For transactions requiring multiple signatures. `build(client)` returns a `Transaction<Response<$$Receipt>>`, preserving the
 typed response through the signing chain. This is the key benefit of the generic parameter on `Transaction`.
 
 ```
 HieroClient client = ...
 
-// Alice builds — Transaction<AccountCreateResponse> carries the type forward
-Transaction<AccountCreateResponse> tx = new AccountCreateTransactionBuilder()
+// Alice builds — Transaction<Response<AccountCreateReceipt>> carries the type forward
+Transaction<Response<AccountCreateReceipt>> tx = new AccountCreateTransactionBuilder()
     .setKey(keyOfNewAccount)
     .setInitialBalance(new Hbar(100, HbarUnit.HBAR))
     .build(client);
@@ -196,10 +196,10 @@ bytes txBytes = tx.toBytes();
 
 // Bob receives and signs. fromBytes() returns Transaction<Response<Receipt>> (raw — type cannot be
 // inferred from bytes). Because Bob knows the transaction type out of band, he may cast explicitly.
-Transaction<AccountCreateResponse> tx2 = (Transaction<AccountCreateResponse>) Transaction.fromBytes(txBytes);
+Transaction<Response<AccountCreateReceipt>> tx2 = (Transaction<Response<AccountCreateReceipt>>) Transaction.fromBytes(txBytes);
 tx2.sign(bobKey);
 
-AccountCreateResponse response = tx2.execute(client);
+Response<AccountCreateReceipt> response = tx2.execute(client);
 AccountId newAccountId = response.queryReceipt().getAccountId();
 ```
 
@@ -233,7 +233,6 @@ and 7 years of mainnet history show that receipt fields have always been introdu
 transaction types, never added to existing ones after the fact. Records are intentionally not typed
 because the `TransactionRecord` protobuf evolves with cross-cutting protocol features that expand to new
 transaction types over time — named record subtypes would produce breaking changes as that set grows.
-Named response aliases (`@@alias`) exist for ergonomics only and carry no fields or methods.
 
 **This is a working draft.** Typed receipts and responses carry real protocol-evolution risk and these
 decisions should be validated with broader community input before V3 is finalized.
@@ -254,22 +253,19 @@ decisions should be validated with broader community input before V3 is finalize
 | NodeCreate               | `nodeId`                                                            |
 | TopicMessageSubmit       | `topicSequenceNumber`, `topicRunningHash`                           |
 
-Transactions not listed above — those whose receipts carry no transaction-specific output fields — still
-get a named `Response` alias but are parameterized with the base `Receipt` rather than a typed one. Note
-that this table is a working draft: which transactions belong here should be validated with broader
-community input before V3 is finalized.
+Transactions not listed above — those whose receipts carry no transaction-specific output fields — use
+`Response<Receipt>` directly. Note that this table is a working draft: which transactions belong here
+should be validated with broader community input before V3 is finalized.
 
 ### How to define a typed transaction in practice
 
-For a transaction that creates an entity (typed receipt, named response):
+For a transaction that creates an entity (typed receipt):
 
 ```
 @@finalType
-FooTransactionBuilder extends transactions.TransactionBuilder<FooTransactionBuilder, FooResponse> {
+FooTransactionBuilder extends transactions.TransactionBuilder<FooTransactionBuilder, transactions.Response<FooReceipt>> {
     // domain-specific fields
 }
-
-@@alias FooResponse = transactions.Response<FooReceipt>
 
 @@finalType
 FooReceipt extends transactions.Receipt {
@@ -277,15 +273,13 @@ FooReceipt extends transactions.Receipt {
 }
 ```
 
-For a transaction with no receipt-specific output (base receipt, named response):
+For a transaction with no receipt-specific output (base receipt):
 
 ```
 @@finalType
-BazTransactionBuilder extends transactions.TransactionBuilder<BazTransactionBuilder, BazResponse> {
+BazTransactionBuilder extends transactions.TransactionBuilder<BazTransactionBuilder, transactions.Response<transactions.Receipt>> {
     // domain-specific fields
 }
-
-@@alias BazResponse = transactions.Response<transactions.Receipt>
 ```
 
 ## Questions & Comments
