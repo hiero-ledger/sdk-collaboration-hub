@@ -285,4 +285,6 @@ BazTransactionBuilder extends transactions.TransactionBuilder<BazTransactionBuil
 ## Questions & Comments
 
 - [@rwalworth](https://github.com/rwalworth): I can see use cases where it would be beneficial to switch the operator for a HieroClient (e.g. testing), as well as the network it connects to. I don't necessarily see a benefit in enforcing @@immutable here for these types.
+- [@hendrikEbbers](https://github.com/hendrikebbers): Only because protobuf defined 1 generic record type we do not need to do it if we can provide a more simple/smaller/concreter scope/api to the app developer. Nothing we need to decide today. We should discuss pro/con of that
+- [@hendrikEbbers](https://github.com/hendrikebbers): It might make sense to have even for transaction types that does not add new attributes concrete implementations for Response/Receipt. Those classes could provide documentation and help in switch cases as example.
 - [@rwalworth](https://github.com/rwalworth) / [@0xivanov](https://github.com/0xivanov): Should maxTransactionFee and validDuration have default values?
