@@ -18,8 +18,11 @@ In the `TransactionBuilder`/`Transaction` model, the domain-specific type is the
 namespace transactions-spi
 requires transactions, grpc, hiero-proto
 
-// TransactionSupport is the interface that must be implemented per custom transaction type
-abstraction TransactionSupport<$$TransactionBuilder, $$Response, $$Receipt, $$Record> {
+// TransactionSupport is the interface that must be implemented per custom transaction type.
+// $$Record is intentionally absent as a generic parameter: records are always the universal
+// Record<$$Receipt> type with no named subtypes. The convert method below returns Record<$$Receipt>
+// directly — see the "Design Rationale" section of transactions.md for the reasoning.
+abstraction TransactionSupport<$$TransactionBuilder, $$Response, $$Receipt> {
 
     type getTransactionType() // defines the transaction builder type ($$TransactionBuilder) the concrete TransactionSupport implementation supports
 
@@ -33,7 +36,7 @@ abstraction TransactionSupport<$$TransactionBuilder, $$Response, $$Receipt, $$Re
 
     $$Receipt convert(protoReceipt:hiero-proto.TransactionReceipt) // converts a proto TransactionReceipt to a Receipt
 
-    $$Record convert(protoRecord:hiero-proto.TransactionRecord) // converts a proto TransactionRecord to a Record
+    transactions.Record<$$Receipt> convert(protoRecord:hiero-proto.TransactionRecord) // converts a proto TransactionRecord to a Record
 }
 
 // factory methods that need to be implemented
