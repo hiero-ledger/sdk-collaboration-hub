@@ -169,12 +169,8 @@ For each numeric Java type a maximum numeric type is defined.
 
 ### Unsigned Integer Semantics
 
-Java does not have native unsigned integer types. The meta-language `uintX` types are mapped to signed Java primitives
-(`byte`, `short`, `int`, `long`), as shown in the table above. Because signed types can represent negative values that
-are invalid for unsigned fields, **explicit validation must be applied at every input boundary** (constructors, setters,
-builder methods, and parsing logic) to enforce correct unsigned semantics.
-
-**Valid ranges:**
+Java uses signed types for `uintX` mappings. Explicit validation must be applied at input boundaries to enforce
+unsigned semantics.
 
 | Meta-Language Type | Java Type          | Valid Range                       |
 |--------------------|--------------------|-----------------------------------|
@@ -184,11 +180,11 @@ builder methods, and parsing logic) to enforce correct unsigned semantics.
 
 **Validation rules:**
 
-- If the value is negative, throw `IllegalArgumentException`.
-- If the value exceeds the maximum for the unsigned type, throw `IllegalArgumentException`.
+- If the value is negative, throw `IllegalArgumentException("Value must be non-negative for unsigned types.")`.
+- If the value exceeds the maximum for the unsigned type, throw
+  `IllegalArgumentException("Value exceeds the allowed range for the unsigned type.")`.
 - Never silently clamp or transform values. Invalid inputs must be rejected immediately.
-- For `uint64`, Java's `long` cannot represent the full unsigned 64-bit range (0 to 2^64 - 1). The maximum
-  representable value is `Long.MAX_VALUE` (2^63 - 1). Any negative `long` value is invalid.
+- For `uint64`, Java's `long` cannot represent the full unsigned 64-bit range. Use `java.math.BigInteger`.
 
 **Utility class:**
 
@@ -229,27 +225,6 @@ public class ConsensusNode {
     public void setPort(final int port) {
         this.port = UnsignedValidator.requireUint16(port, "port");
     }
-}
-```
-
-**Inline validation without the utility class:**
-
-When the utility class is not available, validation can be performed directly. The pattern follows the same approach as
-`@@min`/`@@max` constraint validation:
-
-```java
-public void setPort(final int port) {
-    if (port < 0 || port > 65535) {
-        throw new IllegalArgumentException("port must be in the range 0 to 65535 (uint16), but was: " + port);
-    }
-    this.port = port;
-}
-
-public void setShard(final long shard) {
-    if (shard < 0) {
-        throw new IllegalArgumentException("shard must be non-negative (uint64), but was: " + shard);
-    }
-    this.shard = shard;
 }
 ```
 
