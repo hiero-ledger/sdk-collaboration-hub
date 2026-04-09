@@ -1,6 +1,5 @@
 name: Advanced Issue Template
 description: For expert contributors tackling architectural, multi-module, or core-logic changes.
-title: "[Advanced]: "
 labels: ["advanced"]
 assignees: []
 
