@@ -109,4 +109,6 @@ dist
 
 mochawesome-report/
 /docs/_site/
-/docs/Gemfile.lock
+/docs/Gemfile.lock.claude/settings.local.json
+
+.claude
