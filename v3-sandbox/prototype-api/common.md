@@ -18,12 +18,12 @@ enum HbarUnit {
     TINYBAR  // tℏ
     MICROBAR // μℏ
     MILLIBAR // mℏ
-    HBAR     // ℏ
-    KILOBAR  // kℏ
-    MEGABAR  // Mℏ
-    GIGABAR  // Gℏ
+    @@HBAR     // ℏ
+    @@KILOBAR  // kℏ
+    @@MEGABAR  // Mℏ
+    @@GIGABAR  // Gℏ
     
-    @@immutable symbol: String // symbol of the unit
+    @@immutable symbol: string // symbol of the unit
     @@immutable tinybars: int64  // number of tinybars in one unit
     
     static list<HbarUnit> values()  // returns all HbarUnit values

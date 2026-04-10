@@ -20,13 +20,13 @@ NetworkSetting {
  
     @@immutable ledger: common.Ledger // the definition of the ledger
    
-    // Returns an immutable set of consensus nodes
-    // Modifications to the returned set do not affect the original
-    @@immutable Set<common.ConsensusNode> getConsensusNodes()
+    // Returns an immutable list of consensus nodes
+    // Modifications to the returned list do not affect the original
+    @@immutable list<common.ConsensusNode> getConsensusNodes()
 
-    // Returns an immutable set of mirror nodes
-    // Modifications to the returned set do not affect the original
-    @@immutable Set<common.MirrorNode> getMirrorNodes()
+    // Returns an immutable list of mirror nodes
+    // Modifications to the returned list do not affect the original
+    @@immutable list<common.MirrorNode> getMirrorNodes()
 
 }
 
@@ -37,7 +37,7 @@ void registerNetworkSetting(identifier: string, setting: NetworkSetting)
 
 // throws not-found-error if no network with that identifier exists
 // Network settings can be added as plug and play by external modules
-@@throws(not-found-error) NetworkSetting getNetworkSetting(identifier: String) 
+@@throws(not-found-error) NetworkSetting getNetworkSetting(identifier: string) 
 ```
 
 ## Examples
