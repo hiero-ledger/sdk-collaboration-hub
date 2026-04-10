@@ -20,13 +20,13 @@ NetworkSetting {
  
     @@immutable ledger: common.Ledger // the definition of the ledger
    
-    // Returns an immutable list of consensus nodes
-    // Modifications to the returned list do not affect the original
-    @@immutable list<common.ConsensusNode> getConsensusNodes()
+    // Returns an immutable set of consensus nodes
+    // Modifications to the returned set do not affect the original
+    @@immutable set<common.ConsensusNode> getConsensusNodes()
 
-    // Returns an immutable list of mirror nodes
-    // Modifications to the returned list do not affect the original
-    @@immutable list<common.MirrorNode> getMirrorNodes()
+    // Returns an immutable set of mirror nodes
+    // Modifications to the returned set do not affect the original
+    @@immutable set<common.MirrorNode> getMirrorNodes()
 
 }
 

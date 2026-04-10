@@ -18,10 +18,10 @@ enum HbarUnit {
     TINYBAR  // tℏ
     MICROBAR // μℏ
     MILLIBAR // mℏ
-    @@HBAR     // ℏ
-    @@KILOBAR  // kℏ
-    @@MEGABAR  // Mℏ
-    @@GIGABAR  // Gℏ
+    HBAR     // ℏ
+    KILOBAR  // kℏ
+    MEGABAR  // Mℏ
+    GIGABAR  // Gℏ
     
     @@immutable symbol: string // symbol of the unit
     @@immutable tinybars: int64  // number of tinybars in one unit

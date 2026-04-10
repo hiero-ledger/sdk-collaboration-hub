@@ -117,7 +117,7 @@ PublicKey generatePublicKey(algorithm: KeyAlgorithm)
 
 namespace keys.io
 
-enum KeyFormat {
+enum RawFormat {
     STRING, // string representation of the bytes in the specified encoding
     BYTES // raw bytes
 }
@@ -127,7 +127,7 @@ enum KeyEncoding {
     DER, // Distinguished Encoding Rules
     PEM // Privacy Enhanced Mail
     
-    @@immutable KeyFormat rawFormat // the raw format of the import / export
+    @@immutable RawFormat rawFormat // the raw format of the import / export
     bytes decode(keyType : keys.KeyType, value : string)
 }
 
@@ -157,8 +157,8 @@ enum KeyFormat {
     @@immutable KeyContainer container // the container format
     @@immutable KeyEncoding encoding // the encoding
     
-    boolean supportsType(keys.KeyType type) // returns true if the internal container format supports the given key type
-    byte[] decode(keyType : keys.KeyType, value : string) // decodes the given string value into raw bytes for the given key type
+    bool supportsType(keys.KeyType type) // returns true if the internal container format supports the given key type
+    bytes decode(keyType : keys.KeyType, value : string) // decodes the given string value into raw bytes for the given key type
   
 }
 
