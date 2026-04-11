@@ -12,8 +12,8 @@ namespace grpc
 // Minimal placeholder to express SPI dependency.
 // Concrete transport-layer details are language and runtime specific.
 abstraction MethodDescriptor {
-	@@immutable serviceName: string
-	@@immutable methodName: string
+    @@immutable serviceName: string
+    @@immutable methodName: string
 }
 ```
 
