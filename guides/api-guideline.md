@@ -42,6 +42,7 @@ The following basic data types should be used in the API documentation.
 | `set<TYPE>`                | A set of elements of type TYPE                                        |
 | `map<KEY, VALUE>`          | A map that maps KEY values to VALUE values                            |
 | `type`                     | A type identity that can be used to specify a complex type at runtime |
+| `uuid`                     | A universally unique identifier                                        |
 | `date`                     | A date value (ISO 8601 calendar date)                                 |
 | `time`                     | A time value without date or timezone (nanosecond precision)          |
 | `dateTime`                 | A date and time value without timezone (nanosecond precision)         |
@@ -66,7 +67,9 @@ subscribe(callback: function<void onEvent(event: Event)>)
 
 The following example shows a function type without any parameters that is often used for async handling:
 
+```
 execute(action: function<void run()>)
+```
 
 ### Complex Types
 
@@ -175,7 +178,7 @@ abstraction Factory<$$Product> {
 ```
 
 The `$$Product` type parameter is used in the `create` method to define the return type of the method.
-A complexe type that extends a generic type can use the type parameter in its own definition.
+A complex type that extends a generic type can use the type parameter in its own definition.
 A concrete example of the syntax looks like this:
 
 ```
@@ -184,7 +187,7 @@ CarFactory extends Factory<Car> {
 ```
 
 In that example, the `CarFactory` provides a `create` method that returns a `Car`.
-`Car` must be a concrete complexe type (not a generic type parameter).
+`Car` must be a concrete complex type (not a generic type parameter).
 
 Generic types with multiple parameters are written in angle brackets: `TypeName<$$T1, $$T2, ...>`.
 
@@ -197,7 +200,7 @@ abstraction FruitFactory<$$Product extends Fruit> {
 ```
 
 In the given example, the `FruitFactory` provides a `create` method that returns a `Fruit`.
-`Fruit` must be a concrete complexe type (not a generic type parameter).
+`Fruit` must be a concrete complex type (not a generic type parameter).
 
 ### Enumerations
 
@@ -308,6 +311,9 @@ The following annotations should be used:
   and futures are two distinct async patterns — a callback is invoked when work completes, while a future represents
   a pending result. Combining them (e.g., a callback that returns a future) should be avoided as it creates ambiguity
   about responsibility and completion semantics.
+- `@@static`: Indicates that the method belongs to the type itself and can be called without an instance.
+  Typical use cases are factory methods and deserialization methods.
+  For example, `@@static Transaction fromBytes(payload: bytes)`.
 - `@@throws(error-type-a[, ...])`: Indicates that the method can throw an exception/error.
   The error-types should be stable identifiers, not transport-specific.
   Use lowercase-kebab for error identifiers (e.g., `not-found-error`, `parse-error`).
@@ -358,6 +364,8 @@ The following attribute annotations can be used on method return types: `@@nulla
 ### Namespace
 
 Namespaces can be used to group related data types and methods.
+Namespace names must use lowerCamelCase identifiers. Dot notation can be used for sub-namespaces (for example,
+`keys.io`). Hyphens are not allowed in namespace identifiers.
 The following syntax should be used to define namespaces:
 
 ```
@@ -425,7 +433,7 @@ constant MAX_TRANSACTIONS:int32 = 100
 
 ### Best practices and antipatterns
 
-The following best practices and antipattern should be followed when defining the API.
+The following best practices and antipatterns should be followed when defining the API.
 
 #### Prefer immutable fields and objects
 
@@ -472,7 +480,7 @@ rest immutable, and document clearly why the mutable fields cannot be immutable.
 The data types `list`, `set`, and `map` should never be nullable.
 It is best practice to return an empty collection instead of `null`.
 
-Some languages (like GO) have custom semantics for the defined behavior (like `nil` in GO).
+Some languages (like Go) have custom semantics for the defined behavior (like `nil` in Go).
 In that case the language-specific semantics should be used in the implementation.
 Such special behavior must be documented in the best-practice guidelines for the specific language.
 
@@ -480,7 +488,7 @@ Such special behavior must be documented in the best-practice guidelines for the
 
 To keep the API surface consistent and predictable, use the following naming rules:
 
-- Types (complex types, interfaces, enums, namespaces): PascalCase (e.g., UserProfile, Fetchable).
+- Types (complex types, interfaces, enums): PascalCase (e.g., UserProfile, Fetchable).
 - Fields and methods: lowerCamelCase (e.g., employeeNumber, fetchById).
 - Enum values: UPPER_SNAKE_CASE (e.g., PENDING, COMPLETED).
 - Namespace names: lowerCamelCase (e.g., transactions).
