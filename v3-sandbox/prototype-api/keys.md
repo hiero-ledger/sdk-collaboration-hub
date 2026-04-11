@@ -56,11 +56,11 @@ abstraction Key {
     
     // Convert to bytes using specified container format
     // Throws illegal-format if container.format is not BYTES or doesn't support this key type
-    @@throws(illegal-format) bytes toBytes(container: KeyFormat) 
+    @@throws(illegal-format) bytes toBytes(container: keys.io.KeyFormat) 
     
     // Convert to string using specified container format
     // Throws illegal-format if container.format is not STRING or doesn't support this key type
-    @@throws(illegal-format) string toString(container: KeyFormat) 
+    @@throws(illegal-format) string toString(container: keys.io.KeyFormat) 
 }
 
 // a key pair
