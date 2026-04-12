@@ -4,9 +4,12 @@ This document translates the [language-agnostic API meta-definition](api-guideli
 conventions, and ready-to-copy templates.
 It aims to keep SDK APIs consistent, ergonomic, and maintainable across modules.
 
+The C++ SDK baseline is C++17. This guide therefore treats C++17 mappings as the default contract.
+Where C++20 offers a clearer standard type, that mapping is listed as an optional alternative.
+
 ## 1. Type Mapping Table
 
-| Generic Type      | Preferred C++ Mapping (C++20+)               | Fallback Mapping (C++17 baseline)                 | Notes                                   |
+| Generic Type      | C++17 Mapping (Primary)                       | Optional C++20+ Mapping                           | Notes                                   |
 |-------------------|-----------------------------------------------|---------------------------------------------------|-----------------------------------------|
 | `string`          | `std::string`                                 | `std::string`                                     | -                                       |
 | `intX`            | `int8_t`, `int16_t`, `int32_t`, `int64_t`     | `int8_t`, `int16_t`, `int32_t`, `int64_t`         | From `<cstdint>`                        |
@@ -14,16 +17,16 @@ It aims to keep SDK APIs consistent, ergonomic, and maintainable across modules.
 | `double`          | `double`                                      | `double`                                          | -                                       |
 | `decimal`         | Custom or third-party library                 | Custom or third-party library                     | No standard decimal type                |
 | `bool`            | `bool`                                        | `bool`                                            | -                                       |
-| `bytes`           | `std::vector<std::byte>`                      | `std::vector<std::uint8_t>`                       | C++17 supports `std::byte`; `uint8_t` is also common |
+| `bytes`           | `std::vector<std::byte>`                      | `std::vector<std::byte>`                          | `std::byte` is available in C++17       |
 | `list<TYPE>`      | `std::vector<TYPE>`                           | `std::vector<TYPE>`                               | -                                       |
 | `set<TYPE>`       | `std::set<TYPE>`                              | `std::set<TYPE>`                                  | -                                       |
 | `map<KEY, VALUE>` | `std::map<KEY, VALUE>`                        | `std::map<KEY, VALUE>`                            | Use `std::unordered_map` if needed      |
 | `type`            | `std::type_index`                             | `std::type_index`                                 | From `<typeindex>`                      |
 | `uuid`            | UUID library type                             | UUID library type                                 | No standard UUID until C++26            |
-| `date`            | `std::chrono::year_month_day`                 | Custom date struct or library type                | `year_month_day` is C++20               |
-| `time`            | `std::chrono::hh_mm_ss<std::chrono::nanoseconds>` | Custom time struct or library type            | `hh_mm_ss` is C++20                     |
+| `date`            | Custom date struct or library type            | `std::chrono::year_month_day`                     | `year_month_day` is C++20               |
+| `time`            | Custom time struct or library type            | `std::chrono::hh_mm_ss<std::chrono::nanoseconds>` | `hh_mm_ss` is C++20                     |
 | `dateTime`        | `std::chrono::system_clock::time_point`       | `std::chrono::system_clock::time_point`           | -                                       |
-| `zonedDateTime`   | `std::chrono::zoned_time`                     | `time_point` plus explicit IANA zone string       | `zoned_time` is C++20                   |
+| `zonedDateTime`   | `time_point` plus explicit IANA zone string   | `std::chrono::zoned_time`                         | `zoned_time` is C++20                   |
 | `function<...>`   | `std::function<...>`                          | `std::function<...>`                              | Prefer templates for hot paths          |
 
 ## 2. Error Model Mapping For @@throws
