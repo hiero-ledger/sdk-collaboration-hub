@@ -10,7 +10,7 @@ domain-specific setters live on the builder and `build()` produces a universal `
 ## API Schema
 
 ```
-namespace transactions-accounts
+namespace transactionsAccounts
 requires common, transactions, keys
 
 @@finalType
