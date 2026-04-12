@@ -46,21 +46,21 @@ abstraction Key {
     @@immutable type: KeyType //the type of the key
     
     // if container.format is not BYTES an illegal format error is thrown
-    @@throws(illegal-format) bytes toBytes(container: keys.io.EncodedKeyContainer)
+    @@throws(illegal-format) bytes toBytes(container: keys.io.KeyFormat)
 
     // if container.format is not STRING an illegal format error is thrown
-    @@throws(illegal-format) string toString(container: keys.io.EncodedKeyContainer) 
+    @@throws(illegal-format) string toString(container: keys.io.KeyFormat) 
 
     // returns the key in the RAW encoding
     bytes toRawBytes() 
     
     // Convert to bytes using specified container format
     // Throws illegal-format if container.format is not BYTES or doesn't support this key type
-    @@throws(illegal-format) bytes toBytes(container: EncodedKeyContainer) 
+    @@throws(illegal-format) bytes toBytes(container: keys.io.KeyFormat) 
     
     // Convert to string using specified container format
     // Throws illegal-format if container.format is not STRING or doesn't support this key type
-    @@throws(illegal-format) string toString(container: EncodedKeyContainer) 
+    @@throws(illegal-format) string toString(container: keys.io.KeyFormat) 
 }
 
 // a key pair
@@ -117,7 +117,7 @@ PublicKey generatePublicKey(algorithm: KeyAlgorithm)
 
 namespace keys.io
 
-enum RawFormate {
+enum RawFormat {
     STRING, // string representation of the bytes in the specified encoding
     BYTES // raw bytes
 }
@@ -127,8 +127,8 @@ enum KeyEncoding {
     DER, // Distinguished Encoding Rules
     PEM // Privacy Enhanced Mail
     
-    @@immutable RawFormate rawFormat // the raw format of the import / export
-    byte[] decode(keyType : keys.KeyType, value : string)
+    @@immutable RawFormat rawFormat // the raw format of the import / export
+    bytes decode(keyType : keys.KeyType, value : string)
 }
 
 // all supported container formats
@@ -136,7 +136,7 @@ enum KeyContainer {
     PKCS8, // PKCS#8 Private Key Specification
     SPKI // Subject Public Key Info
     
-    boolean supportsType(keys.KeyType type) // returns true if the container format supports the given key type
+    bool supportsType(keys.KeyType type) // returns true if the container format supports the given key type
 }
 
 // encoding information for import / export
@@ -144,7 +144,7 @@ enum ByteImportEncoding {
     HEX, // hex string representation of the bytes
     BASE64 // base64 string representation of the bytes
     
-    byte[] decode(value : string)
+    bytes decode(value : string)
 }
 
 // combined container format and encoding
@@ -157,8 +157,8 @@ enum KeyFormat {
     @@immutable KeyContainer container // the container format
     @@immutable KeyEncoding encoding // the encoding
     
-    boolean supportsType(keys.KeyType type) // returns true if the internal container format supports the given key type
-    byte[] decode(keyType : keys.KeyType, value : string) // decodes the given string value into raw bytes for the given key type
+    bool supportsType(keys.KeyType type) // returns true if the internal container format supports the given key type
+    bytes decode(keyType : keys.KeyType, value : string) // decodes the given string value into raw bytes for the given key type
   
 }
 
