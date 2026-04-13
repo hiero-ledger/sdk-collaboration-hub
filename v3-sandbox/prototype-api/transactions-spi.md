@@ -15,8 +15,8 @@ In the `TransactionBuilder`/`Transaction` model, the domain-specific type is the
 ## API Schema
 
 ```
-namespace transactions-spi
-requires transactions, grpc, hiero-proto
+namespace transactionsSpi
+requires transactions, grpc, hieroProto
 
 // TransactionSupport is the interface that must be implemented per custom transaction type.
 // $$Record is intentionally absent as a generic parameter: records are always the universal
@@ -28,15 +28,15 @@ abstraction TransactionSupport<$$TransactionBuilder, $$Response, $$Receipt> {
 
     grpc.MethodDescriptor getMethodDescriptor() // defines the gRPC method
 
-    hiero-proto.TransactionBody updateBody(transactionBuilder:$$TransactionBuilder, protoBody:hiero-proto.TransactionBody) // updates a proto TransactionBody with the builder's domain fields
+    hieroProto.TransactionBody updateBody(transactionBuilder:$$TransactionBuilder, protoBody:hieroProto.TransactionBody) // updates a proto TransactionBody with the builder's domain fields
 
-    $$TransactionBuilder convert(protoBody:hiero-proto.TransactionBody) // converts a proto TransactionBody to a TransactionBuilder
+    $$TransactionBuilder convert(protoBody:hieroProto.TransactionBody) // converts a proto TransactionBody to a TransactionBuilder
 
-    $$Response convert(protoResponse:hiero-proto.TransactionResponse) // converts a proto TransactionResponse to a Response
+    $$Response convert(protoResponse:hieroProto.TransactionResponse) // converts a proto TransactionResponse to a Response
 
-    $$Receipt convert(protoReceipt:hiero-proto.TransactionReceipt) // converts a proto TransactionReceipt to a Receipt
+    $$Receipt convert(protoReceipt:hieroProto.TransactionReceipt) // converts a proto TransactionReceipt to a Receipt
 
-    transactions.Record<$$Receipt> convert(protoRecord:hiero-proto.TransactionRecord) // converts a proto TransactionRecord to a Record
+    transactions.Record<$$Receipt> convert(protoRecord:hieroProto.TransactionRecord) // converts a proto TransactionRecord to a Record
 }
 
 // factory methods that need to be implemented
