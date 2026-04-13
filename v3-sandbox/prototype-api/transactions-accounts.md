@@ -4,57 +4,68 @@ This section defines the API for the account transactions.
 
 ## Description
 
-A concrete Transaction implementation for creating a new account.
+A concrete TransactionBuilder implementation for creating a new account. Demonstrates the builder pattern where
+domain-specific setters live on the builder and `build()` produces a universal `Transaction`.
+
+## API Schema
 
 ```
-namespace transactions-accounts
+namespace transactionsAccounts
 requires common, transactions, keys
 
 @@finalType
-AccountCreateTransaction extends Transaction<AccountCreatePackedTransaction> {
-    @nullable accountMemo:String
-    @default(0) initialBalance:Hbar
-    key:PublicKey
+AccountCreateTransactionBuilder extends transactions.TransactionBuilder<AccountCreateTransactionBuilder, transactions.Response<AccountCreateReceipt>> {
+    @@nullable accountMemo: string
+    @@default(0) initialBalance: common.Hbar
+    key: keys.PublicKey
 }
 
 @@finalType
-AccountCreatePackedTransaction extends PackedTransaction<AccountCreateTransaction, AccountCreateResponse> {
-}
-
-@@finalType
-AccountCreateResponse extends Response<AccountCreateReceipt, AccountCreateRecord> {
-}
-
-@@finalType
-AccountCreateReceipt extends Receipt {
-    @immutable accountId:AccountId
-}
-
-@@finalType
-AccountCreateRecord extends Record<AccountCreateReceipt> {
-    @immutable accountId:AccountId
+// Extends the base Receipt with the account ID assigned by the consensus node.
+// This is the only new field: everything else (status, exchangeRate, etc.) lives on Receipt.
+AccountCreateReceipt extends transactions.Receipt {
+    @@immutable accountId: common.AccountId
 }
 
 ```
 
-## Example
+## Examples
 
-The following example creates a new account with a balance of 100 hbars.
+### Simple flow
+
+Creates a new account with a balance of 100 hbars using `buildAndExecute` for a single-signer flow.
 
 ```
 HieroClient client = ...
-PrivateKey operatorKey = ...
-
-Hbar initialBalance = new Hbar(100, HbarUnit.HBAR);
 PublicKey keyOfNewAccount = ...
 
-AccountCreateTransaction transaction = new AccountCreateTransaction(keyOfNewAccount, initialBalance);
-AccountId newAccountId = transaction.pack(client)
-           .sign(operatorKey)
-           .execute(client)
-           .sendAndWait(30_000)
-           .queryReceiptAndWait(30_000)
-           .getAccountId();
+Response<AccountCreateReceipt> response = new AccountCreateTransactionBuilder()
+    .setKey(keyOfNewAccount)
+    .setInitialBalance(new Hbar(100, HbarUnit.HBAR))
+    .buildAndExecute(client);
+
+AccountId newAccountId = response.queryReceipt().getAccountId();
+```
+
+### Multi-party signing
+
+Creates a new account where both the operator and another party need to sign. Because `build()` returns
+`Transaction<Response<AccountCreateReceipt>>`, the typed response is preserved through the signing chain.
+
+```
+HieroClient client = ...
+PublicKey keyOfNewAccount = ...
+
+Transaction<Response<AccountCreateReceipt>> tx = new AccountCreateTransactionBuilder()
+    .setKey(keyOfNewAccount)
+    .setInitialBalance(new Hbar(100, HbarUnit.HBAR))
+    .build(client);
+
+tx.sign(operatorKey);
+tx.sign(otherPartyKey);
+
+Response<AccountCreateReceipt> response = tx.execute(client);
+AccountId newAccountId = response.queryReceipt().getAccountId();
 ```
 
 ## Questions & Comments
