@@ -23,24 +23,50 @@ Where C++20 offers a clearer standard type, that mapping is listed as an optiona
 | `map<KEY, VALUE>` | `std::map<KEY, VALUE>`                        | `std::map<KEY, VALUE>`                            | Use `std::unordered_map` if needed      |
 | `type`            | `std::type_index`                             | `std::type_index`                                 | From `<typeindex>`                      |
 | `uuid`            | UUID library type                             | UUID library type                                 | No standard UUID until C++26            |
-| `date`            | Custom date struct or library type            | `std::chrono::year_month_day`                     | `year_month_day` is C++20               |
+| `date`            | `date::year_month_day`                        | `std::chrono::year_month_day`                     | C++17: Howard Hinnant date library      |
 | `time`            | Custom time struct or library type            | `std::chrono::hh_mm_ss<std::chrono::nanoseconds>` | `hh_mm_ss` is C++20                     |
 | `dateTime`        | `std::chrono::system_clock::time_point`       | `std::chrono::system_clock::time_point`           | -                                       |
-| `zonedDateTime`   | `time_point` plus explicit IANA zone string   | `std::chrono::zoned_time`                         | `zoned_time` is C++20                   |
-| `function<...>`   | `std::function<...>`                          | `std::function<...>`                              | Prefer templates for hot paths          |
+| `zonedDateTime`   | `date::zoned_time<std::chrono::system_clock::duration>` | `std::chrono::zoned_time`                | C++17: Howard Hinnant date library      |
+| `function<...>`   | `std::function<...>`                          | `std::function<...>`                              | Use templates for one-shot invocation; use `std::function` when callables are stored |
 
 ## 2. Error Model Mapping For @@throws
 
 `@@throws(error-type-a[, ...])` maps to typed C++ error handling at the SDK boundary.
 
+Recommended V3 pattern: use a discriminated result type as the primary model.
+
+- Return `HieroResult<T>` for fallible methods instead of throwing by default.
+- Use one stable `HieroError` shape (for example, `code` plus optional message/details).
+- Multiple `@@throws(...)` entries still map to the same `HieroResult<T>`; the error code distinguishes cases.
+- For methods without a value return, use a status result (for example, `HieroStatus`) that carries success/failure.
+
+Mapping sketch:
+
+```cpp
+// Meta-language:
+// @@throws(not-found-error, invalid-argument-error)
+// AccountBalance getBalance(id: AccountId)
+
+// C++17 translation:
+HieroResult<AccountBalance> getBalance(const AccountId& id);
+
+auto result = client.getBalance(id);
+if (!result) {
+    log(result.error().message);
+    return;
+}
+auto& balance = *result;
+```
+
 Recommended pattern:
 
 - Public APIs should expose stable SDK-level error identifiers, not transport-specific status enums.
-- Prefer a structured error object with `code` and `message` when avoiding exceptions.
-- If exceptions are enabled in the SDK, use a base exception type and specific subclasses.
+- Result types are the recommended V3 default in C++17.
+- The current V2 SDK uses an exception hierarchy; document this for contributor context.
+- Exception hierarchies are still a valid fallback when a project explicitly relies on exceptions.
 - Preserve lower-level causes in logs or nested error payloads.
 
-Example exception pattern:
+Example exception fallback pattern:
 
 ```cpp
 #include <stdexcept>
@@ -67,27 +93,44 @@ public:
 
 `@@async` should map to non-blocking APIs that return futures or completion objects.
 
+Recommended V3 pattern: an explicit client-owned executor or thread pool.
+
 Recommended pattern:
 
-- Use `std::future<T>` for simple async contracts.
-- For richer cancellation or continuations, use a runtime-specific async abstraction.
+- Submit work items to an explicit thread pool or executor owned by the client/runtime.
+- Return a future-like handle from the pooled submission.
 - If both sync and async variants exist, keep shared execution logic in one internal implementation.
 - Do not mix callback and future styles in a single public method signature.
 
-Example:
+`std::async(std::launch::async, ...)` note:
+
+- V2-style `std::async` is acceptable for simple, infrequent one-off operations.
+- At SDK scale, prefer pooled executors because `std::async` can create one OS thread per call,
+  futures are not composable in C++17, and future destruction may block if `.get()` is never called.
+
+Example executor-oriented sketch:
 
 ```cpp
 #include <future>
-#include <vector>
-#include <cstdint>
+#include <memory>
+#include <utility>
+
+class Executor {
+public:
+    template <typename Fn>
+    auto submit(Fn&& fn) -> std::future<decltype(fn())>;
+};
 
 class Client {
 public:
-    std::future<std::vector<std::uint8_t>> submitAsync(std::vector<std::uint8_t> txBytes) const {
-        return std::async(std::launch::async, [payload = std::move(txBytes)]() {
-            return payload;
-        });
+    explicit Client(std::shared_ptr<Executor> executor) : executor_(std::move(executor)) {}
+
+    std::future<int> submitAsync(int request) const {
+        return executor_->submit([req = request]() { return req + 1; });
     }
+
+private:
+    std::shared_ptr<Executor> executor_;
 };
 ```
 
@@ -158,11 +201,15 @@ Recommended pattern:
 - Use `std::unique_ptr` to express ownership transfer.
 - Use `std::shared_ptr<const T>` for shared immutable objects.
 - Protect shared mutable state with `std::mutex` and scoped locking.
+- Use `std::unique_lock<std::mutex>` with `std::condition_variable` when waiting on conditions.
+- Use `std::atomic<T>` for simple counters and flags.
+- Avoid complex lock-free coordination patterns unless profiling proves they are required.
 - Avoid exposing references to internal mutable containers.
 
-Example:
+Example: mutex and lock_guard for simple mutation
 
 ```cpp
+#include <cstdint>
 #include <mutex>
 #include <string>
 
@@ -189,6 +236,52 @@ public:
 private:
     std::string transactionId_;
     std::string status_;
+};
+```
+
+Example: condition_variable requires unique_lock
+
+```cpp
+#include <condition_variable>
+#include <mutex>
+
+class BackgroundSignal {
+public:
+    void notify() {
+        {
+            std::lock_guard<std::mutex> guard(mutex_);
+            ready_ = true;
+        }
+        condition_.notify_one();
+    }
+
+    void waitUntilReady() {
+        std::unique_lock<std::mutex> lock(mutex_);
+        condition_.wait(lock, [this] { return ready_; });
+    }
+
+private:
+    bool ready_ = false;
+    std::mutex mutex_;
+    std::condition_variable condition_;
+};
+```
+
+Example: atomics for counters and flags
+
+```cpp
+#include <atomic>
+#include <cstdint>
+
+class RuntimeState {
+public:
+    void requestStop() noexcept { stopRequested_.store(true, std::memory_order_relaxed); }
+    bool isStopRequested() const noexcept { return stopRequested_.load(std::memory_order_relaxed); }
+    void incrementInFlight() noexcept { inFlight_.fetch_add(1, std::memory_order_relaxed); }
+
+private:
+    std::atomic<bool> stopRequested_{false};
+    std::atomic<std::int64_t> inFlight_{0};
 };
 ```
 
