@@ -559,9 +559,11 @@ uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
 #### Security and supply-chain risk
 
-GitHub Actions referenced using tags such as `latest`, `v1`, or `v4` are **mutable**. If a package is compromised, workflows that rely on floating tags may unknowingly execute untrusted code. 
+GitHub Actions referenced using tags such as `latest`, `v1`, or `v4` are **mutable** and can be updated to point to a different commit at any time. If a package is compromised, workflows that rely on floating tags may unknowingly execute untrusted code. 
 
 By pinning a GitHub Action to a specific commit SHA, the exact code being executed is known and cannot change unexpectedly. This makes workflows more secure, auditable, and resistant to supply-chain attacks.
+
+For step-by-step instructions on how to find and pin commit SHAs to a specific version, see [How to Pin GitHub Actions to a Specific Commit Hash](#how-to-pin-github-actions-to-a-specific-commit-hash).
 
 ---
 
