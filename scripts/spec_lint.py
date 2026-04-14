@@ -215,26 +215,30 @@ def in_scope(file_path: Path, root: Path, scope_globs: Sequence[str]) -> bool:
     return any(fnmatch.fnmatch(rel_posix, scope_glob) for scope_glob in scope_globs)
 
 
-def collect_files(file_args: List[str], root: Path, scope_globs: Sequence[str], ignore_patterns: Sequence[str]) -> List[Path]:
+def resolve_candidate_files(file_args: List[str], root: Path, scope_globs: Sequence[str]) -> List[Path]:
     if file_args:
-        files = [Path(p).resolve() for p in file_args]
-    else:
-        files = sorted(
-            {
-                file_path.resolve()
-                for scope_glob in scope_globs
-                for file_path in root.glob(scope_glob)
-            }
-        )
+        return [Path(p).resolve() for p in file_args]
 
-    return [
-        p
-        for p in files
-        if p.exists()
-        and p.suffix == ".md"
-        and p.is_relative_to(root)
-        and not is_ignored(p, root, ignore_patterns)
-    ]
+    return sorted(
+        {
+            file_path.resolve()
+            for scope_glob in scope_globs
+            for file_path in root.glob(scope_glob)
+        }
+    )
+
+
+def is_lintable_markdown(file_path: Path, root: Path, ignore_patterns: Sequence[str]) -> bool:
+    if not file_path.exists() or file_path.suffix != ".md":
+        return False
+    if not file_path.is_relative_to(root):
+        return False
+    return not is_ignored(file_path, root, ignore_patterns)
+
+
+def collect_files(file_args: List[str], root: Path, scope_globs: Sequence[str], ignore_patterns: Sequence[str]) -> List[Path]:
+    candidates = resolve_candidate_files(file_args, root, scope_globs)
+    return [p for p in candidates if is_lintable_markdown(p, root, ignore_patterns)]
 
 
 def main() -> int:
