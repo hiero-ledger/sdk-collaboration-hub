@@ -84,11 +84,6 @@ RULES: List[Rule] = [
         pattern=re.compile(r"^\s*namespace\s+[A-Za-z0-9_.]*-[A-Za-z0-9_.-]*\s*$"),
         message="Namespace identifiers should not contain hyphens. Use lowerCamelCase and optional dot notation.",
     ),
-    Rule(
-        rule_id="rawformate-typo",
-        pattern=re.compile(r"\bRawFormate\b"),
-        message="Use `RawFormat` (fix misspelling `RawFormate`).",
-    ),
 ]
 
 
