@@ -144,6 +144,7 @@ def should_lint_block(fence_lang: str, block_lines: Sequence[str], untagged_is_d
 
 
 def iter_lintable_code_block_lines(lines: List[str], untagged_is_dsl: bool) -> Iterable[tuple[int, str]]:
+    """Yield (line_number, line_text) pairs from lintable fenced code blocks."""
     in_fence = False
     fence_lang = ""
     block_start_line = 0
@@ -153,11 +154,13 @@ def iter_lintable_code_block_lines(lines: List[str], untagged_is_dsl: bool) -> I
         stripped = line.strip()
         if stripped.startswith("```"):
             if not in_fence:
+                # Opening fence: capture fence language and start collecting block lines.
                 in_fence = True
                 block_start_line = idx + 1
                 fence_lang = stripped[3:].strip().split()[0].lower() if stripped[3:].strip() else ""
                 block_lines = []
             else:
+                # Closing fence: decide once per block whether to lint its lines.
                 if should_lint_block(fence_lang, block_lines, untagged_is_dsl):
                     for offset, block_line in enumerate(block_lines):
                         yield block_start_line + offset, block_line
@@ -171,6 +174,7 @@ def iter_lintable_code_block_lines(lines: List[str], untagged_is_dsl: bool) -> I
 
 
 def lint_file(file_path: Path, untagged_is_dsl: bool) -> List[Finding]:
+    """Run all rules against one markdown file and return findings."""
     text = file_path.read_text(encoding="utf-8")
     lines = text.splitlines()
     findings: List[Finding] = []
@@ -192,6 +196,7 @@ def lint_file(file_path: Path, untagged_is_dsl: bool) -> List[Finding]:
 
 
 def load_ignore_patterns(root: Path) -> List[str]:
+    """Load optional ignore globs from .spec-lint-ignore in repository root."""
     ignore_file = root / ".spec-lint-ignore"
     if not ignore_file.exists():
         return []
@@ -206,16 +211,19 @@ def load_ignore_patterns(root: Path) -> List[str]:
 
 
 def is_ignored(file_path: Path, root: Path, patterns: Sequence[str]) -> bool:
+    """Return True when a file matches any ignore glob."""
     rel_posix = file_path.relative_to(root).as_posix()
     return any(fnmatch.fnmatch(rel_posix, pattern) for pattern in patterns)
 
 
 def in_scope(file_path: Path, root: Path, scope_globs: Sequence[str]) -> bool:
+    """Return True when a file matches any configured lint scope glob."""
     rel_posix = file_path.relative_to(root).as_posix()
     return any(fnmatch.fnmatch(rel_posix, scope_glob) for scope_glob in scope_globs)
 
 
 def resolve_candidate_files(file_args: List[str], root: Path, scope_globs: Sequence[str]) -> List[Path]:
+    """Resolve explicit file args, or discover markdown files from scope globs."""
     if file_args:
         return [Path(p).resolve() for p in file_args]
 
@@ -229,6 +237,7 @@ def resolve_candidate_files(file_args: List[str], root: Path, scope_globs: Seque
 
 
 def is_lintable_markdown(file_path: Path, root: Path, ignore_patterns: Sequence[str]) -> bool:
+    """Return True for existing, in-repo, non-ignored markdown files."""
     if not file_path.exists() or file_path.suffix != ".md":
         return False
     if not file_path.is_relative_to(root):
@@ -237,11 +246,13 @@ def is_lintable_markdown(file_path: Path, root: Path, ignore_patterns: Sequence[
 
 
 def collect_files(file_args: List[str], root: Path, scope_globs: Sequence[str], ignore_patterns: Sequence[str]) -> List[Path]:
+    """Collect the final list of markdown files that should be linted."""
     candidates = resolve_candidate_files(file_args, root, scope_globs)
     return [p for p in candidates if is_lintable_markdown(p, root, ignore_patterns)]
 
 
 def main() -> int:
+    """Parse CLI arguments, lint target files, and return a process exit code."""
     parser = argparse.ArgumentParser(description="Lint markdown files for API meta-language spec consistency.")
     parser.add_argument(
         "files",
@@ -272,6 +283,7 @@ def main() -> int:
 
     all_findings: List[Finding] = []
     for file_path in files:
+        # Untagged fences in scoped docs are treated as DSL blocks by design.
         untagged_is_dsl = in_scope(file_path, repo_root, scope_globs)
         all_findings.extend(lint_file(file_path, untagged_is_dsl))
 
