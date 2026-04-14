@@ -8,6 +8,13 @@ The communications protocol between Hiero SDKs and the network nodes is done bas
 
 ```
 namespace grpc
+
+// Minimal placeholder to express SPI dependency.
+// Concrete transport-layer details are language and runtime specific.
+abstraction MethodDescriptor {
+    @@immutable serviceName: string
+    @@immutable methodName: string
+}
 ```
 
 ## Questions & Comments
