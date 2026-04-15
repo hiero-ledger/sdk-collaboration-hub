@@ -52,8 +52,10 @@ jobs:
 
       - name: Run spec lint
         if: steps.changed.outputs.files != ''
+        env:
+          CHANGED_FILES: ${{ steps.changed.outputs.files }}
         run: |
-          python scripts/spec_lint.py ${{ steps.changed.outputs.files }}
+          python scripts/spec_lint.py $CHANGED_FILES
 
       - name: No relevant file changes
         if: steps.changed.outputs.files == ''
