@@ -1535,8 +1535,10 @@ are built around them.
 |--------------------------|-------------------------------------------|---------------------------------------|
 | `timeout-error`          | `java.util.concurrent.TimeoutException`   | Standard for timeout scenarios        |
 | `invalid-argument-error` | `java.lang.IllegalArgumentException`      | Standard for bad input                |
+| `illegal-format`         | `java.lang.IllegalArgumentException`      | Standard for malformed input format   |
 | `invalid-state-error`    | `java.lang.IllegalStateException`         | Standard for wrong object state       |
 | `io-error`               | `java.io.IOException`                     | Standard for I/O failures             |
+| `not-found-error`        | `java.util.NoSuchElementException`        | Standard for missing elements         |
 | `unsupported-error`      | `java.lang.UnsupportedOperationException` | Standard for unimplemented operations |
 
 Only define a custom exception class when no suitable standard exception exists — typically for SDK-specific error
