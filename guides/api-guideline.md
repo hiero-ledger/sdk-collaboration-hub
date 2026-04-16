@@ -42,12 +42,13 @@ The following basic data types should be used in the API documentation.
 | `set<TYPE>`                | A set of elements of type TYPE                                        |
 | `map<KEY, VALUE>`          | A map that maps KEY values to VALUE values                            |
 | `type`                     | A type identity that can be used to specify a complex type at runtime |
-| `uuid`                     | A universally unique identifier                                        |
+| `uuid`                     | A universally unique identifier                                       |
 | `date`                     | A date value (ISO 8601 calendar date)                                 |
 | `time`                     | A time value without date or timezone (nanosecond precision)          |
 | `dateTime`                 | A date and time value without timezone (nanosecond precision)         |
 | `zonedDateTime`            | A date and time value with timezone (nanosecond precision)            |
 | `function<R m(p: T, ...)>` | A function type (often called lambda/callable)                        |
+| `ANY`                      | A top type — accepts any value. Use sparingly (see best practices)    |
 
 ### Function Types
 
@@ -202,6 +203,45 @@ abstraction FruitFactory<$$Product extends Fruit> {
 In the given example, the `FruitFactory` provides a `create` method that returns a `Fruit`.
 `Fruit` must be a concrete complex type (not a generic type parameter).
 
+#### Wildcard type arguments
+
+Sometimes a method or field needs to reference a generic type without committing to a specific type parameter — for
+example, a heterogeneous collection whose elements may be different concrete instantiations of the same generic type.
+The `ANY` keyword can be used as a wildcard type argument to express this.
+
+Syntax:
+
+```
+Type<ANY>             // unbounded — any concrete instantiation of Type
+Type<ANY extends T>   // upper-bounded — any instantiation with a subtype of T
+```
+
+Example:
+
+```
+ContractCall {
+    common.ContractId createContract(fileId: common.FileId, constructorParams: ContractParam<ANY>...)
+}
+```
+
+In this example, `constructorParams` accepts a heterogeneous list of `ContractParam` instances — each element may be
+a different concrete instantiation (e.g., `ContractParam<int32>`, `ContractParam<string>`).
+
+Rules:
+
+- `ANY` can only appear as a type argument, never as a standalone type (e.g., a parameter type, return type, or field
+  type cannot be just `ANY`).
+- `ANY` and `$$T` are distinct concepts: `$$T` is a generic type parameter that the caller binds to a single concrete
+  type, while `ANY` is a wildcard meaning "an unknown concrete type" that may differ across uses.
+- Because `ANY` is not a bound type variable, it cannot be referenced elsewhere in the method or type signature.
+- Languages without native wildcard support must define an idiomatic mapping in their best-practice guideline
+  (e.g., `?` / `? extends T` in Java, `any Protocol` in Swift, `Box<dyn Trait>` in Rust, a polymorphic base type or
+  `std::variant` in C++, an interface type in Go).
+
+`ANY` can also appear as a standalone type (e.g., a parameter or return type), in which case it acts as the
+language's top type — see [Basic data types](#basic-data-types). Standalone use is strongly discouraged; see
+[Avoid `ANY` as a standalone type](#avoid-any-as-a-standalone-type) for the rationale and alternatives.
+
 ### Enumerations
 
 Enumerations can be defined using the following syntax:
@@ -295,6 +335,37 @@ An example of a method with no return type:
 ```
 void resetCache()
 ```
+
+#### Variable arguments (varargs)
+
+A method may declare its last parameter as a variable-arguments parameter by appending `...` to the parameter type.
+This allows callers to pass an arbitrary number of arguments without explicitly constructing a collection.
+
+Syntax:
+
+```
+methodName(paramName: DataType...)
+```
+
+Example:
+
+```
+addSigners(signers: Key...)
+```
+
+Rules:
+
+- A method can have at most one varargs parameter.
+- The varargs parameter must always be the last parameter of the method.
+- A varargs parameter must not be annotated with `@@nullable`. If no arguments are passed, the implementation must
+  treat it as an empty collection (consistent with
+  the [Never define nullable collections](#never-define-nullable-collections)
+  rule).
+- Callers must also be able to pass an existing collection in place of individual arguments. The exact mechanism is
+  language-specific (e.g., Go's `slice...` expansion, Java's array pass-through).
+- Languages without native varargs support (e.g., Rust, C++) must define an idiomatic mapping in their respective
+  best-practice guideline (e.g., `&[T]` or `impl IntoIterator<Item = T>` in Rust, `std::initializer_list<T>` or a
+  variadic template in C++).
 
 #### Method annotations
 
@@ -483,6 +554,42 @@ It is best practice to return an empty collection instead of `null`.
 Some languages (like Go) have custom semantics for the defined behavior (like `nil` in Go).
 In that case the language-specific semantics should be used in the implementation.
 Such special behavior must be documented in the best-practice guidelines for the specific language.
+
+#### Avoid `ANY` as a standalone type
+
+The `ANY` type is the API equivalent of Java's `Object` or TypeScript's `unknown`/`any` — it accepts any value but
+gives up all compile-time type information. It exists in the meta-language because some legitimate use cases require
+it (e.g., bridges to dynamic data, generic key/value stores, callbacks that forward opaque user data), but it should
+be a last resort, not a default choice.
+
+**Why standalone `ANY` is problematic:**
+
+- **No type safety** — Callers cannot tell what value is expected or returned. The compiler/runtime cannot catch
+  type mismatches at the API boundary.
+- **Pushes complexity to callers** — Every consumer must check or cast the value before using it, leading to
+  boilerplate and runtime errors.
+- **Documentation drift** — The actual contract lives in prose ("this returns a `String` if X, otherwise an
+  `Integer`"), which is invisible to tooling and easy to get wrong.
+- **Inconsistent language semantics** — Java's `Object` boxes primitives, Rust requires explicit downcasting,
+  TypeScript distinguishes `any` (unsafe) from `unknown` (safe). Behavior varies more than for typed APIs.
+
+**Prefer instead:**
+
+- **A generic type parameter (`$$T`)** — When the caller knows the type at the call site, expose it as a generic
+  parameter so the type flows through the API.
+- **A concrete base type or interface** — Model the common contract explicitly (e.g., `ContractParam` instead of
+  `ANY` for smart-contract arguments).
+- **A sealed/tagged union via `@@oneOf`** — When the value is one of a finite set of known types, model it as a
+  union so the consumer can exhaustively handle each case.
+- **`bytes` plus a documented schema** — For fully opaque payloads (serialized data, blobs), `bytes` is more honest
+  than `ANY` and avoids accidental coupling.
+
+Note that this guidance applies to `ANY` used as a standalone type. `ANY` as a wildcard type argument (e.g.,
+`ContractParam<ANY>`) serves a different purpose — see
+[Wildcard type arguments](#wildcard-type-arguments) — and is not subject to the same warning.
+
+When `ANY` is genuinely the right choice, document the expected shape and the conditions under which different
+runtime types may appear so consumers do not have to guess.
 
 ### Naming conventions
 
