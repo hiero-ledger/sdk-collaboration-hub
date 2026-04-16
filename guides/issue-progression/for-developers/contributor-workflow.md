@@ -207,7 +207,7 @@ Navigate the repository pull request section:
 
 You will see a banner showing your branch with a “Compare & pull request” button. Click it.
 
-3. Write a Good Title and Description
+4. Write a Good Title and Description
 Conventionally Name your *Pull Request* Title [Guide](https://www.conventionalcommits.org/en/v1.0.0/#summary)
 
 For example:
@@ -215,7 +215,7 @@ For example:
 
 Add a brief description and any important notes.
 
-4. Link the Pull Request to an Issue
+5. Link the Pull Request to an Issue
 To link a pull request to an issue, add one of the following lines
 to the **pull request description**:
 
@@ -231,7 +231,7 @@ GitHub to automatically manage issue state.
 
 Double check the content, then click 'ready to review' and submit!
 
-4. Wait for Checks
+6. Wait for Checks
 We have several security and quality checks.
 
 Please review and check they all pass.
@@ -245,6 +245,6 @@ If checks are solving and you require help, you can:
 - Attend [Community Calls](https://zoom-lfx.platform.linuxfoundation.org/meetings/hiero?view=week)
 - Ask for help on the pull request
 
-5. Once approved
+7. Once approved
 Once your pull request passes checks and is approved, it will shortly be merged to main.
 Congratulations!
