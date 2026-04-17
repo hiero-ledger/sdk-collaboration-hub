@@ -21,7 +21,7 @@ option java_package = "com.hedera.hashgraph.sdk.proto";
 option java_multiple_files = true;
 
 /**
- * A Hedera Token Service token relationship.
+ * An Hedera Token Service token relationship.
  *
  * A token relationship connects an Account with a Token and is necessary for
  * that Account to transact in that Token. TokenRelationship defines a

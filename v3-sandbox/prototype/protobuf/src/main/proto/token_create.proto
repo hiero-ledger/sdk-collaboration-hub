@@ -1,6 +1,6 @@
 /**
  * # Token Create
- * Create a Hedera Token Service (HTS) token.
+ * Create an Hedera Token Service (HTS) token.
  *
  * ### Keywords
  * The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
@@ -124,7 +124,7 @@ message TokenCreateTransactionBody {
     AccountID treasury = 5;
 
     /**
-     * A Hedera key for token administration.
+     * An Hedera key for token administration.
      * <p>
      * This key, if set, SHALL have administrative authority for this token and
      * MAY authorize token update and/or token delete transactions.<br/>
@@ -134,7 +134,7 @@ message TokenCreateTransactionBody {
     Key adminKey = 6;
 
     /**
-     * A Hedera key for managing account KYC.
+     * An Hedera key for managing account KYC.
      * <p>
      * This key, if set, SHALL have KYC authority for this token and
      * MAY authorize transactions to grant or revoke KYC for accounts.<br/>
@@ -146,7 +146,7 @@ message TokenCreateTransactionBody {
     Key kycKey = 7;
 
     /**
-     * A Hedera key for managing asset "freeze".
+     * An Hedera key for managing asset "freeze".
      * <p>
      * This key, if set, SHALL have "freeze" authority for this token and
      * MAY authorize transactions to freeze or unfreeze accounts
@@ -159,7 +159,7 @@ message TokenCreateTransactionBody {
     Key freezeKey = 8;
 
     /**
-     * A Hedera key for wiping tokens from accounts.
+     * An Hedera key for wiping tokens from accounts.
      * <p>
      * This key, if set, SHALL have "wipe" authority for this token and
      * MAY authorize transactions to "wipe" any amount of this token from
@@ -170,7 +170,7 @@ message TokenCreateTransactionBody {
     Key wipeKey = 9;
 
     /**
-     * A Hedera key for "minting" and "burning" tokens.
+     * An Hedera key for "minting" and "burning" tokens.
      * <p>
      * This key, if set, MAY authorize transactions to "mint" new tokens to
      * be delivered to the token treasury or "burn" tokens held by the
@@ -285,7 +285,7 @@ message TokenCreateTransactionBody {
     int64 maxSupply = 19;
 
     /**
-     * A Hedera key for managing the token custom fee schedule.
+     * An Hedera key for managing the token custom fee schedule.
      * <p>
      * This key, if set, MAY authorize transactions to modify the
      * `custom_fees` for this token.<br/>
@@ -308,7 +308,7 @@ message TokenCreateTransactionBody {
     repeated CustomFee custom_fees = 21;
 
     /**
-     * A Hedera key for managing token "pause".
+     * An Hedera key for managing token "pause".
      * <p>
      * This key, if set, SHALL have "pause" authority for this token and
      * MAY authorize transactions to pause or unpause this token.<br/>
@@ -331,7 +331,7 @@ message TokenCreateTransactionBody {
     bytes metadata = 23;
 
     /**
-     * A Hedera key for managing the token `metadata`.
+     * An Hedera key for managing the token `metadata`.
      * <p>
      * This key, if set, MAY authorize transactions to modify the
      * `metadata` for this token.<br/>

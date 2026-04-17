@@ -22,7 +22,7 @@ option java_package = "com.hedera.hashgraph.sdk.proto";
 option java_multiple_files = true;
 
 /**
- * A Hedera Token Service (HTS) token.
+ * An Hedera Token Service(HTS) token.
  *
  * A token SHALL represent a fungible or non-fungible unit of exchange.<br/>
  * The specified Treasury Account SHALL receive the initial supply of tokens and

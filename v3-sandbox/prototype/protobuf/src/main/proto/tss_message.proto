@@ -18,7 +18,7 @@ option java_package = "com.hedera.hapi.services.auxiliary.tss.legacy";
 
 option java_multiple_files = true;
 
-/** A transaction body to send a Threshold Signature Scheme (TSS)
+/** A transaction body to to send a Threshold Signature Scheme (TSS)
  * Message.<br/>
  * This is a wrapper around several different TSS message types that a node
  * might communicate with other nodes in the network.

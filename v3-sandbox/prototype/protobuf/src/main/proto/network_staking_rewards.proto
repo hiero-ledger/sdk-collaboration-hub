@@ -21,7 +21,7 @@ option java_multiple_files = true;
 import "timestamp.proto";
 
 /**
- * A Hedera Token Service staking reward entity.
+ * An Hedera Token Service staking reward entity.
  * This stores values related to the aggregate staking rewards for all nodes in
  * the network. It is calculated at the beginning of each staking period.
  */

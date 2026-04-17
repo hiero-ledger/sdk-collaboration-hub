@@ -124,7 +124,7 @@ enum BlockHashAlgorithm {
 }
 
 /**
- * A unique identifier for a Hedera account.
+ * A unique identifier for an Hedera account.
  *
  * An account identifier is of the form `shard.realm.[number|alias]`.<br/>
  * The identifier MAY use the alias form when transferring HBAR to a public key
@@ -490,7 +490,7 @@ message TransferList {
 }
 
 /**
- * An NFT transfer.<br/>
+ * A NFT transfer.<br/>
  * This refers to a sender account, a receiver account, and the serial number
  * of an NFT to transfer from sender to receiver.
  *
@@ -557,7 +557,7 @@ message TokenTransferList {
      * These transfers SHALL be "double-entry" style; the credits (positive
      * amount) and debits (negative amount) MUST sum to 0, unless this
      * transfer list is part of a `mint` or `burn` operation.<br/>
-     * This SHALL be set for fungible/common tokens and MUST be
+     * This SHALL be be set for fungible/common tokens and MUST be
      * empty otherwise.
      */
     repeated AccountAmount transfers = 2;
@@ -567,7 +567,7 @@ message TokenTransferList {
      * <p>
      * Each entry SHALL have a sender and receiver account, and the
      * serial number of the unique token to transfer.<br/>
-     * This SHALL be set for non-fungible/unique tokens and SHALL be
+     * This SHALL be be set for non-fungible/unique tokens and SHALL be
      * empty otherwise.
      */
     repeated NftTransfer nftTransfers = 3;
@@ -877,7 +877,7 @@ enum TokenPauseStatus {
  * specified otherwise in the documentation for a specific transaction
  * type (e.g. FileDeleteTransactionBody).<br/>
  * This implies that the use of a key list is dependent on context. For
- * example, a Hedera file that is created with a list of keys, SHALL require
+ * example, an Hedera file that is created with a list of keys, SHALL require
  * that all of those keys must sign a transaction to create or modify the file,
  * but only one key from that list MUST sign a transaction to delete the file.
  * So it is a single list that sometimes acts as a N-of-N threshold key, and
@@ -2156,7 +2156,7 @@ message ServicesConfigurationList {
 }
 
 /**
- * A Hedera Token Service token relationship. A token relationship describes
+ * An Hedera Token Service token relationship. A token relationship describes
  * the connection between an Account and a Token type, including the current
  * account balance in that token.
  *

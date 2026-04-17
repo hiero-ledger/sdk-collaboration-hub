@@ -44,7 +44,7 @@ import "timestamp.proto";
  * This transaction MUST specify an expiration timestamp (with seconds
  * precision). The file SHALL be permanently removed from state when
  * network consensus time exceeds the specified expiration time.<br/>
- * This transaction MUST be signed by a Hedera administrative ("system")
+ * This transaction MUST be signed by an Hedera administrative ("system")
  * account.
  *
  * ### What is a "system" file

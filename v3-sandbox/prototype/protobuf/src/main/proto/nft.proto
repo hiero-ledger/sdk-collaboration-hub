@@ -21,7 +21,7 @@ option java_package = "com.hedera.hashgraph.sdk.proto";
 option java_multiple_files = true;
 
 /**
- * A Hedera Token Service non-fungible token (NFT).<br/>
+ * An Hedera Token Service non-fungible token (NFT).<br/>
  * Every NFT is a unique instance of a token with non-fungible type.
  *
  * The NFT SHALL be identified by token ID and serial number.<br/>

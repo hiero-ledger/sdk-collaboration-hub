@@ -23,7 +23,7 @@ option java_package = "com.hedera.hashgraph.sdk.proto";
 option java_multiple_files = true;
 
 /**
- * Representation of a Hedera File Service `file`.
+ * Representation of an Hedera File Service `file`.
  *
  * Files offer a place to store additional data, much more than is available in
  * other entities, for use with smart contracts, non-fungible tokens, etc...

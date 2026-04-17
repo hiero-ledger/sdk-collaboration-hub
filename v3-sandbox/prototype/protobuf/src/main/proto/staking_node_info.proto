@@ -19,7 +19,7 @@ option java_package = "com.hedera.hashgraph.sdk.proto";
 option java_multiple_files = true;
 
 /**
- * A Hedera Token Service staking info entity.
+ * An Hedera Token Service staking info entity.
  *
  * Staking info is per node. Shard and Realm are implied based on the network
  * address book entry for this node.
