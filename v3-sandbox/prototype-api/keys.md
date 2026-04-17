@@ -172,7 +172,7 @@ Here you can find the complete list of rules as a basic implementation of the en
 
 ### Key examples
 
-The following examples show the different key formats as String representations.
+The following examples show the different key formats as string representations.
 
 #### PKCS#8 + DER (Private Key)
 
