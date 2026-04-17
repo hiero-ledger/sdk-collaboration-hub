@@ -128,19 +128,19 @@ For example, a developer may be considered as a candidate for a maintainer once 
 ## Further Reading for Maintainers
 Follow these recommended steps:
 
-[1. Label Issues by Difficulty](guides/issue-progression/for-maintainers/labelling-issues-examples.md)
+[1. Label Issues by Difficulty](./labelling-issues-examples.md)
 
-[Creating Issues Examples](guides/issue-progression/for-maintainers/creating-issues-examples.md)
+[Creating Issues Examples](./creating-issues-examples.md)
 
-[AI Prompts to Create Issues](guides/issue-progression/for-maintainers/creating-issues-AI-prompts.md)
+[AI Prompts to Create Issues](./creating-issues-AI-prompts.md)
 
-[Reviewing Strategies At Each Difficulty](guides/issue-progression/for-maintainers/reviewing-pull-requests.md)
+[Reviewing Strategies At Each Difficulty](./reviewing-pull-requests.md)
 
 ## Resources
 
-[Issue Templates for Maintainers Tailored to Difficulty](guides/issue-progression/for-maintainers/editable-templates)
+[Issue Templates for Maintainers Tailored to Difficulty](./editable-templates)
 
-[Documents for Developers Tailored to Difficulty](guides/issue-progression/for-developers)
+[Documents for Developers Tailored to Difficulty](../for-developers)
 
 
 ---
