@@ -13,13 +13,13 @@ A public key can be derived from a private key.
 
 To read or write keys different formats are supported.
 The easiest way is to read or write the raw bytes of the key.
-To do so the algorithm must be known.
+To do so, the algorithm must be known.
 
 To make import and export of keys more convenient, so-called key containers exist.
 Like algorithms those containers are well defined and standardized.
 A container normally contains the raw bytes of the key and the algorithm.
 To import and export a key in a container an encoding must be specified.
-Here not all container formats support all encodings by its spec and the encoding can end in a byte array result or a
+Not all container formats support all encodings according to their specification, and the encoding can end in a byte array result or a
 string result.
 
 ## API Schema
@@ -111,7 +111,7 @@ PublicKey generatePublicKey(algorithm: KeyAlgorithm)
 @@throws(illegal-format) PrivateKey createPrivateKey(container: keys.io.KeyFormat, value: bytes) // if container.format is not BYTES an illegal format error is thrown
 @@throws(illegal-format) PublicKey createPublicKey(container: keys.io.KeyFormat, value: bytes) // if container.format is not BYTES an illegal format error is thrown
 
-// Read a key based on our preferred format (container & encoding) from a string
+//Read a key based on our preferred format (container & encoding) from a string
 @@throws(illegal-format) PrivateKey createPrivateKey(value: string) // reads string as PKCS#8 PEM
 @@throws(illegal-format) PublicKey createPublicKey(value: string) // reads string as SPKI PEM
 
