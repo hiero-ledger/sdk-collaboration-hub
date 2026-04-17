@@ -71,9 +71,9 @@ message Query {
         GetByKeyQuery getByKey = 1;
 
         /**
-         * Get an Hedera identifier associated with an identifier in EVM
+         * Get a Hedera identifier associated with an identifier in EVM
          * "Solidity" form.<br/>
-         * Most often used in smart contracts to find an Hedera account,
+         * Most often used in smart contracts to find a Hedera account,
          * file, or contract identifier to pass to a system contract or
          * precompile.
          */
@@ -106,7 +106,7 @@ message Query {
         ContractGetRecordsQuery ContractGetRecords = 6 [deprecated = true];
 
         /**
-         * Get the current HBAR balance of an Hedera account or smart contract.
+         * Get the current HBAR balance of a Hedera account or smart contract.
          */
         CryptoGetAccountBalanceQuery cryptogetAccountBalance = 7;
 

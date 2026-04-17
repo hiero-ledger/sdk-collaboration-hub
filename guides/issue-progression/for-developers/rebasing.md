@@ -30,7 +30,7 @@ Each time you want to sync:
   git push origin main
 ```
 
-You can also do this by visiting your repository `https://github.com/YOUR_GITHUB_NAME/REPOSITORY_NAME` and clicking the sync fork button which is a few lines from the top near the right. Then pull these changes locally in Github Desktop.
+You can also do this by visiting your repository `https://github.com/YOUR_GITHUB_NAME/REPOSITORY_NAME` and clicking the sync fork button which is a few lines from the top near the right. Then pull these changes locally in GitHub Desktop.
 
 #### 3. Sync your working branch
 

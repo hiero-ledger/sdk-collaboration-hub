@@ -419,7 +419,7 @@ enum ResponseCodeEnum {
     OBTAINER_REQUIRED = 76;
 
     /**
-     * when deleting smart contract that has crypto balance you can not use the same contract id as
+     * when deleting smart contract that has crypto balance you cannot use the same contract id as
      * transferContractId as the one being deleted
      */
     OBTAINER_SAME_CONTRACT_ID = 77;
@@ -940,7 +940,7 @@ enum ResponseCodeEnum {
     ACCOUNT_STILL_OWNS_NFTS = 251;
 
     /**
-     * A NFT can only be burned when owned by the unique token's treasury
+     * An NFT can only be burned when owned by the unique token's treasury
      */
     TREASURY_MUST_OWN_BURNED_NFT = 252;
 
@@ -1215,12 +1215,12 @@ enum ResponseCodeEnum {
     INVALID_DELEGATING_SPENDER = 303;
 
     /**
-     * The delegating Spender cannot grant approveForAll allowance on a NFT token type for another spender.
+     * The delegating Spender cannot grant approveForAll allowance on an NFT token type for another spender.
      */
     DELEGATING_SPENDER_CANNOT_GRANT_APPROVE_FOR_ALL = 304;
 
     /**
-     * The delegating Spender cannot grant allowance on a NFT serial for another spender as it doesnt not have approveForAll
+     * The delegating Spender cannot grant allowance on an NFT serial for another spender as it does not have approveForAll
      * granted on token-owner.
      */
     DELEGATING_SPENDER_DOES_NOT_HAVE_APPROVE_FOR_ALL = 305;
@@ -1751,7 +1751,7 @@ enum ResponseCodeEnum {
     THROTTLE_GROUP_LCM_OVERFLOW = 397;
 
     /**
-     * Token airdrop transactions can not contain multiple senders for a single token.
+     * Token airdrop transactions cannot contain multiple senders for a single token.
      */
     AIRDROP_CONTAINS_MULTIPLE_SENDERS_FOR_A_TOKEN = 398;
 

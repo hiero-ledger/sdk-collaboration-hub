@@ -40,7 +40,7 @@ import "basic_types.proto";
  *
  * This transaction can _only_ recover a file removed with the `systemDelete`
  * transaction. A file deleted via `fileDelete` SHALL be irrecoverable.<br/>
- * This transaction MUST be signed by an Hedera administrative ("system")
+ * This transaction MUST be signed by a Hedera administrative ("system")
  * account.
  *
  * ### What is a "system" file

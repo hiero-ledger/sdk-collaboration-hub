@@ -33,7 +33,7 @@ or, to have them grouped together:
 | `skill: intermediate` | #FFD92F  
 | `skill: advanced`     | #E78AC3  
 
-The disadvantage is Github will not market `skill: good first issue` but it will `Good First Issue`.
+The disadvantage is GitHub will not market `skill: good first issue` but it will `Good First Issue`.
 
 
 ## Meaning of the Difficulty Labels

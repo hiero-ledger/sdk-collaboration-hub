@@ -128,7 +128,7 @@ message SchedulableTransactionBody {
         CryptoCreateTransactionBody cryptoCreateAccount = 7;
 
         /**
-         * Delete an Hedera account.<br/>
+         * Delete a Hedera account.<br/>
          * This will mark the account as deleted, and transfer all remaining
          * HBAR to a receiver account.
          */
@@ -140,7 +140,7 @@ message SchedulableTransactionBody {
         CryptoTransferTransactionBody cryptoTransfer = 9;
 
         /**
-         * Modify an Hedera account.
+         * Modify a Hedera account.
          */
         CryptoUpdateTransactionBody cryptoUpdateAccount = 10;
 
@@ -168,7 +168,7 @@ message SchedulableTransactionBody {
         FileUpdateTransactionBody fileUpdate = 14;
 
         /**
-         * Delete a file as an Hedera administrative function.<br/>
+         * Delete a file as a Hedera administrative function.<br/>
          * This is a privileged operation.
          */
         SystemDeleteTransactionBody systemDelete = 15;
@@ -239,13 +239,13 @@ message SchedulableTransactionBody {
         TokenRevokeKycTransactionBody tokenRevokeKyc = 26;
 
         /**
-         * Deletes an Hedera token.<br/>
+         * Deletes a Hedera token.<br/>
          * The token will be marked deleted.
          */
         TokenDeleteTransactionBody tokenDeletion = 27;
 
         /**
-         * Update an Hedera token.<br/>
+         * Update a Hedera token.<br/>
          * Depending on what fields are to be modified, the signature
          * requirements will vary. See `TokenUpdateTransactionBody` for
          * further detail.
@@ -270,7 +270,7 @@ message SchedulableTransactionBody {
          * Wipe tokens from an account.<br/>
          * This will remove a specified amount of fungible/common tokens or
          * a specified list of non-fungible/unique serial numbered tokens
-         * of a given token type from an Hedera account. The removed tokens
+         * of a given token type from a Hedera account. The removed tokens
          * are _burned_ as if by a `tokenBurn` transaction.<br/>
          * The "wipe key" for the token must sign this transaction.
          */
@@ -397,7 +397,7 @@ message SchedulableTransactionBody {
          * This transaction unilaterally "gifts" tokens by transferring them
          * from a "sender" account to the "recipient" account(s). If any
          * recipient is not already associated to the token to airdrop, or
-         * has set a "reciever signature required" flag, then that recipient
+         * has set a "receiver signature required" flag, then that recipient
          * is recorded as a "pending" airdrop which must be "claimed".  All
          * other recipients receive the "airdropped" tokens immediately.
          */

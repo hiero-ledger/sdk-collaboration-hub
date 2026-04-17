@@ -117,7 +117,7 @@ message TransactionRecord {
     /**
      * A schedule reference.<br/>
      * The reference to a schedule ID for the schedule that initiated this
-     * transaction, if this this transaction record represents a scheduled
+     * transaction, if this transaction record represents a scheduled
      * transaction.
      */
     ScheduleID scheduleRef = 12;

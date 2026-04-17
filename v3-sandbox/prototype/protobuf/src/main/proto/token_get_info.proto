@@ -46,7 +46,7 @@ message TokenGetInfoQuery {
 }
 
 /**
- * An Hedera Token Service(HTS) token.
+ * A Hedera Token Service (HTS) token.
  *
  * A token SHALL represent a fungible or non-fungible unit of exchange.<br/>
  * The specified Treasury Account SHALL receive the initial supply of tokens and

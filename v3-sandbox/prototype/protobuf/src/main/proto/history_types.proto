@@ -108,7 +108,7 @@ message HistoryProofConstruction {
   bytes source_roster_hash = 2;
   /**
    * If set, the proof that the address book of the source roster belongs
-   * to the the ledger id's chain of trust; if not set, the source roster's
+   * to the ledger id's chain of trust; if not set, the source roster's
    * address book must *be* the ledger id.
    */
   HistoryProof source_proof = 3;

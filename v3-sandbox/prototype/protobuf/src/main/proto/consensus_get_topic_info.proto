@@ -50,7 +50,7 @@ message ConsensusGetTopicInfoQuery {
 
 /**
  * Query response to describe the current state of a topic in the Hedera
- * Consensus Service(HCS).
+ * Consensus Service (HCS).
  */
 message ConsensusGetTopicInfoResponse {
     /**

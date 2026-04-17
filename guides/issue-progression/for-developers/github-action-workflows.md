@@ -1,8 +1,8 @@
-# Creating or Maintaining Github Workflows
+# Creating or Maintaining GitHub Workflows
 
-Github workflows provide automations to support activities on a repository.
+GitHub workflows provide automations to support activities on a repository.
 
-This guide explains best practices for documenting, creating and maintaing github action workflows.
+This guide explains best practices for documenting, creating, and maintaining GitHub Actions workflows.
 
 ## Table of Contents
 

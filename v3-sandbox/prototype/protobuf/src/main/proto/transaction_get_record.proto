@@ -45,7 +45,7 @@ import "response_header.proto";
  *
  * <dl>
  *   <dt>What is the "first" transaction?</dt>
- *   <dd>The "first" transaction SHALL be the the transaction with
+ *   <dd>The "first" transaction SHALL be the transaction with
  *       the earliest consensus time and a status that is neither
  *       `INVALID_NODE_ACCOUNT` nor `INVALID_PAYER_SIGNATURE`.<br/>
  *       If no transaction is found meeting this status criteria, the

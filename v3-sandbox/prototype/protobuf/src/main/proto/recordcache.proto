@@ -73,7 +73,7 @@ message TransactionReceiptEntry {
      * This identifies the node that submitted the transaction to consensus.
      * The value is the identifier as known to the current address book.
      * <p>
-     * Valid node identifiers SHALL be between 0 and <tt>2<sup>63-1</sup></tt>,
+     * Valid node identifiers SHALL between 0 and <tt>2<sup>63-1</sup></tt>,
      * inclusive.
      */
     uint64 node_id = 1;

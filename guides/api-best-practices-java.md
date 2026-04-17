@@ -461,7 +461,7 @@ public enum TransactionStatus {
 ## Collections
 
 The public API must never return `null` for collections. Instead, an empty collection must be returned.
-The most easy way to achieve this is to use one of the static `java.util.Collections.emptyList()`/
+The easiest way to achieve this is to use one of the static `java.util.Collections.emptyList()`/
 `java.util.Collections.emptySet()`/`java.util.Collections.emptyMap()`/`List.of()`/`Set.of()`/`Map.of()` factory methods.
 Since the API must never return `null` for collections it never makes sense to wrap a collection in a
 `java.util.Optional` in the public API.
@@ -659,7 +659,7 @@ public class Example {
         return name.length(); //Without early checks the exception will be thrown here what can be long after the creation of the object
     }
 
-    public int getNickNameLenght() {
+    public int getNickNameLength() {
         return nickName.length(); //Without early checks the exception will be thrown here what can be long after the creation of the object
     }
 }

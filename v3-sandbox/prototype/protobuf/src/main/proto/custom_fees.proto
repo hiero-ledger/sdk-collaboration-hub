@@ -325,7 +325,7 @@ message AssessedCustomFee {
 /**
  * A custom fee definition for a consensus topic.
  * <p>
- * This fee definition is specific to an Hedera Consensus Service (HCS) topic
+ * This fee definition is specific to a Hedera Consensus Service (HCS) topic
  * and SHOULD NOT be used in any other context.<br/>
  * All fields for this message are REQUIRED.<br/>
  * Only "fixed" fee definitions are supported because there is no basis for

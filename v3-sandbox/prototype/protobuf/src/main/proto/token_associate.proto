@@ -1,6 +1,6 @@
 /**
  * # Token Associate
- * Transaction to associate an Hedera Token Service (HTS) token with an
+ * Transaction to associate a Hedera Token Service (HTS) token with an
  * account.<br/>
  * Accounts cannot transact in a token (send or receive) until the account
  * and token are associated.
@@ -31,7 +31,7 @@ option java_multiple_files = true;
 import "basic_types.proto";
 
 /**
- * Associate an Hedera Token Service (HTS) token and an account.
+ * Associate a Hedera Token Service (HTS) token and an account.
  *
  * An association MUST exist between an account and a token before that
  * account may transfer or receive that token.<br/>
