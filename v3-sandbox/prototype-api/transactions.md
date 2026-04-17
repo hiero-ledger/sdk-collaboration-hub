@@ -58,7 +58,7 @@ abstraction TransactionSigner {
 //                for transactions that do not add entity-specific receipt fields.
 abstraction TransactionBuilder<$$Builder extends TransactionBuilder, $$Response extends Response> {
   @@nullable maxTransactionFee: common.Hbar
-  @@nullable validDuration: long
+  @@nullable validDuration: int64
   @@nullable memo: string
   @@nullable transactionId: TransactionId
   nodeAccountIds: list<common.AccountId>
@@ -84,9 +84,9 @@ abstraction TransactionBuilder<$$Builder extends TransactionBuilder, $$Response 
 Transaction<$$Response extends Response> {
   // Network execution config — does not affect the signed transaction body
   @@nullable maxAttempts: int32
-  @@nullable maxBackoff: long
-  @@nullable minBackoff: long
-  @@nullable attemptTimeout: long
+  @@nullable maxBackoff: int64
+  @@nullable minBackoff: int64
+  @@nullable attemptTimeout: int64
 
   // Sign the transaction with the given key pair. Returns self to allow chaining.
   Transaction<$$Response> sign(keyPair: keys.KeyPair)
