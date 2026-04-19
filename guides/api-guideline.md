@@ -311,6 +311,29 @@ The following annotations should be used:
   and futures are two distinct async patterns — a callback is invoked when work completes, while a future represents
   a pending result. Combining them (e.g., a callback that returns a future) should be avoided as it creates ambiguity
   about responsibility and completion semantics.
+- `@@streaming`: Indicates that the method initiates an asynchronous stream - a sequence of zero or more items
+  delivered over time, as opposed to a single deferred result. Every `@@streaming` method carries four mandatory
+  semantic guarantees that every language implementation must fulfill, regardless of the mechanism used:
+  1. **Item delivery** - zero or more items of the declared type are delivered to the consumer as they arrive.
+  2. **Error propagation** - transport failures, timeouts, and protocol errors are communicated to the consumer.
+     Errors may be terminal (the stream cannot continue) or, where applicable, handled internally via reconnect
+     logic before surfacing to the consumer.
+  3. **Completion signaling** - the consumer is notified when the stream has ended naturally. Completion is
+     server-driven: when an end condition (such as `endTime` or `endBlockNumber`) is set on the request, the
+     server enforces it and closes the stream; the SDK propagates that closure to the consumer. The SDK does
+     not monitor item values to detect end conditions client-side.
+  4. **Cancellation** - the consumer can terminate the stream early and release associated resources.
+
+  Like `@@async`, `@@streaming` does not prescribe a mechanism - it declares a semantic category. The concrete
+  method signature (return type, parameters, and how the four guarantees are fulfilled) is language-specific and
+  defined in each language's best practice guide.
+
+  Note: `@@streaming` and `@@async` are mutually exclusive on a method. `@@async` represents a single deferred
+  result; `@@streaming` represents a sequence of results delivered over time.
+  Note: `@@throws` does not apply to `@@streaming` methods. Errors are not thrown from `subscribe()` itself —
+  they are delivered through the language-specific error mechanism (e.g., an error callback, a thrown exception
+  inside the iteration loop, or an `Err` item in the stream). See the error propagation guarantee above and
+  each language's best practice guide for the concrete form.
 - `@@static`: Indicates that the method belongs to the type itself and can be called without an instance.
   Typical use cases are factory methods and deserialization methods.
   For example, `@@static Transaction fromBytes(payload: bytes)`.
