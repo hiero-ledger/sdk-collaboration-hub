@@ -34,24 +34,50 @@ Defensive implementation does **not** mean:
 
 Use the following canonical mappings when turning meta types into Java:
 
-| Generic Type      | Java Type                                                                                                                          | Notes                                                                            |
-|-------------------|------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------|
-| `string`          | `java.lang.String`                                                                                                                 | -                                                                                |
-| `intX`            | `byte`, `short`, `int`, `long`, `java.lang.Byte`, `java.lang.Short`, `java.lang.Integer`, `java.lang.Long`, `java.math.BigInteger` | For all definitions that are not `@@nullable` the primitive types should be used |
-| `uintX`           | `byte`, `short`, `int`, `long`, `java.lang.Byte`, `java.lang.Short`, `java.lang.Integer`, `java.lang.Long`, `java.math.BigInteger` | For all definitions that are not `@@nullable` the primitive types should be used |
-| `double`          | `double`/`java.lang.Double`                                                                                                        | For all definitions that are not `@@nullable` the primitive types should be used |
-| `decimal`         | `java.math.BigDecimal`                                                                                                             | -                                                                                |
-| `bool`            | `boolean`/`java.lang.Boolean`                                                                                                      | For all definitions that are not `@@nullable` the primitive types should be used |
-| `bytes`           | `byte[]`/`java.lang.Byte[]`                                                                                                        | For all definitions that are not `@@nullable` the primitive types should be used |
-| `list<TYPE>`      | `java.util.List<TYPE>`                                                                                                             | lists in the public API should always be immutable                               |
-| `set<TYPE>`       | `java.util.Set<TYPE>`                                                                                                              | sets in the public API should always be immutable                                |
-| `map<KEY, VALUE>` | `java.util.Map<KEY, VALUE>`                                                                                                        | maps in the public API should always be immutable                                |
-| `date`            | `java.time.LocalDate`                                                                                                              | -                                                                                |
-| `time`            | `java.time.LocalTime`                                                                                                              | -                                                                                |
-| `dateTime`        | `java.time.LocalDateTime`                                                                                                          | -                                                                                |
-| `zonedDateTime`   | `java.time.ZonedDateTime`                                                                                                          | -                                                                                |
-| `type`            | `java.lang.Class<?>`                                                                                                               | Used for runtime type information, typically with generics `Class<T>`            |
-| `function<...>`   | `@FunctionalInterface` or `java.util.function.*`                                                                                   | See [Function Types](#function-types) section below                              |
+| Generic Type                                                                     | Java Type                                                                                 | Notes |
+|----------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------|-------|
+| `string`                                                                         |
+ `java.lang.String`                                                               | -                                                                                         |
+| `intX`                                                                           | `byte`, `short`, `int`, `long`, `java.lang.Byte`, `java.lang.Short`, `java.lang.Integer`, 
+ `java.lang.Long`, `java.math.BigInteger`                                         | For all definitions that are not `@@nullable` the primitive types should be               
+ used                                                                             |
+| `uintX`                                                                          | `byte`, `short`, `int`, `long`, `java.lang.Byte`, `java.lang.Short`, `java.lang.Integer`, 
+ `java.lang.Long`, `java.math.BigInteger`                                         | For all definitions that are not `@@nullable` the primitive types should be               
+ used                                                                             |
+| `double`                                                                         | `double`/                                                                                 
+ `java.lang.Double`                                                               |
+ For all definitions that are not `@@nullable` the primitive types should be used |
+| `decimal`                                                                        |
+ `java.math.BigDecimal`                                                           | -                                                                                         |
+| `bool`                                                                           | `boolean`/                                                                                
+ `java.lang.Boolean`                                                              |
+ For all definitions that are not `@@nullable` the primitive types should be used |
+| `bytes`                                                                          | `byte[]`/                                                                                 
+ `java.lang.Byte[]`                                                               |
+ For all definitions that are not `@@nullable` the primitive types should be used |
+| `list<TYPE>`                                                                     |
+ `java.util.List<TYPE>`                                                           |
+ lists in the public API should always be immutable                               |
+| `set<TYPE>`                                                                      |
+ `java.util.Set<TYPE>`                                                            |
+ sets in the public API should always be immutable                                |
+| `map<KEY, VALUE>`                                                                |
+ `java.util.Map<KEY, VALUE>`                                                      |
+ maps in the public API should always be immutable                                |
+| `date`                                                                           |
+ `java.time.LocalDate`                                                            | -                                                                                         |
+| `time`                                                                           |
+ `java.time.LocalTime`                                                            | -                                                                                         |
+| `dateTime`                                                                       |
+ `java.time.LocalDateTime`                                                        | -                                                                                         |
+| `zonedDateTime`                                                                  |
+ `java.time.ZonedDateTime`                                                        | -                                                                                         |
+| `type`                                                                           |
+ `java.lang.Class<?>`                                                             |
+ Used for runtime type information, typically with generics `Class<T>`            |
+| `function<...>`                                                                  | `@FunctionalInterface` or                                                                 
+ `java.util.function.*`                                                           |
+ See [Function Types](#function-types) section below                              |
 
 ### Type Parameter for Runtime Type Information
 
@@ -1117,6 +1143,341 @@ public class Example {
 }
 ```
 
+## Thread Safety (`@@threadSafe`)
+
+The meta-language `@@threadSafe[(groupName)]` annotation indicates that a method or attribute accessor (getter and, if
+mutable, setter) can be called concurrently by the SDK and must be implemented in a thread-safe manner. The optional
+`groupName` groups methods and attributes whose accessors can be called concurrently with each other.
+
+See the [API guideline](api-guideline.md) for the full semantics of `@@threadSafe`.
+
+### The `@ThreadSafe` annotation
+
+In Java, the meta-language `@@threadSafe` maps to a custom `@ThreadSafe` annotation provided by the SDK. The annotation
+is defined in the `org.hiero.sdk.annotation` package (see [java-files/ThreadSafe.java](java-files/ThreadSafe.java) for
+the full source).
+
+The annotation serves two purposes:
+
+- **On interface methods** — it documents a contract: any implementation of this method must be thread-safe.
+- **On concrete methods and attribute accessors** — it indicates that the implementation is thread-safe.
+
+The optional `group` parameter maps to the meta-language `groupName`:
+
+```java
+import org.hiero.sdk.annotation.ThreadSafe;
+
+public interface DataCache {
+
+    // @@threadSafe(cache) — grouped with other "cache" members
+    @ThreadSafe(group = "cache")
+    void updateCache(@NonNull byte[] data);
+
+    // @@threadSafe(cache) — same group
+    @ThreadSafe(group = "cache")
+    @NonNull
+    byte[] readCache();
+
+    // @@threadSafe — no group, only safe for concurrent calls on its own
+    @ThreadSafe
+    void resetStats();
+}
+```
+
+When `@@threadSafe` is applied to an attribute in the meta-language, annotate both the getter and (if mutable) the
+setter with `@ThreadSafe`:
+
+```java
+public class ConnectionManager {
+
+    private volatile boolean connected = true;
+
+    @ThreadSafe
+    public boolean isConnected() {
+        return connected;
+    }
+
+    @ThreadSafe
+    public void setConnected(final boolean connected) {
+        this.connected = connected;
+    }
+}
+```
+
+All methods that implement a `@ThreadSafe`-annotated interface method must also carry the `@ThreadSafe` annotation on
+the implementation.
+
+### Implementation strategies
+
+Always prefer **non-blocking** approaches over blocking ones. Blocking mechanisms (`synchronized`, `Lock`) suspend
+threads, which reduces throughput, increases latency, and risks deadlocks. Non-blocking alternatives (atomics, volatile,
+concurrent collections, immutable snapshots) allow threads to proceed without waiting and should be the first choice.
+Only fall back to blocking synchronization when the operation genuinely requires mutual exclusion across multiple fields
+or complex invariants that cannot be expressed with non-blocking primitives.
+
+When blocking is unavoidable, prefer `java.util.concurrent.locks.Lock` (and its variants such as `ReadWriteLock`) over
+`synchronized`. Locks offer finer-grained control: they can be acquired and released in different scopes, support
+try-lock and timed-lock patterns, and allow read/write separation. `synchronized` should only be used in the simplest
+cases where none of these advantages are needed.
+
+The following table lists the common strategies **in order of preference** — try the topmost applicable strategy first:
+
+| Priority | Strategy                          | When to use                                                                                     |
+|----------|-----------------------------------|-------------------------------------------------------------------------------------------------|
+| 1        | Immutable snapshots               | Return defensive copies so callers never see partial state — no synchronization needed at all   |
+| 2        | `volatile` field                  | Simple flags or single references where only visibility is required                             |
+| 3        | `java.util.concurrent.atomic.*`   | Single-field atomic updates (e.g., `AtomicReference`, `AtomicLong`)                             |
+| 4        | Concurrent collections            | Thread-safe collection access (`ConcurrentHashMap`, `CopyOnWriteArrayList`)                     |
+| 5        | `java.util.concurrent.locks.Lock` | Multi-field invariants requiring mutual exclusion; prefer `ReadWriteLock` for read-heavy groups |
+| 6        | `synchronized` block / method     | Last resort for simple cases where a `Lock` provides no additional benefit                      |
+
+### Example: Immutable snapshots
+
+The preferred strategy is to avoid synchronization entirely by using immutable snapshots. When a getter returns a
+defensive copy or an unmodifiable view, callers can read the data without any risk of seeing partial state — no locks,
+no atomics, no contention. This works especially well for attributes whose value is replaced as a whole rather than
+mutated in place.
+
+```
+// Meta-language
+Configuration {
+    @@threadSafe(config) properties: map<string, string>
+
+    @@threadSafe(config)
+    void updateProperties(properties: map<string, string>)
+}
+```
+
+```java
+// Java implementation using immutable snapshots — no blocking required
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import org.hiero.sdk.annotation.ThreadSafe;
+
+public final class Configuration {
+
+    // ConcurrentHashMap handles concurrent reads and writes without blocking
+    private final ConcurrentHashMap<String, String> properties = new ConcurrentHashMap<>();
+
+    // @@threadSafe(config) attribute accessor — returns an immutable snapshot
+    @ThreadSafe(group = "config")
+    @NonNull
+    public Map<String, String> getProperties() {
+        // Map.copyOf creates an immutable copy; callers can read it freely without synchronization
+        return Map.copyOf(properties);
+    }
+
+    // @@threadSafe(config) — replaces all properties atomically from the caller's perspective
+    @ThreadSafe(group = "config")
+    public void updateProperties(@NonNull final Map<String, String> properties) {
+        Objects.requireNonNull(properties, "properties must not be null");
+        this.properties.clear();
+        this.properties.putAll(properties);
+    }
+}
+```
+
+The key insight is that the getter returns an independent, immutable copy. Even if another thread calls
+`updateProperties` concurrently, callers that already hold a snapshot are unaffected. No thread ever blocks.
+
+### Example: Volatile field
+
+A `volatile` field guarantees that reads and writes are visible across threads without any locking. This is the right
+choice when a single reference or primitive value is read frequently and written infrequently, and no compound
+read-modify-write operation is needed.
+
+```
+// Meta-language
+ConnectionManager {
+    @@threadSafe connected: bool
+
+    @@threadSafe
+    void disconnect()
+}
+```
+
+```java
+// Java implementation using volatile — no blocking required
+
+import org.hiero.sdk.annotation.ThreadSafe;
+
+public final class ConnectionManager {
+
+    // volatile ensures that any thread reading 'connected' sees the latest write
+    private volatile boolean connected = true;
+
+    // @@threadSafe attribute accessor — getter
+    @ThreadSafe
+    public boolean isConnected() {
+        return connected;
+    }
+
+    // @@threadSafe attribute accessor — setter
+    @ThreadSafe
+    public void setConnected(final boolean connected) {
+        this.connected = connected;
+    }
+
+    // @@threadSafe — uses the volatile field directly
+    @ThreadSafe
+    public void disconnect() {
+        connected = false;
+    }
+}
+```
+
+`volatile` is sufficient here because each operation is a simple read or write of a single field. If the operation
+required a check-then-act sequence (e.g., "disconnect only if currently connected"), an `AtomicBoolean` with
+`compareAndSet` would be needed instead.
+
+### Example without group
+
+A method annotated with `@@threadSafe` (no group) must be safe for concurrent calls on its own:
+
+```
+// Meta-language
+DataService {
+    @@threadSafe
+    void resetStats()
+}
+```
+
+```java
+// Java implementation
+
+import java.util.concurrent.atomic.AtomicLong;
+import org.hiero.sdk.annotation.ThreadSafe;
+
+public final class DataService {
+
+    private final AtomicLong requestCount = new AtomicLong(0);
+    private final AtomicLong errorCount = new AtomicLong(0);
+
+    @ThreadSafe
+    public void resetStats() {
+        requestCount.set(0);
+        errorCount.set(0);
+    }
+}
+```
+
+### Example with group
+
+Methods and attributes in the same group can be called concurrently with each other. The implementation must ensure that
+concurrent access across all members of the group is safe:
+
+```
+// Meta-language
+DataCache {
+    @@threadSafe(cache) data: bytes
+
+    @@threadSafe(cache)
+    void updateCache(data: bytes)
+
+    @@threadSafe(cache)
+    bytes readCache()
+
+    @@threadSafe
+    void resetStats()
+}
+```
+
+```java
+// Java implementation using ReadWriteLock for the 'cache' group
+
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.atomic.AtomicLong;
+import org.hiero.sdk.annotation.ThreadSafe;
+
+public final class DataCache {
+
+    private final ReadWriteLock cacheLock = new ReentrantReadWriteLock();
+
+    private byte[] data = new byte[0];
+
+    private final AtomicLong statsCounter = new AtomicLong(0);
+
+    // @@threadSafe(cache) attribute accessor — getter
+    @ThreadSafe(group = "cache")
+    @NonNull
+    public byte[] getData() {
+        cacheLock.readLock().lock();
+        try {
+            return data.clone();
+        } finally {
+            cacheLock.readLock().unlock();
+        }
+    }
+
+    // @@threadSafe(cache) attribute accessor — setter
+    @ThreadSafe(group = "cache")
+    public void setData(@NonNull final byte[] data) {
+        Objects.requireNonNull(data, "data must not be null");
+        cacheLock.writeLock().lock();
+        try {
+            this.data = data.clone();
+        } finally {
+            cacheLock.writeLock().unlock();
+        }
+    }
+
+    // @@threadSafe(cache) — same group, shares the cacheLock
+    @ThreadSafe(group = "cache")
+    public void updateCache(@NonNull final byte[] data) {
+        Objects.requireNonNull(data, "data must not be null");
+        cacheLock.writeLock().lock();
+        try {
+            this.data = data.clone();
+        } finally {
+            cacheLock.writeLock().unlock();
+        }
+    }
+
+    // @@threadSafe(cache) — same group, shares the cacheLock
+    @ThreadSafe(group = "cache")
+    @NonNull
+    public byte[] readCache() {
+        cacheLock.readLock().lock();
+        try {
+            return data.clone();
+        } finally {
+            cacheLock.readLock().unlock();
+        }
+    }
+
+    // @@threadSafe (no group) — independent, uses its own synchronization
+    @ThreadSafe
+    public void resetStats() {
+        statsCounter.set(0);
+    }
+}
+```
+
+### Best practices
+
+1. **Avoid blocking whenever possible** — Non-blocking techniques (atomics, volatile, concurrent collections, immutable
+   snapshots) should always be the first choice. They do not suspend threads, avoid deadlocks by design, and scale
+   better under contention. Only introduce blocking synchronization when the invariant genuinely requires it.
+2. **Prefer `Lock` over `synchronized`** — When blocking is unavoidable, use `java.util.concurrent.locks.Lock` instead
+   of `synchronized`. Locks provide finer-grained control: they can be acquired and released in different scopes,
+   support try-lock and timed-lock patterns to avoid indefinite blocking, and allow read/write separation via
+   `ReadWriteLock`. Use `synchronized` only in the simplest cases where none of these advantages are needed.
+3. **Prefer `ReadWriteLock` for read-heavy groups** — When a group contains both read and write operations, use
+   `ReentrantReadWriteLock` to allow concurrent reads while serializing writes.
+4. **Scope the synchronization to the group** — Members of the same `@@threadSafe` group share a single lock or
+   synchronization mechanism. Members without a group or in different groups use independent synchronization.
+5. **Prefer atomics for simple state** — For single-field updates (counters, flags), `java.util.concurrent.atomic.*`
+   types are simpler and more performant than any blocking approach.
+6. **Avoid holding locks during callbacks** — Never hold a lock while invoking user-supplied callbacks or listeners.
+   This can cause deadlocks if the callback attempts to re-enter the SDK.
+7. **Document the synchronization strategy** — Add a brief comment or Javadoc noting which lock protects which group,
+   so future maintainers understand the concurrency design.
+8. **Do not over-synchronize** — Only add synchronization where `@@threadSafe` is declared. Adding `synchronized` to
+   every method kills performance and is explicitly discouraged (see
+   [Defensive Implementation](#defensive-implementation)).
+
 ## Asynchronous methods
 
 Methods that are annotated with `@@async` in the meta-language must return a `java.util.concurrent.CompletionStage<T>`
@@ -1174,8 +1535,10 @@ are built around them.
 |--------------------------|-------------------------------------------|---------------------------------------|
 | `timeout-error`          | `java.util.concurrent.TimeoutException`   | Standard for timeout scenarios        |
 | `invalid-argument-error` | `java.lang.IllegalArgumentException`      | Standard for bad input                |
+| `illegal-format`         | `java.lang.IllegalArgumentException`      | Standard for malformed input format   |
 | `invalid-state-error`    | `java.lang.IllegalStateException`         | Standard for wrong object state       |
 | `io-error`               | `java.io.IOException`                     | Standard for I/O failures             |
+| `not-found-error`        | `java.util.NoSuchElementException`        | Standard for missing elements         |
 | `unsupported-error`      | `java.lang.UnsupportedOperationException` | Standard for unimplemented operations |
 
 Only define a custom exception class when no suitable standard exception exists — typically for SDK-specific error

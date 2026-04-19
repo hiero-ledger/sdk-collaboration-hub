@@ -10,9 +10,9 @@ This file defines the API for the prototype in the format defined at our [api-gu
 
 ## Consensus Node
 
-- [Transactions](transactions.md) — `Transaction` (single type with internal state machine), response types
+- [Transactions](transactions.md) — `TransactionBuilder` (mutable build phase) + `Transaction` (immutable sign/send phase), response types
 - [Transactions SPI](transactions-spi.md) — `TransactionSupport` data-layer SPI
-- [Account Transactions](transactions-accounts.md) — `AccountCreateTransaction` concrete example
+- [Account Transactions](transactions-accounts.md) — `AccountCreateTransactionBuilder` concrete example
 - [Consensus Queries](consensus-queries.md) — `ConsensusQuery` base + concrete consensus query types
 
 ## Mirror Node

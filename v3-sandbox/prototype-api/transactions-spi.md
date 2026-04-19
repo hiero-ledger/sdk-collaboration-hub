@@ -9,6 +9,9 @@ The consensus node supports adding custom services next to the services that are
 Since new and custom services can provide new transaction types, the SDKs must be able to handle these new transaction types.
 The transactions SPI API defines the interface that must be implemented by the custom service that provides new transaction types.
 
+In the `TransactionBuilder`/`Transaction` model, the domain-specific type is the builder (e.g. `AccountCreateTransactionBuilder`).
+`Transaction` itself is universal and has no domain-specific subclasses. Therefore, the SPI converts between protobuf types and the concrete `TransactionBuilder` subclass.
+
 ### Relationship to Executable and GrpcRequest SPI Methods
 
 `TransactionSupport` and the SPI methods on `Executable` / `GrpcRequest` (from [requests-spi.md](requests-spi.md)) are complementary:
@@ -17,45 +20,49 @@ The transactions SPI API defines the interface that must be implemented by the c
 - **`GrpcRequest` SPI methods** (`buildRequest`, `shouldRetry`) handle building the protobuf request and determining retryability.
 - **`Executable` SPI methods** (`send`, `mapResponse`) handle sending the request and mapping the response.
 
-`Transaction` implements the `GrpcRequest` and `Executable` SPI methods generically by delegating to the `TransactionSupport` instance that matches its concrete data type:
+`Transaction` implements the `GrpcRequest` and `Executable` SPI methods generically by delegating to the `TransactionSupport` instance that matches its concrete builder type:
 
 | SPI method | Source | Transaction implementation |
 |---|---|---|
-| `buildRequest(node)` | `GrpcRequest` | Uses `TransactionSupport.updateBody()` to build the `TransactionBody`, sets `transactionId` and `nodeAccountId`, signs with collected signers, wraps in `SignedTransaction` |
+| `buildRequest(node)` | `GrpcRequest` | Uses `TransactionSupport.updateBody()` to build the `TransactionBody` from the stored builder state, sets `transactionId` and `nodeAccountId`, signs with collected signers, wraps in `SignedTransaction` |
 | `send(node, request)` | `Executable` | Uses `TransactionSupport.getMethodDescriptor()` to select the gRPC method, invokes it on the consensus node |
-| `mapResponse(response)` | `Executable` | Uses `TransactionSupport.convert(protoResponse)` to produce the SDK `TransactionResponse` |
+| `mapResponse(response)` | `Executable` | Uses `TransactionSupport.convert(protoResponse)` to produce the SDK `Response<$$Receipt>` |
 | `shouldRetry(error)` | `GrpcRequest` | Checks gRPC status codes (UNAVAILABLE, RESOURCE_EXHAUSTED) plus consensus-specific codes (BUSY, PLATFORM_TRANSACTION_NOT_CREATED, etc.) |
 
 This means adding a new transaction type requires only:
-1. A new `Transaction` subclass (e.g. `FooTransaction extends Transaction`)
-2. A new `TransactionSupport` implementation for the `FooTransactionData` type
+1. A new `TransactionBuilder` subclass (e.g. `FooTransactionBuilder extends TransactionBuilder<FooTransactionBuilder, Response<FooReceipt>>`)
+2. A new `TransactionSupport` implementation for that builder type
 
 No additional subclasses are needed for SPI purposes.
 
 ## API Schema
 
 ```
-namespace transactions-spi
-requires transactions, grpc, hiero-proto
+namespace transactionsSpi
+requires transactions, grpc, hieroProto
 
 // TransactionSupport is the interface that must be implemented per custom transaction type.
 // It provides the data-layer mechanics that Transaction delegates to
 // when implementing ExecutableSpi.
-abstraction TransactionSupport<$$Data, $$Response, $$Receipt, $$Record> {
+//
+// $$Record is intentionally absent as a generic parameter: records are always the universal
+// Record<$$Receipt> type with no named subtypes. The convert method below returns Record<$$Receipt>
+// directly — see the "Design Rationale" section of transactions.md for the reasoning.
+abstraction TransactionSupport<$$TransactionBuilder, $$Response, $$Receipt> {
 
-    type getTransactionType() // defines the transaction data type ($$Data) this support handles
+    type getTransactionType() // defines the transaction builder type ($$TransactionBuilder) the concrete TransactionSupport implementation supports
 
     grpc.MethodDescriptor getMethodDescriptor() // defines the gRPC method to call for this transaction type
 
-    hiero-proto.TransactionBody updateBody(data:$$Data, protoBody:hiero-proto.TransactionBody) // populates a proto TransactionBody from the transaction data
+    hieroProto.TransactionBody updateBody(transactionBuilder:$$TransactionBuilder, protoBody:hieroProto.TransactionBody) // updates a proto TransactionBody with the builder's domain fields
 
-    $$Data convert(protoBody:hiero-proto.TransactionBody) // converts a proto TransactionBody back to transaction data
+    $$TransactionBuilder convert(protoBody:hieroProto.TransactionBody) // converts a proto TransactionBody to a TransactionBuilder
 
-    $$Response convert(protoResponse:hiero-proto.TransactionResponse) // converts a proto TransactionResponse to an SDK Response
+    $$Response convert(protoResponse:hieroProto.TransactionResponse) // converts a proto TransactionResponse to a Response
 
-    $$Receipt convert(protoReceipt:hiero-proto.TransactionReceipt) // converts a proto TransactionReceipt to an SDK Receipt
+    $$Receipt convert(protoReceipt:hieroProto.TransactionReceipt) // converts a proto TransactionReceipt to a Receipt
 
-    $$Record convert(protoRecord:hiero-proto.TransactionRecord) // converts a proto TransactionRecord to an SDK Record
+    transactions.Record<$$Receipt> convert(protoRecord:hieroProto.TransactionRecord) // converts a proto TransactionRecord to a Record
 }
 
 // Factory methods that need to be implemented
