@@ -330,10 +330,11 @@ The following annotations should be used:
 
   Note: `@@streaming` and `@@async` are mutually exclusive on a method. `@@async` represents a single deferred
   result; `@@streaming` represents a sequence of results delivered over time.
-  Note: `@@throws` does not apply to `@@streaming` methods. Errors are not thrown from `subscribe()` itself —
-  they are delivered through the language-specific error mechanism (e.g., an error callback, a thrown exception
-  inside the iteration loop, or an `Err` item in the stream). See the error propagation guarantee above and
-  each language's best practice guide for the concrete form.
+  Note: `@@throws` applies to `@@streaming` methods, but only for pre-stream failures — errors that occur
+  before the stream is established (e.g., invalid client state, failure to connect to any node after exhausting
+  all retry attempts). Once the stream is open and delivering items, errors are communicated through the
+  language-specific stream mechanism (e.g., an error callback, a thrown exception inside the iteration loop,
+  or an `Err` item in the stream) rather than thrown from `subscribe()` itself.
 - `@@static`: Indicates that the method belongs to the type itself and can be called without an instance.
   Typical use cases are factory methods and deserialization methods.
   For example, `@@static Transaction fromBytes(payload: bytes)`.

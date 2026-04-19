@@ -28,6 +28,7 @@ interface Executable<$$Response> {
 // Does NOT extend Request - avoids diamond inheritance.
 interface Subscribable<$$Item> {
     @@streaming
+    @@throws(network-error, request-timeout, max-attempts-exceeded)
     subscribe(client: HieroClient)
 }
 ```
