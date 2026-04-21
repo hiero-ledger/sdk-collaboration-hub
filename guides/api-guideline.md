@@ -47,6 +47,7 @@ The following basic data types should be used in the API documentation.
 | `time`                     | A time value without date or timezone (nanosecond precision)          |
 | `dateTime`                 | A date and time value without timezone (nanosecond precision)         |
 | `zonedDateTime`            | A date and time value with timezone (nanosecond precision)            |
+| `streamResult<TYPE>`       | A stream item that is either a success value of TYPE or an error      |
 | `function<R m(p: T, ...)>` | A function type (often called lambda/callable)                        |
 
 ### Function Types
@@ -453,6 +454,152 @@ Example of a constant definition:
 namespace transactions
 
 constant MAX_TRANSACTIONS:int32 = 100
+```
+
+### Streaming
+
+The meta-language supports declaring methods that return an asynchronous stream of items. A stream is a pull-based async
+sequence that the consumer drives at its own pace. The SDK produces items (from a network subscription, gRPC stream,
+paginated query, etc.) and the consumer pulls them one at a time using the language's idiomatic async iteration construct.
+
+#### The `@@streaming` annotation
+
+The `@@streaming` annotation on a method declares that the method returns an asynchronous stream of items instead of a
+single value. The return type specifies the element type of the stream.
+
+```
+@@streaming
+TopicMessage subscribe(topicId: string)
+```
+
+The consumer iterates over the stream using the language's native async iteration pattern (e.g., `for await...of` in
+TypeScript, `async for` in Python, `while let Some(x) = s.next().await` in Rust). Breaking out of the loop cancels the
+stream.
+
+`@@streaming` applies only to method declarations. It must not be combined with `@@async` — a streaming method already
+implies asynchronous production of items. `@@async` is for single-value returns; `@@streaming` is for multi-value
+returns.
+
+#### Per-item error handling with `streamResult<TYPE>`
+
+Streams use a dedicated result wrapper to separate per-item errors (non-terminal) from stream-level errors (terminal).
+The `streamResult<TYPE>` data type represents a single item in the stream that is either a success value or an error:
+
+| Data Type             | Description                                                       |
+|-----------------------|-------------------------------------------------------------------|
+| `streamResult<TYPE>`  | A stream item that is either a success value of TYPE or an error  |
+
+A streaming method that may produce per-item errors uses `streamResult` as its return type:
+
+```
+@@streaming
+streamResult<TopicMessage> subscribe(topicId: string)
+```
+
+Each language maps `streamResult<TYPE>` to its idiomatic result/either type:
+
+| Language   | Mapping                                              |
+|------------|------------------------------------------------------|
+| Rust       | `Result<T, E>` (standard library)                    |
+| Swift      | `Result<T, Error>` (standard library)                |
+| Go         | `(T, error)` multiple return / `iter.Seq2[T, error]` |
+| C++        | `std::expected<T, E>` (C++23) / `absl::StatusOr<T>`  |
+| Java       | Sealed `StreamItem<T>` interface                     |
+| TypeScript | Discriminated union `{ ok: true, value: T } \| { ok: false, error: Error }` |
+| JavaScript | Plain object with `status` field                     |
+| Python     | `Success[T] \| Failure` dataclass union              |
+
+When a streaming method does **not** use `streamResult` (i.e., the return type is a plain type), all errors are
+stream-level and terminal — the stream ends and the error is delivered through the language's native error mechanism
+(exception, panic, etc.).
+
+#### Error levels in streams
+
+Streams have two distinct error levels:
+
+1. **Per-item errors** (non-terminal) — A single item in the stream is broken (parse error, invalid data, etc.). The
+   stream continues. These are expressed by yielding an error variant of `streamResult`.
+2. **Stream-level errors** (terminal) — The stream itself has failed (connection lost after retries exhausted, resource
+   deleted, authorization revoked). The stream ends. These are delivered through the language's native error mechanism.
+
+Consumer code follows a consistent two-level pattern:
+
+```
+try {
+    for await (item in stream) {
+        if (item is error) {
+            // per-item: handle, skip, or log
+        } else {
+            process(item.value)
+        }
+    }
+} catch (error) {
+    // stream-level: fatal, stream is over
+}
+```
+
+#### Retry strategy
+
+Retry and reconnection logic for transient failures (network interruptions, gRPC stream resets) is an SDK-internal
+concern. The SDK handles reconnection transparently — the consumer's iteration loop continues without interruption.
+
+User-facing retry configuration is expressed as parameters on the streaming method or on the object that provides the
+streaming method, not as control flow around the iteration loop:
+
+```
+@@streaming
+streamResult<TopicMessage> subscribe(topicId: string, @@nullable retryPolicy: RetryPolicy)
+```
+
+If the SDK exhausts its retry budget, the failure surfaces as a terminal stream-level error.
+
+#### Cancellation
+
+Cancellation is implicit: when the consumer stops iterating (breaks out of the loop, the enclosing scope ends, or the
+stream handle is explicitly closed/dropped), the SDK must release the underlying resources (close the gRPC stream,
+unsubscribe from the topic, etc.). Each language implements this through its native resource management:
+
+- **Rust**: Dropping the `Stream`
+- **Swift**: Task cancellation / leaving the `for await` scope
+- **Go**: Cancelling the `context.Context`
+- **Java**: `AutoCloseable.close()` / try-with-resources
+- **TypeScript/JavaScript**: `break` / `return` from the `for await` loop
+- **Python**: `break` / `return` from the `async for` loop, or async context manager
+- **C++**: RAII destructor
+
+#### Streaming annotation combinations
+
+`@@streaming` can be combined with the following annotations:
+
+- `@@throws(error-type)` — Declares terminal stream-level errors that the stream can produce.
+
+`@@streaming` must **not** be combined with:
+
+- `@@async` — Streaming already implies async item production.
+- `@@static` — Streams are produced by instances, not types.
+
+#### Full example
+
+```
+namespace topics
+requires common
+
+TopicSubscription {
+    @@streaming
+    @@throws(topic-deleted-error, authorization-error)
+    streamResult<TopicMessage> subscribe(topicId: common.TopicId, @@nullable retryPolicy: RetryPolicy)
+}
+
+TopicMessage {
+    @@immutable sequenceNumber: int64
+    @@immutable payload: bytes
+    @@immutable timestamp: zonedDateTime
+}
+
+RetryPolicy {
+    @@immutable @@default(3) maxAttempts: int32
+    @@immutable @@default("exponential") backoffStrategy: string
+}
 ```
 
 ### Best practices and antipatterns
