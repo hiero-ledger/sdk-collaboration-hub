@@ -230,11 +230,8 @@ a different concrete instantiation (e.g., `ContractParam<int32>`, `ContractParam
 
 Rules:
 
-- `ANY` can only appear as a type argument, never as a standalone type (e.g., a parameter type, return type, or field
-  type cannot be just `ANY`).
 - `ANY` and `$$T` are distinct concepts: `$$T` is a generic type parameter that the caller binds to a single concrete
   type, while `ANY` is a wildcard meaning "an unknown concrete type" that may differ across uses.
-- Because `ANY` is not a bound type variable, it cannot be referenced elsewhere in the method or type signature.
 - Languages without native wildcard support must define an idiomatic mapping in their best-practice guideline
   (e.g., `?` / `? extends T` in Java, `any Protocol` in Swift, `Box<dyn Trait>` in Rust, a polymorphic base type or
   `std::variant` in C++, an interface type in Go).
