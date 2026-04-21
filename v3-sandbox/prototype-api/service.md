@@ -27,7 +27,7 @@ SmartContractService {
 
     @@throws(service-error) common.ContractId createContract(fileId:common.FileId, constructorParams:Param<ANY>...)
     
-    @@throws(service-error) common.ContractId createContract(contents:bytes, , constructorParams:Param<ANY>...)
+    @@throws(service-error) common.ContractId createContract(contents:bytes, constructorParams:Param<ANY>...)
     
     @@throws(service-error) ContractCallResult callContractFunction(contractId:common.ContractId, functionName:string, params:Param<ANY>...)
 }
