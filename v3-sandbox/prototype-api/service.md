@@ -13,7 +13,7 @@ ParamSupplier<$$Type> {
     ANY getNativeContractValue()
 }
 
-Param<$$Type>(
+Param<$$Type> {
     @@immutable value:$$Type
     @@immutable nativeType:string
     @@immutable supplier:ParamSupplier<$$Type>
@@ -27,7 +27,7 @@ SmartContractService {
 
     @@throws(service-error) common.ContractId createContract(fileId:common.FileId, constructorParams:Param<ANY>...)
     
-    @@throws(service-error) common.ContractId createContract(contents:bytes, , constructorParams:Param<ANY>...)
+    @@throws(service-error) common.ContractId createContract(contents:bytes, constructorParams:Param<ANY>...)
     
     @@throws(service-error) ContractCallResult callContractFunction(contractId:common.ContractId, functionName:string, params:Param<ANY>...)
 }
@@ -44,6 +44,6 @@ Param<boolean> ofBool(value:boolean)
 Param<uint8> uint8(value:uint8)
 Param<int8> int8(value:int8)
 //TODO
-Param<uint256> uint8(value:uint256)
-Param<int256> int8(value:int256)
+Param<uint256> uint256(value:uint256)
+Param<int256> int256(value:int256)
 ```
