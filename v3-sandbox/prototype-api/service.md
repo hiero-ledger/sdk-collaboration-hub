@@ -44,6 +44,6 @@ Param<boolean> ofBool(value:boolean)
 Param<uint8> uint8(value:uint8)
 Param<int8> int8(value:int8)
 //TODO
-Param<uint256> uint8(value:uint256)
+Param<uint256> uint256(value:uint256)
 Param<int256> int8(value:int256)
 ```
