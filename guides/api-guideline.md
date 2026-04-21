@@ -312,6 +312,12 @@ The following annotations should be used:
   and futures are two distinct async patterns — a callback is invoked when work completes, while a future represents
   a pending result. Combining them (e.g., a callback that returns a future) should be avoided as it creates ambiguity
   about responsibility and completion semantics.
+- `@@streaming`: Indicates that the method returns an asynchronous stream of items — a pull-based sequence the
+  consumer drives at its own pace. The return type specifies the element type; use `streamResult<TYPE>` when
+  per-item errors are possible (non-terminal), or a plain type when all errors are terminal. `@@throws` declares
+  terminal stream-level errors (connection failure, authorization revoked, etc.). See [Streaming](#streaming) for
+  full semantics, per-item error handling, retry, cancellation, and language mappings.
+  Note: `@@streaming` and `@@async` are mutually exclusive — streaming already implies asynchronous item production.
 - `@@static`: Indicates that the method belongs to the type itself and can be called without an instance.
   Typical use cases are factory methods and deserialization methods.
   For example, `@@static Transaction fromBytes(payload: bytes)`.
@@ -528,6 +534,15 @@ streamResult<TopicMessage> subscribe(topicId: string, @@nullable retryPolicy: Re
 ```
 
 If the SDK exhausts its retry budget, the failure surfaces as a terminal stream-level error.
+
+#### Completion
+
+A stream completes when the server closes the connection. Completion is **server-driven**: when an end condition
+is set on the request (such as `endTime` or `endBlockNumber`), the server enforces it and closes the stream; the
+SDK propagates that closure to the consumer. The SDK does not monitor item values client-side to detect end
+conditions.
+
+When no end condition is set, the stream runs indefinitely until the consumer cancels it or a terminal error occurs.
 
 #### Cancellation
 
