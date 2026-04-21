@@ -134,6 +134,11 @@ git remote add upstream https://github.com/hiero-ledger/hiero-sdk-python.git
 ```
 
 ## 6. Install Packages and Protobufs
+
+> ⚠️ **NOTE**: The instructions below are specific to the **Python SDK** (`hiero-sdk-python`). If you are contributing to a different SDK (C++, Java, JavaScript, Go, Swift, Rust), please refer to that SDK's own `README.md` or `CONTRIBUTING.md` for setup instructions.
+
+### Python SDK Setup
+
 This installs the package manager uv:
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
