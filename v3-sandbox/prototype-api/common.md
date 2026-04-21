@@ -90,6 +90,12 @@ abstraction Address {
 AccountId extends Address {
 }
 
+ContractId extends Address {
+}
+
+FileId extends Address {
+}
+
 // factory methods of AccountId that should be added to the namespace in the best language dependent way
 
 // Parses AccountId from string format: "shard.realm.num" or "shard.realm.num-checksum"
@@ -103,3 +109,6 @@ AccountId extends Address {
 - [@hendrikebbers](https://github.com/hendrikebbers): Should we rename `Ledger` to `Network`?
 - [@hendrikebbers](https://github.com/hendrikebbers): Do we want an abstraction for currency? HBAR is the only one for
   now and can be seen as Hedera specific.
+- [@hendrikebbers](https://github.com/hendrikebbers): Do we want to have separate types for `AccountId`, `ContractId`
+  and `FileId` or just one type `Address`?
+  If we want separate types, should they all extend a common base type `Address`?
