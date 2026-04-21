@@ -13,7 +13,7 @@ ParamSupplier<$$Type> {
     ANY getNativeContractValue()
 }
 
-Param<$$Type>(
+Param<$$Type> {
     @@immutable value:$$Type
     @@immutable nativeType:string
     @@immutable supplier:ParamSupplier<$$Type>
