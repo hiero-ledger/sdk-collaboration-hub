@@ -26,10 +26,13 @@ interface Executable<$$Response> {
 
 // Any request that produces an ongoing stream of $$Item values via subscribe().
 // Does NOT extend Request - avoids diamond inheritance.
+// streamResult<$$Item> wraps each item as either a success value or a per-item error,
+// allowing the stream to continue past individual item failures (e.g. deserialization errors).
+// Terminal failures (connection lost, auth revoked) surface via @@throws.
 interface Subscribable<$$Item> {
     @@streaming
     @@throws(network-error, request-timeout, max-attempts-exceeded)
-    subscribe(client: HieroClient)
+    streamResult<$$Item> subscribe(client: HieroClient)
 }
 ```
 
@@ -38,10 +41,12 @@ interface Subscribable<$$Item> {
 | | `Executable<$$Response>` | `Subscribable<$$Item>` |
 |---|---|---|
 | Result cardinality | Exactly one response | Zero or more items over time |
+| Return type | `$$Response` | `streamResult<$$Item>` |
 | Execution annotation | `@@async` | `@@streaming` |
-| Error mechanism | `@@throws` (propagates from `execute`) | Language-specific (thrown, `Err` item, callback) |
-| Completion | Implicit — `execute()` returns | Explicit — stream signals end |
-| Cancellation | Not applicable (single shot) | Required — see language guide |
+| Per-item errors | Not applicable | Non-terminal — error variant of `streamResult<$$Item>` |
+| Terminal errors | `@@throws` | `@@throws` — stream ends, error surfaces via language mechanism |
+| Completion | Implicit — `execute()` returns | Server-driven — server closes stream when end condition reached |
+| Cancellation | Not applicable (single shot) | Implicit — stop iterating; SDK releases resources |
 | Concurrency model | Future / promise / coroutine | Async iteration / reactive stream / callbacks |
 
 ## Questions & Comments
