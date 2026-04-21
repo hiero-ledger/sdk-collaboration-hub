@@ -42,12 +42,14 @@ The following basic data types should be used in the API documentation.
 | `set<TYPE>`                | A set of elements of type TYPE                                        |
 | `map<KEY, VALUE>`          | A map that maps KEY values to VALUE values                            |
 | `type`                     | A type identity that can be used to specify a complex type at runtime |
-| `uuid`                     | A universally unique identifier                                        |
+| `uuid`                     | A universally unique identifier                                       |
 | `date`                     | A date value (ISO 8601 calendar date)                                 |
 | `time`                     | A time value without date or timezone (nanosecond precision)          |
 | `dateTime`                 | A date and time value without timezone (nanosecond precision)         |
 | `zonedDateTime`            | A date and time value with timezone (nanosecond precision)            |
+| `streamResult<TYPE>`       | A stream item that is either a success value of TYPE or an error      |
 | `function<R m(p: T, ...)>` | A function type (often called lambda/callable)                        |
+| `ANY`                      | A top type — accepts any value. Use sparingly (see best practices)    |
 
 ### Function Types
 
@@ -277,6 +279,42 @@ abstraction FruitFactory<$$Product extends Fruit> {
 In the given example, the `FruitFactory` provides a `create` method that returns a `Fruit`.
 `Fruit` must be a concrete complex type (not a generic type parameter).
 
+#### Wildcard type arguments
+
+Sometimes a method or field needs to reference a generic type without committing to a specific type parameter — for
+example, a heterogeneous collection whose elements may be different concrete instantiations of the same generic type.
+The `ANY` keyword can be used as a wildcard type argument to express this.
+
+Syntax:
+
+```
+Type<ANY>             // unbounded — any concrete instantiation of Type
+Type<ANY extends T>   // upper-bounded — any instantiation with a subtype of T
+```
+
+Example:
+
+```
+ContractCall {
+    common.ContractId createContract(fileId: common.FileId, constructorParams: ContractParam<ANY>...)
+}
+```
+
+In this example, `constructorParams` accepts a heterogeneous list of `ContractParam` instances — each element may be
+a different concrete instantiation (e.g., `ContractParam<int32>`, `ContractParam<string>`).
+
+Rules:
+
+- `ANY` and `$$T` are distinct concepts: `$$T` is a generic type parameter that the caller binds to a single concrete
+  type, while `ANY` is a wildcard meaning "an unknown concrete type" that may differ across uses.
+- Languages without native wildcard support must define an idiomatic mapping in their best-practice guideline
+  (e.g., `?` / `? extends T` in Java, `any Protocol` in Swift, `Box<dyn Trait>` in Rust, a polymorphic base type or
+  `std::variant` in C++, an interface type in Go).
+
+`ANY` can also appear as a standalone type (e.g., a parameter or return type), in which case it acts as the
+language's top type — see [Basic data types](#basic-data-types). Standalone use is strongly discouraged; see
+[Avoid `ANY` as a standalone type](#avoid-any-as-a-standalone-type) for the rationale and alternatives.
+
 ### Enumerations
 
 Enumerations can be defined using the following syntax:
@@ -371,6 +409,37 @@ An example of a method with no return type:
 void resetCache()
 ```
 
+#### Variable arguments (varargs)
+
+A method may declare its last parameter as a variable-arguments parameter by appending `...` to the parameter type.
+This allows callers to pass an arbitrary number of arguments without explicitly constructing a collection.
+
+Syntax:
+
+```
+methodName(paramName: DataType...)
+```
+
+Example:
+
+```
+addSigners(signers: Key...)
+```
+
+Rules:
+
+- A method can have at most one varargs parameter.
+- The varargs parameter must always be the last parameter of the method.
+- A varargs parameter must not be annotated with `@@nullable`. If no arguments are passed, the implementation must
+  treat it as an empty collection (consistent with
+  the [Never define nullable collections](#never-define-nullable-collections)
+  rule).
+- Callers must also be able to pass an existing collection in place of individual arguments. The exact mechanism is
+  language-specific (e.g., Go's `slice...` expansion, Java's array pass-through).
+- Languages without native varargs support (e.g., Rust, C++) must define an idiomatic mapping in their respective
+  best-practice guideline (e.g., `&[T]` or `impl IntoIterator<Item = T>` in Rust, `std::initializer_list<T>` or a
+  variadic template in C++).
+
 #### Method annotations
 
 Method annotations can be used to provide additional information about methods.
@@ -386,6 +455,12 @@ The following annotations should be used:
   and futures are two distinct async patterns — a callback is invoked when work completes, while a future represents
   a pending result. Combining them (e.g., a callback that returns a future) should be avoided as it creates ambiguity
   about responsibility and completion semantics.
+- `@@streaming`: Indicates that the method returns an asynchronous stream of items — a pull-based sequence the
+  consumer drives at its own pace. The return type specifies the element type; use `streamResult<TYPE>` when
+  per-item errors are possible (non-terminal), or a plain type when all errors are terminal. `@@throws` declares
+  terminal stream-level errors (connection failure, authorization revoked, etc.). See [Streaming](#streaming) for
+  full semantics, per-item error handling, retry, cancellation, and language mappings.
+  Note: `@@streaming` and `@@async` are mutually exclusive — streaming already implies asynchronous item production.
 - `@@static`: Indicates that the method belongs to the type itself and can be called without an instance.
   Typical use cases are factory methods and deserialization methods.
   For example, `@@static Transaction fromBytes(payload: bytes)`.
@@ -506,6 +581,161 @@ namespace transactions
 constant MAX_TRANSACTIONS:int32 = 100
 ```
 
+### Streaming
+
+The meta-language supports declaring methods that return an asynchronous stream of items. A stream is a pull-based async
+sequence that the consumer drives at its own pace. The SDK produces items (from a network subscription, gRPC stream,
+paginated query, etc.) and the consumer pulls them one at a time using the language's idiomatic async iteration construct.
+
+#### The `@@streaming` annotation
+
+The `@@streaming` annotation on a method declares that the method returns an asynchronous stream of items instead of a
+single value. The return type specifies the element type of the stream.
+
+```
+@@streaming
+TopicMessage subscribe(topicId: string)
+```
+
+The consumer iterates over the stream using the language's native async iteration pattern (e.g., `for await...of` in
+TypeScript, `async for` in Python, `while let Some(x) = s.next().await` in Rust). Breaking out of the loop cancels the
+stream.
+
+`@@streaming` applies only to method declarations. It must not be combined with `@@async` — a streaming method already
+implies asynchronous production of items. `@@async` is for single-value returns; `@@streaming` is for multi-value
+returns.
+
+#### Per-item error handling with `streamResult<TYPE>`
+
+Streams use a dedicated result wrapper to separate per-item errors (non-terminal) from stream-level errors (terminal).
+The `streamResult<TYPE>` data type represents a single item in the stream that is either a success value or an error:
+
+| Data Type             | Description                                                       |
+|-----------------------|-------------------------------------------------------------------|
+| `streamResult<TYPE>`  | A stream item that is either a success value of TYPE or an error  |
+
+A streaming method that may produce per-item errors uses `streamResult` as its return type:
+
+```
+@@streaming
+streamResult<TopicMessage> subscribe(topicId: string)
+```
+
+Each language maps `streamResult<TYPE>` to its idiomatic result/either type:
+
+| Language   | Mapping                                              |
+|------------|------------------------------------------------------|
+| Rust       | `Result<T, E>` (standard library)                    |
+| Swift      | `Result<T, Error>` (standard library)                |
+| Go         | `(T, error)` multiple return / `iter.Seq2[T, error]` |
+| C++        | `std::expected<T, E>` (C++23) / `absl::StatusOr<T>`  |
+| Java       | Sealed `StreamItem<T>` interface                     |
+| TypeScript | Discriminated union `{ ok: true, value: T } \| { ok: false, error: Error }` |
+| JavaScript | Plain object with `status` field                     |
+| Python     | `Success[T] \| Failure` dataclass union              |
+
+When a streaming method does **not** use `streamResult` (i.e., the return type is a plain type), all errors are
+stream-level and terminal — the stream ends and the error is delivered through the language's native error mechanism
+(exception, panic, etc.).
+
+#### Error levels in streams
+
+Streams have two distinct error levels:
+
+1. **Per-item errors** (non-terminal) — A single item in the stream is broken (parse error, invalid data, etc.). The
+   stream continues. These are expressed by yielding an error variant of `streamResult`.
+2. **Stream-level errors** (terminal) — The stream itself has failed (connection lost after retries exhausted, resource
+   deleted, authorization revoked). The stream ends. These are delivered through the language's native error mechanism.
+
+Consumer code follows a consistent two-level pattern:
+
+```
+try {
+    for await (item in stream) {
+        if (item is error) {
+            // per-item: handle, skip, or log
+        } else {
+            process(item.value)
+        }
+    }
+} catch (error) {
+    // stream-level: fatal, stream is over
+}
+```
+
+#### Retry strategy
+
+Retry and reconnection logic for transient failures (network interruptions, gRPC stream resets) is an SDK-internal
+concern. The SDK handles reconnection transparently — the consumer's iteration loop continues without interruption.
+
+User-facing retry configuration is expressed as parameters on the streaming method or on the object that provides the
+streaming method, not as control flow around the iteration loop:
+
+```
+@@streaming
+streamResult<TopicMessage> subscribe(topicId: string, @@nullable retryPolicy: RetryPolicy)
+```
+
+If the SDK exhausts its retry budget, the failure surfaces as a terminal stream-level error.
+
+#### Completion
+
+A stream completes when the server closes the connection. Completion is **server-driven**: when an end condition
+is set on the request (such as `endTime` or `endBlockNumber`), the server enforces it and closes the stream; the
+SDK propagates that closure to the consumer. The SDK does not monitor item values client-side to detect end
+conditions.
+
+When no end condition is set, the stream runs indefinitely until the consumer cancels it or a terminal error occurs.
+
+#### Cancellation
+
+Cancellation is implicit: when the consumer stops iterating (breaks out of the loop, the enclosing scope ends, or the
+stream handle is explicitly closed/dropped), the SDK must release the underlying resources (close the gRPC stream,
+unsubscribe from the topic, etc.). Each language implements this through its native resource management:
+
+- **Rust**: Dropping the `Stream`
+- **Swift**: Task cancellation / leaving the `for await` scope
+- **Go**: Cancelling the `context.Context`
+- **Java**: `AutoCloseable.close()` / try-with-resources
+- **TypeScript/JavaScript**: `break` / `return` from the `for await` loop
+- **Python**: `break` / `return` from the `async for` loop, or async context manager
+- **C++**: RAII destructor
+
+#### Streaming annotation combinations
+
+`@@streaming` can be combined with the following annotations:
+
+- `@@throws(error-type)` — Declares terminal stream-level errors that the stream can produce.
+
+`@@streaming` must **not** be combined with:
+
+- `@@async` — Streaming already implies async item production.
+- `@@static` — Streams are produced by instances, not types.
+
+#### Full example
+
+```
+namespace topics
+requires common
+
+TopicSubscription {
+    @@streaming
+    @@throws(topic-deleted-error, authorization-error)
+    streamResult<TopicMessage> subscribe(topicId: common.TopicId, @@nullable retryPolicy: RetryPolicy)
+}
+
+TopicMessage {
+    @@immutable sequenceNumber: int64
+    @@immutable payload: bytes
+    @@immutable timestamp: zonedDateTime
+}
+
+RetryPolicy {
+    @@immutable @@default(3) maxAttempts: int32
+    @@immutable @@default("exponential") backoffStrategy: string
+}
+```
+
 ### Best practices and antipatterns
 
 The following best practices and antipatterns should be followed when defining the API.
@@ -558,6 +788,42 @@ It is best practice to return an empty collection instead of `null`.
 Some languages (like Go) have custom semantics for the defined behavior (like `nil` in Go).
 In that case the language-specific semantics should be used in the implementation.
 Such special behavior must be documented in the best-practice guidelines for the specific language.
+
+#### Avoid `ANY` as a standalone type
+
+The `ANY` type is the API equivalent of Java's `Object` or TypeScript's `unknown`/`any` — it accepts any value but
+gives up all compile-time type information. It exists in the meta-language because some legitimate use cases require
+it (e.g., bridges to dynamic data, generic key/value stores, callbacks that forward opaque user data), but it should
+be a last resort, not a default choice.
+
+**Why standalone `ANY` is problematic:**
+
+- **No type safety** — Callers cannot tell what value is expected or returned. The compiler/runtime cannot catch
+  type mismatches at the API boundary.
+- **Pushes complexity to callers** — Every consumer must check or cast the value before using it, leading to
+  boilerplate and runtime errors.
+- **Documentation drift** — The actual contract lives in prose ("this returns a `String` if X, otherwise an
+  `Integer`"), which is invisible to tooling and easy to get wrong.
+- **Inconsistent language semantics** — Java's `Object` boxes primitives, Rust requires explicit downcasting,
+  TypeScript distinguishes `any` (unsafe) from `unknown` (safe). Behavior varies more than for typed APIs.
+
+**Prefer instead:**
+
+- **A generic type parameter (`$$T`)** — When the caller knows the type at the call site, expose it as a generic
+  parameter so the type flows through the API.
+- **A concrete base type or interface** — Model the common contract explicitly (e.g., `ContractParam` instead of
+  `ANY` for smart-contract arguments).
+- **A sealed/tagged union via `@@oneOf`** — When the value is one of a finite set of known types, model it as a
+  union so the consumer can exhaustively handle each case.
+- **`bytes` plus a documented schema** — For fully opaque payloads (serialized data, blobs), `bytes` is more honest
+  than `ANY` and avoids accidental coupling.
+
+Note that this guidance applies to `ANY` used as a standalone type. `ANY` as a wildcard type argument (e.g.,
+`ContractParam<ANY>`) serves a different purpose — see
+[Wildcard type arguments](#wildcard-type-arguments) — and is not subject to the same warning.
+
+When `ANY` is genuinely the right choice, document the expected shape and the conditions under which different
+runtime types may appear so consumers do not have to guess.
 
 ### Naming conventions
 

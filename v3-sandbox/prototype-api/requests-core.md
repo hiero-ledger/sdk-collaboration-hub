@@ -28,14 +28,15 @@ interface Executable<$$Response> {
     $$Response execute(client: HieroClient)
 }
 
-// Produces an asynchronous stream of $$Item values.
+// Any request that produces an ongoing stream of $$Item values via subscribe().
 // Does NOT extend Request — avoids diamond inheritance.
-// Implementations must provide item delivery, error propagation,
-// completion signaling, and cancellation support.
-// The return type and consumer mechanism are language-specific.
-// See language best practice guides for the concrete signature.
+// streamResult<$$Item> wraps each item as either a success value or a per-item error,
+// allowing the stream to continue past individual item failures (e.g. deserialization errors).
+// Terminal failures (connection lost, auth revoked) surface via @@throws.
 interface Subscribable<$$Item> {
-    subscribe(client: HieroClient)
+    @@streaming
+    @@throws(network-error, request-timeout, max-attempts-exceeded)
+    streamResult<$$Item> subscribe(client: HieroClient)
 }
 
 // ============================================================================
@@ -126,6 +127,21 @@ abstraction BlockNodeRequest extends Request {
 }
 ```
 
+## Comparison: Executable vs Subscribable
+
+| | `Executable<$$Response>` | `Subscribable<$$Item>` |
+|---|---|---|
+| Result cardinality | Exactly one response | Zero or more items over time |
+| Return type | `$$Response` | `streamResult<$$Item>` |
+| Execution annotation | `@@async` | `@@streaming` |
+| Per-item errors | Not applicable | Non-terminal — error variant of `streamResult<$$Item>` |
+| Terminal errors | `@@throws` | `@@throws` — stream ends, error surfaces via language mechanism |
+| Completion | Implicit — `execute()` returns | Server-driven — server closes stream when end condition reached |
+| Cancellation | Not applicable (single shot) | Implicit — stop iterating; SDK releases resources |
+| Concurrency model | Future / promise / coroutine | Async iteration / reactive stream / callbacks |
+
 ## Questions & Comments
 
 - Should `ConsensusRequest.nodeAccountIds` have a default (e.g., all known nodes) or must it always be explicitly set?
+- Should `Subscribable` carry any retry/reconnect annotations, or is reconnect-on-disconnect purely an
+  internal SPI concern (i.e., transparent to the consumer unless all reconnect attempts fail)?
