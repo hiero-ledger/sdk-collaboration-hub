@@ -1,4 +1,4 @@
-# HIPs - Not Requiring Implementation
+# HIPS --NOT-- REQUIRING IMPLEMENTATION
 
 > [!IMPORTANT]
 > This document is for tracking and coordination only.
@@ -6,52 +6,59 @@
 
 ---
 
-## Purpose and Scope
+## Scope and Purpose
 
-The purpose of this document is to track Hedera Improvement Proposals (HIPs) that do not require direct code changes or API modifications within the Hiero SDKs, but still impact the ecosystem, documentation, or how developers interact with the protocol.
+This document serves as the central tracking artifact for Hedera Improvement Proposals (HIPs) that **do not require direct SDK code implementation**, yet necessitate cross-SDK visibility, coordination, and ecosystem awareness.
 
-### Included in Scope
-- Documentation-impacting HIPs: Changes that require updates to guides, tutorials, or READMEs.
-- Conceptual / Protocol-level changes: Changes to how the network operates that impact mental models but not the SDK code itself.
-- Behavioral clarifications: Updates to specifications that clarify expected behavior without changing implementation logic.
-- Ecosystem / Awareness: HIPs that define standards (like metadata formats) which SDK users and maintainers should be aware of.
+### What Qualifies as a "Non-Implementation HIP"?
+- **Documentation Updates:** Changes that strictly affect API reference docs, tutorials, or conceptual guides without altering underlying code.
+- **Behavioral Clarifications:** Standardizations of how SDKs should behave in edge cases (e.g., error handling conventions) where the implementation might already exist but needs to be uniformly understood.
+- **Ecosystem / Awareness:** Network-wide standards, tool integrations, or architectural patterns that SDK developers and users must be aware of, even if the SDKs themselves don't require code changes.
 
-### Excluded from Scope
-- Any HIP requiring new methods, classes, or logic in SDKs.
-- Performance improvements that require implementation work in the codebase.
-- Feature additions needing SDK updates.
+### What Does NOT Qualify?
+- Any HIP that requires writing new features, modifying existing logic, adding new API endpoints, or updating dependencies within the SDK codebase. These must be tracked in their own dedicated implementation epics.
+
+### Why Tracking is Important
+Even if no code is written, SDK maintainers must remain aligned. This tracker ensures that:
+- Documentation accurately reflects the latest network standards.
+- Maintainers enforce behavioral conventions uniformly across all languages (JS, Go, Java, Swift, etc.).
+- Critical ecosystem changes do not catch SDK maintainers or end-users by surprise.
 
 ---
 
-## HIP Tracking Table
+## Structured Tracking Table
 
 | HIP ID | Title | Summary | Affected SDKs | Impact Type | Status | References |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| [HIP-1](https://hips.hedera.com/hip/hip-1) | Hedera Improvement Proposal | The standard process for proposing improvements to the Hedera network. | All | Documentation | Active | [Link](https://hips.hedera.com/hip/hip-1) |
-| [HIP-15](https://hips.hedera.com/hip/hip-15) | HIP Governance | Defines the governance model for the HIP process. | All | Ecosystem | Active | [Link](https://hips.hedera.com/hip/hip-15) |
-| [HIP-XXX] | [Example Placeholder] | [Example of a conceptual protocol update or behavioral clarification] | All | Behavioral | Draft | [Link] |
+|--------|-------|---------|---------------|-------------|--------|------------|
+| HIP-15 | Hedera Account Identifiers | Clarifies string formats for account IDs to maintain consistency across ecosystem tooling. | All | Awareness | Final | [HIP-15](https://hips.hedera.com/hip/hip-15) |
+| HIP-794 | Standardize Network Node Identifiers | Defines naming conventions for network nodes in documentation and reference materials. | All | Docs | Adopted | [HIP-794](https://hips.hedera.com/hip/hip-794) |
+| HIP-820 | SDK Error Handling Terminology | Establishes a uniform vocabulary for describing network errors in conceptual documentation. | All | Behavior | Review | [HIP-820](https://hips.hedera.com/hip/hip-820) |
 
----
-
-## Impact Type Definitions
-
-- Documentation: Requires updates to technical documentation, guides, or examples.
-- Behavioral: Impacts how developers use the SDK (e.g., timing, retries, or expected errors) without changing the API.
-- Ecosystem: Relates to broader standards or protocol conventions (e.g., metadata schemas).
-- Awareness: Primarily for informing SDK maintainers and users about protocol evolution.
+*(Note: Impact Type = Docs / Behavior / Ecosystem / Awareness \| Status = Draft / Review / Final / Adopted)*
 
 ---
 
 ## How to Contribute
 
-We welcome updates to this tracking list. To add or update an entry:
+When a new HIP is introduced that fits the non-implementation criteria, please add it to the table above following these guidelines:
 
-1. Verify Scope: Ensure the HIP does not require SDK code changes.
-2. Impact Analysis: Identify which SDKs are affected and the type of impact.
-3. Submit a PR: Add the entry to the table above and link the relevant HIP.
+### How to Determine if a HIP Belongs Here
+Review the HIP's "Specification" and "Implementation" sections. If the HIP only mandates documentation updates, standardizes existing behavior, or provides informational context without necessitating code changes in the SDKs, it belongs here.
+
+### Formatting Rules
+Add a new row to the table using the following required fields:
+- **HIP ID:** The official HIP number (e.g., HIP-123).
+- **Title:** The exact title from the official HIP document.
+- **Summary:** A 1-2 sentence concise explanation of the HIP's purpose.
+- **Affected SDKs:** Comma-separated list (e.g., JS, Go, Java) or "All".
+- **Impact Type:** Must be exactly one of: `Docs`, `Behavior`, `Ecosystem`, or `Awareness`.
+- **Status:** Must be exactly one of: `Draft`, `Review`, `Final`, or `Adopted`.
+- **References:** A markdown link to the official HIP URL.
 
 ---
 
-## Related Tracking
-- SDK Implementation Epic: #216 (For HIPs requiring code changes)
-- Hiero Ledger HIPs Repo: [github.com/hashgraph/hedera-improvement-proposals](https://github.com/hashgraph/hedera-improvement-proposals)
+## Maintenance Guidelines
+
+- **Who updates status:** SDK maintainers, technical writers, or community contributors who monitor HIP progression.
+- **When to update entries:** Statuses should be updated whenever the corresponding HIP changes state on the official Hedera HIPs repository.
+- **Cross-SDK Tracking:** This issue acts as the source of truth for visibility. If a non-implementation HIP requires specific documentation tasks per SDK, individual issues may be created and linked in the "Summary" column, but the overarching status is tracked here. Entries are generally not removed, serving as a historical ledger of adopted standards.
