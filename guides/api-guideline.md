@@ -21,6 +21,26 @@ We provide concrete implementation guidelines for the following programming lang
 - [JavaScript API Implementation Guideline](api-best-practices-js.md)
 - [Swift API Implementation Guideline](api-best-practices-swift.md)
 
+## Minimum Section Parity Template For Language Guides
+
+To keep cross-SDK implementation guidance consistent, every language guide file matching
+`guides/api-best-practices-*.md` must include the same baseline sections before adding language-specific depth.
+
+Required baseline sections:
+
+1. Type mapping table from meta-language to target language
+2. Error model mapping for `@@throws`
+3. Async model mapping for `@@async`
+4. Factory and static method conventions
+5. Nullability and collection semantics
+6. Immutability and thread-safety guidance
+7. One runnable example covering build-sign-send flow
+
+Use [Language Guide Parity Template](../templates/language-guide-parity-template.md) as the canonical section skeleton.
+
+When opening language-specific follow-up issues (for example, expanding Python or C++ guide depth), link this section
+and explicitly list which baseline sections are being added or updated.
+
 ## Syntax
 
 The following syntax should be used to document the APIs in a language-agnostic way
