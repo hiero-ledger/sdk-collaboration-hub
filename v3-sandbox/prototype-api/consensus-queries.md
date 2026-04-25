@@ -4,7 +4,7 @@ This section defines the consensus query types — queries sent to consensus nod
 
 ## Description
 
-All consensus queries extend `ConsensusQuery`, which provides query payment handling and cost estimation. `ConsensusQuery` follows the 3-axis model: it extends `ConsensusRequest` (network), implements `Executable` (execution), and implements `GrpcRequest` (transport). It inherits retry/timeout config from `Request` and `nodeAccountIds` from `ConsensusRequest`.
+All consensus queries extend `ConsensusQuery`, which provides query payment handling and cost estimation. `ConsensusQuery` extends `ConsensusCall` (network + execution) and implements `GrpcTransport` (transport). It inherits retry/timeout config from `Request` and holds `nodeAccountIds` for targeting specific consensus nodes at query time.
 
 For the overall request hierarchy, see [requests.md](requests.md). For the internal execution flow, see [requests-spi.md](requests-spi.md).
 
@@ -14,10 +14,15 @@ For the overall request hierarchy, see [requests.md](requests.md). For the inter
 namespace consensus-queries
 requires requests-core, common
 
-// All consensus queries. Query payment, cost estimation.
-// Class chain: ConsensusQuery -> ConsensusRequest -> Request
-// Contracts: implements Executable<$$Response>, GrpcRequest
-abstraction ConsensusQuery<$$Response> extends ConsensusRequest, Executable<$$Response>, GrpcRequest {
+// All consensus queries. Query payment, cost estimation, and node targeting.
+// Class chain: ConsensusQuery -> ConsensusCall -> Request
+// Transport: implements GrpcTransport
+abstraction ConsensusQuery<$$Response> extends ConsensusCall<$$Response> : GrpcTransport {
+    // Allows the user to explicitly target specific consensus nodes.
+    // When set, the withRetry loop selects from this list instead of the full network.
+    // Corresponds to the node_account_id field in the protobuf QueryHeader.
+    nodeAccountIds: list<AccountId>
+
     @@nullable queryPayment: Hbar
 
     @@async
@@ -61,4 +66,5 @@ AccountBalance balance = query.execute(client)
 ## Questions & Comments
 
 - Should `ConsensusQuery` provide a default `queryPayment` or always require the user to set one (or call `getCost`)?
+- Should `nodeAccountIds` have a default (e.g., all known nodes) or must it always be explicitly set?
 - Should `TransactionReceiptQuery` and `TransactionRecordQuery` have specialized retry behavior (e.g., waiting for consensus)?

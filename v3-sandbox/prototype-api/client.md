@@ -23,7 +23,7 @@ OperatorAccount {
 HieroClient {
     @@immutable operatorAccount: OperatorAccount // the operator account
     @@immutable ledger: common.Ledger // the network to connect to
-    defaultRequestConfig: requests-core.RequestConfig // client-level defaults for retry/timeout (overridden by per-request config)
+    defaultRetryPolicy: requests-core.RetryPolicy // client-level defaults for retry/timeout (overridden by per-request config)
 }
 
 // factory methods of `HieroClient` that should be added to the namespace in the best language dependent way

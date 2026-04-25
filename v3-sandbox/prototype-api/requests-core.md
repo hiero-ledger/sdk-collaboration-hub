@@ -2,11 +2,12 @@
 
 This document defines the foundational contracts, base abstractions, and configuration types for the request hierarchy. These are the building blocks that all domain-specific request types (transactions, queries, streaming subscriptions) extend or implement.
 
-Every concrete request type answers three orthogonal questions via its type declaration:
+Every concrete request type answers two questions via its type declaration:
 
-1. **Network** (class inheritance): Which network does this target? (`ConsensusRequest`, `MirrorRequest`, `BlockNodeRequest`)
-2. **Execution** (interface): What execution pattern does it use? (`Executable<R>` or `Subscribable<I>`)
-3. **Transport** (interface): What transport protocol does it use? (`GrpcRequest` or `RestRequest`)
+1. **Network + execution pattern** (class inheritance): Which network does this target, and does it return a single response or a stream? (`ConsensusCall`, `MirrorCall`, `MirrorStream`, `BlockNodeCall`, `BlockNodeStream`)
+2. **Transport** (interface): What transport protocol does it use? (`GrpcTransport` or `RestTransport`)
+
+Network and execution pattern are unified in the class hierarchy rather than split across class inheritance and interfaces. This allows each concrete base to hold a sealed `execute()` or `subscribe()` implementation that delegates to protected SPI helpers — removing the need for concrete types to re-implement execution logic.
 
 For the overall architecture and hierarchy diagrams, see [requests.md](requests.md).
 
@@ -17,57 +18,34 @@ namespace requests-core
 requires common, client
 
 // ============================================================================
-// EXECUTION INTERFACES
-// ============================================================================
-
-// Any request that produces a single response via execute().
-// Does NOT extend Request — avoids diamond inheritance.
-interface Executable<$$Response> {
-    @@async
-    @@throws(network-error, request-timeout, max-attempts-exceeded)
-    $$Response execute(client: HieroClient)
-}
-
-// Any request that produces an ongoing stream of $$Item values via subscribe().
-// Does NOT extend Request — avoids diamond inheritance.
-// streamResult<$$Item> wraps each item as either a success value or a per-item error,
-// allowing the stream to continue past individual item failures (e.g. deserialization errors).
-// Terminal failures (connection lost, auth revoked) surface via @@throws.
-interface Subscribable<$$Item> {
-    @@streaming
-    @@throws(network-error, request-timeout, max-attempts-exceeded)
-    streamResult<$$Item> subscribe(client: HieroClient)
-}
-
-// ============================================================================
 // TRANSPORT INTERFACES
 // ============================================================================
 
 // Marks a request as using gRPC transport.
 // Carries transport-specific SPI methods (see requests-spi.md):
 //   buildRequest(node) — builds the protobuf request
-//   shouldRetry(error) — default: retry on gRPC UNAVAILABLE, RESOURCE_EXHAUSTED
-interface GrpcRequest {
+//   isRetryable(error) — default: retry on gRPC UNAVAILABLE, RESOURCE_EXHAUSTED
+interface GrpcTransport {
 }
 
 // Marks a request as using REST/HTTP transport.
 // Carries transport-specific SPI methods (see requests-spi.md):
 //   buildRequest(node) — builds the HTTP request (URL, headers, body)
-//   shouldRetry(error) — default: retry on HTTP 503, 429, 408
-interface RestRequest {
+//   isRetryable(error) — default: retry on HTTP 503, 429, 408
+interface RestTransport {
 }
 
 // ============================================================================
-// SHARED CONFIGURATION
+// RETRY AND TIMEOUT CONFIGURATION
 // ============================================================================
 
-// Shared retry and timeout configuration.
-// Composed by Request (execution hierarchy) and HieroClient (defaults).
+// Retry and timeout configuration.
+// Composed by Request and HieroClient (defaults).
 // Fields are surfaced directly on composing types (flattened access, not nested).
 //
 // Priority chain: per-request config > client defaults > hardcoded defaults.
 // When execute()/subscribe() is called, any unset fields on the request are
-// filled from client.defaultRequestConfig, then from @@default values here.
+// filled from client.defaultRetryPolicy, then from @@default values here.
 //
 // Timeout semantics:
 //
@@ -84,7 +62,7 @@ interface RestRequest {
 //   Example: maxAttempts=3, attemptTimeout=5s, requestTimeout=30s means each
 //   individual call can take up to 5s, but the whole operation (up to 3 attempts
 //   with backoff) must finish within 30s.
-RequestConfig {
+RetryPolicy {
     @@default(10) maxAttempts: int32
     @@default(8s) maxBackoff: duration
     @@default(250ms) minBackoff: duration
@@ -96,40 +74,76 @@ RequestConfig {
 // ROOT BASE
 // ============================================================================
 
-// Root of all executable request types. Composes RequestConfig for retry/timeout.
-// Fields from RequestConfig are surfaced directly (flattened access).
-// Also provides the internal withRetry execution loop (see requests-spi.md).
+// Root of all request types. Composes RetryPolicy for retry/timeout configuration.
+// Fields from RetryPolicy are surfaced directly (flattened access).
+// Provides the internal withRetry loop and executeImpl/subscribeImpl helpers
+// used by the concrete bases (see requests-spi.md).
 abstraction Request {
-    requestConfig: RequestConfig
+    retryPolicy: RetryPolicy
 }
 
 // ============================================================================
-// NETWORK-SPECIFIC REQUEST BASES
+// CONSENSUS NODE BASES
 // ============================================================================
 
-// Shared base for all consensus node requests.
-// Network resolution is handled internally via SPI (see requests-spi.md).
-abstraction ConsensusRequest extends Request {
-    // Allows the user to explicitly target specific consensus nodes.
-    // When set, the withRetry loop selects from this list instead of the full network.
-    // Corresponds to the node_account_id field in the protobuf TransactionBody/QueryHeader.
-    nodeAccountIds: list<AccountId>
+// Base for all unary requests to the consensus node.
+// Provides getNetwork() → client.consensusNetwork (see requests-spi.md).
+// Transport is declared by each concrete subtype via GrpcTransport or RestTransport.
+abstraction ConsensusCall<$$Response> extends Request {
+    @@async
+    @@throws(network-error, request-timeout, max-attempts-exceeded)
+    $$Response execute(client: HieroClient)
 }
 
-// Shared base for all mirror node requests (gRPC and REST, unary and streaming).
-// Network resolution is handled internally via SPI (see requests-spi.md).
-abstraction MirrorRequest extends Request {
+// ============================================================================
+// MIRROR NODE BASES
+// ============================================================================
+
+// Base for all unary requests to the mirror node.
+// Provides getNetwork() → client.mirrorNetwork (see requests-spi.md).
+// Transport is declared by each concrete subtype via GrpcTransport or RestTransport.
+abstraction MirrorCall<$$Response> extends Request {
+    @@async
+    @@throws(network-error, request-timeout, max-attempts-exceeded)
+    $$Response execute(client: HieroClient)
 }
 
-// Shared base for all block node requests (unary and streaming).
-// Network resolution is handled internally via SPI (see requests-spi.md).
-abstraction BlockNodeRequest extends Request {
+// Base for all streaming subscriptions to the mirror node.
+// Provides getNetwork() → client.mirrorNetwork (see requests-spi.md).
+// streamResult<$$Item> wraps each item as either a success value or a per-item error,
+// allowing the stream to continue past individual item failures (e.g. deserialization errors).
+// Terminal failures (connection lost, auth revoked) surface via @@throws.
+abstraction MirrorStream<$$Item> extends Request {
+    @@streaming
+    @@throws(network-error, request-timeout, max-attempts-exceeded)
+    streamResult<$$Item> subscribe(client: HieroClient)
+}
+
+// ============================================================================
+// BLOCK NODE BASES
+// ============================================================================
+
+// Base for all unary requests to the block node.
+// Provides getNetwork() → client.blockNodeNetwork (see requests-spi.md).
+// Transport is declared by each concrete subtype via GrpcTransport or RestTransport.
+abstraction BlockNodeCall<$$Response> extends Request {
+    @@async
+    @@throws(network-error, request-timeout, max-attempts-exceeded)
+    $$Response execute(client: HieroClient)
+}
+
+// Base for all streaming subscriptions to the block node.
+// Provides getNetwork() → client.blockNodeNetwork (see requests-spi.md).
+abstraction BlockNodeStream<$$Item> extends Request {
+    @@streaming
+    @@throws(network-error, request-timeout, max-attempts-exceeded)
+    streamResult<$$Item> subscribe(client: HieroClient)
 }
 ```
 
-## Comparison: Executable vs Subscribable
+## Comparison: execute() vs subscribe()
 
-| | `Executable<$$Response>` | `Subscribable<$$Item>` |
+| | `execute()` bases | `subscribe()` bases |
 |---|---|---|
 | Result cardinality | Exactly one response | Zero or more items over time |
 | Return type | `$$Response` | `streamResult<$$Item>` |
@@ -142,6 +156,5 @@ abstraction BlockNodeRequest extends Request {
 
 ## Questions & Comments
 
-- Should `ConsensusRequest.nodeAccountIds` have a default (e.g., all known nodes) or must it always be explicitly set?
-- Should `Subscribable` carry any retry/reconnect annotations, or is reconnect-on-disconnect purely an
-  internal SPI concern (i.e., transparent to the consumer unless all reconnect attempts fail)?
+- Should `RetryPolicy` default values for `maxAttempts`, `maxBackoff`, `minBackoff` be standardized across all SDKs, or configurable per-SDK?
+- Should `MirrorStream` or `BlockNodeStream` carry any retry/reconnect annotations, or is reconnect-on-disconnect purely an internal SPI concern (i.e., transparent to the consumer unless all reconnect attempts fail)?

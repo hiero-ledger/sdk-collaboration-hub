@@ -13,7 +13,7 @@ The transaction lifecycle has two phases, each with its own type:
 
 `build()` transitions from phase 1 to phase 2. `buildAndExecute()` is a convenience that handles both phases in one call for simple single-signer flows.
 
-`Transaction` extends `ConsensusRequest` from the request hierarchy and implements `Executable<$$Response>` and `GrpcRequest`. See [requests.md](requests.md) for the full hierarchy and [requests-core.md](requests-core.md) for base type definitions.
+`Transaction` extends `ConsensusCall<$$Response>` from the request hierarchy and implements `GrpcTransport`. See [requests.md](requests.md) for the full hierarchy and [requests-core.md](requests-core.md) for base type definitions.
 
 ## API Schema
 
@@ -77,20 +77,15 @@ abstraction TransactionBuilder<$$Builder extends TransactionBuilder, $$Response 
 }
 
 // An immutable transaction ready for signing, serialization, and submission. Extends
-// ConsensusRequest from the request hierarchy (see requests-core.md) and implements
-// Executable<$$Response> and GrpcRequest. The transaction body cannot be modified after
-// build — only network execution config and signatures can be added.
+// ConsensusCall<$$Response> from the request hierarchy (see requests-core.md) and implements
+// GrpcTransport. The transaction body cannot be modified after build — only network
+// execution config and signatures can be added.
 //
 // The generic parameter $$Response carries the typed response produced when the transaction is
 // executed. This ensures that the typed return value is preserved through the full
 // build() → sign() → execute() chain, including multi-party signing flows.
 @@finalType
-Transaction<$$Response extends Response> extends requests-core.ConsensusRequest, requests-core.Executable<$$Response>, requests-core.GrpcRequest {
-  // Network execution config — does not affect the signed transaction body
-  @@nullable maxAttempts: int32
-  @@nullable maxBackoff: int64
-  @@nullable minBackoff: int64
-  @@nullable attemptTimeout: int64
+Transaction<$$Response extends Response> extends requests-core.ConsensusCall<$$Response> : requests-core.GrpcTransport {
 
   // Sign the transaction with the given key pair. Returns self to allow chaining.
   Transaction<$$Response> sign(keyPair: keys.KeyPair)

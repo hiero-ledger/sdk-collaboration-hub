@@ -5,7 +5,7 @@ This file defines the API for the prototype in the format defined at our [api-gu
 ## Architecture
 
 - [Requests Overview](requests.md) — Request hierarchy, design rationale, hierarchy diagrams
-- [Requests Core Types](requests-core.md) — `RequestConfig` struct, execution contracts (`Executable`, `Subscribable`), transport contracts (`GrpcRequest`, `RestRequest`), `Request` root base, network-specific request bases
+- [Requests Core Types](requests-core.md) — `RetryPolicy` struct, transport interfaces (`GrpcTransport`, `RestTransport`), `Request` root base, concrete bases (`ConsensusCall`, `MirrorCall`, `MirrorStream`, `BlockNodeCall`, `BlockNodeStream`)
 - [Requests SPI](requests-spi.md) — Internal node/network types, `withRetry` execution loop, SPI methods distributed across 3 axes
 
 ## Consensus Node

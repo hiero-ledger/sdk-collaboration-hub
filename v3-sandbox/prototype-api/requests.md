@@ -4,28 +4,27 @@ This document describes the overall request hierarchy for v3 SDKs, covering all 
 
 ## Description
 
-The requests API defines the foundational types for all SDK requests: transactions, queries, and streaming subscriptions. It uses a **3-axis model** where every concrete request type answers three orthogonal questions via its type declaration:
+The requests API defines the foundational types for all SDK requests: transactions, queries, and streaming subscriptions. Every concrete request type answers two questions via its type declaration:
 
-1. **Network** (class inheritance): Which network does this target? (`ConsensusRequest`, `MirrorRequest`, `BlockNodeRequest`)
-2. **Execution** (interface): What execution pattern does it use? (`Executable<R>` or `Subscribable<I>`)
-3. **Transport** (interface): What transport protocol does it use? (`GrpcRequest` or `RestRequest`)
+1. **Network + execution pattern** (class inheritance): Which network does this target, and does it return a single response or a stream? (`ConsensusCall`, `MirrorCall`, `MirrorStream`, `BlockNodeCall`, `BlockNodeStream`)
+2. **Transport** (interface): What transport protocol does it use? (`GrpcTransport` or `RestTransport`)
 
 This replaces the v2 `Executable` base class with a design that cleanly separates:
 
-- **Shared configuration** (`RequestConfig` struct, `Request` base) from **execution behavior** (`Executable`, `Subscribable` interfaces)
-- **Network targeting** (network-specific request bases) from **transport protocol** (`GrpcRequest`, `RestRequest` interfaces)
+- **Shared configuration** (`RetryPolicy` struct, `Request` base) from **execution behavior** (`execute()` / `subscribe()` on the concrete bases)
+- **Network + execution pattern** (concrete bases in the class hierarchy) from **transport protocol** (`GrpcTransport`, `RestTransport` interfaces)
 - **Request semantics** (transaction signing, query payment, etc.) from all of the above
 
-Diamond inheritance is avoided by keeping all interfaces outside the class inheritance tree. Every type has exactly one class-inheritance path to `Request`.
+Network and execution pattern are unified in a single class hierarchy layer rather than split across class inheritance and interfaces. This keeps `execute()` and `subscribe()` as sealed concrete implementations — no concrete type needs to re-implement or can accidentally override execution logic.
 
-### RequestConfig and Priority Chain
+### RetryPolicy and Priority Chain
 
-Retry and timeout configuration is defined in a standalone `RequestConfig` struct (see [requests-core.md](requests-core.md)). It is composed by:
+Retry and timeout configuration is defined in a standalone `RetryPolicy` struct (see [requests-core.md](requests-core.md)). It is composed by:
 
-- **`Request`** — every executable request type inherits config through the class hierarchy
-- **`HieroClient`** — holds `defaultRequestConfig` for client-level defaults
+- **`Request`** — every request type inherits config through the class hierarchy
+- **`HieroClient`** — holds `defaultRetryPolicy` for client-level defaults
 
-When `execute()` or `subscribe()` is called, unset fields on the request are filled from the client's `defaultRequestConfig`, then from the hardcoded `@@default` values on `RequestConfig`.
+When `execute()` or `subscribe()` is called, unset fields on the request are filled from the client's `defaultRetryPolicy`, then from the hardcoded `@@default` values on `RetryPolicy`.
 
 **Priority chain:** per-request config > client defaults > hardcoded defaults.
 
@@ -40,11 +39,11 @@ This document uses two meta-language keywords for abstract types (see [API Guide
 
 | File | Contents |
 |---|---|
-| [Requests Core Types](requests-core.md) | `RequestConfig` struct, execution interfaces (`Executable`, `Subscribable`), transport interfaces (`GrpcRequest`, `RestRequest`), root `Request` base, network-specific request bases |
-| [Requests SPI](requests-spi.md) | Internal node/network types, `withRetry` execution loop, SPI methods distributed across 3 axes |
-| [Transactions](transactions.md) | `Transaction` (single type with internal state machine), response types (`TransactionId`, `Receipt`, `Record`) |
+| [Requests Core Types](requests-core.md) | `RetryPolicy` struct, transport interfaces (`GrpcTransport`, `RestTransport`), root `Request` base, concrete bases (`ConsensusCall`, `MirrorCall`, `MirrorStream`, `BlockNodeCall`, `BlockNodeStream`) |
+| [Requests SPI](requests-spi.md) | Internal node/network types, `withRetry` loop, `executeImpl`/`subscribeImpl` helpers, SPI methods across the hierarchy |
+| [Transactions](transactions.md) | `TransactionBuilder` (mutable build phase), `Transaction` (immutable sign/send phase), response types (`TransactionId`, `Receipt`, `Record`) |
 | [Transactions SPI](transactions-spi.md) | `TransactionSupport` data-layer SPI |
-| [Account Transactions](transactions-accounts.md) | `AccountCreateTransaction` — concrete transaction example |
+| [Account Transactions](transactions-accounts.md) | `AccountCreateTransactionBuilder` — concrete transaction example |
 | [Consensus Queries](consensus-queries.md) | `ConsensusQuery` base + concrete consensus query types |
 | [Mirror Requests](mirror-requests.md) | Mirror gRPC/REST queries + `TopicMessageQuery` streaming |
 | [Block Requests](block-requests.md) | Block node queries + `BlockStreamQuery` streaming |
@@ -56,16 +55,7 @@ This document uses two meta-language keywords for abstract types (see [API Guide
 ### Interfaces (no state, no inheritance relationship to Request)
 
 ```
-Executable<Response>              Subscribable<Item>
-  ··> Transaction                   ··> TopicMessageQuery
-  ··> ConsensusQuery                ··> BlockStreamQuery
-  ··> AddressBookQuery
-  ··> MirrorNodeContractCallQuery
-  ··> MirrorNodeContractEstimateGasQuery
-  ··> ServerStatusQuery
-  ··> BlockQuery
-
-GrpcRequest                       RestRequest
+GrpcTransport                     RestTransport
   ··> Transaction                   ··> MirrorNodeContractCallQuery
   ··> ConsensusQuery                ··> MirrorNodeContractEstimateGasQuery
   ··> AddressBookQuery
@@ -78,66 +68,66 @@ GrpcRequest                       RestRequest
 ### Class Inheritance Tree (single-inheritance, rooted at Request)
 
 ```
-RequestConfig                                              [standalone struct]
+RetryPolicy                                                [standalone struct]
 
-Request [composes RequestConfig]
-├── ConsensusRequest                                       [+ nodeAccountIds]
-│   ├── Transaction : Executable, GrpcRequest              [+ transactionId, maxTransactionFee, memo, validDuration, sign(), toBytes()]
-│   │   ├── ChunkedTransaction                             [+ chunking logic]
+Request [composes RetryPolicy]
+├── ConsensusCall<$$R>
+│   ├── Transaction : GrpcTransport                       [+ sign(), toBytes(), execute()]
+│   │   ├── ChunkedTransaction                            [+ chunking logic]
 │   │   │   ├── FileAppendTransaction
 │   │   │   └── TopicMessageSubmitTransaction
-│   │   ├── AccountCreateTransaction
-│   │   ├── TransferTransaction
-│   │   ├── TokenCreateTransaction
-│   │   └── ... (50+ more)
-│   └── ConsensusQuery<R> : Executable, GrpcRequest        [+ queryPayment, getCost()]
+│   │   └── ... (50+ more concrete types via TransactionBuilder)
+│   └── ConsensusQuery<$$R> : GrpcTransport               [+ nodeAccountIds, queryPayment, getCost()]
 │       ├── AccountInfoQuery
 │       ├── AccountBalanceQuery
 │       ├── TransactionReceiptQuery
 │       └── ... (17+ more)
 │
-├── MirrorRequest
-│   ├── AddressBookQuery : Executable, GrpcRequest
-│   ├── MirrorNodeContractCallQuery : Executable, RestRequest
-│   ├── MirrorNodeContractEstimateGasQuery : Executable, RestRequest
-│   └── TopicMessageQuery : Subscribable, GrpcRequest
+├── MirrorCall<$$R>
+│   ├── AddressBookQuery : GrpcTransport
+│   ├── MirrorNodeContractCallQuery : RestTransport
+│   └── MirrorNodeContractEstimateGasQuery : RestTransport
 │
-└── BlockNodeRequest
-    ├── ServerStatusQuery : Executable, GrpcRequest
-    ├── BlockQuery : Executable, GrpcRequest
-    └── BlockStreamQuery : Subscribable, GrpcRequest
+├── MirrorStream<$$I>
+│   └── TopicMessageQuery : GrpcTransport
+│
+├── BlockNodeCall<$$R>
+│   ├── ServerStatusQuery : GrpcTransport
+│   └── BlockQuery : GrpcTransport
+│
+└── BlockNodeStream<$$I>
+    └── BlockStreamQuery : GrpcTransport
 ```
 
-## 3-Axis Summary Table
+## Summary Table
 
-| Request | Network | Execution | Transport |
-|---|---|---|---|
-| `Transaction` | `ConsensusRequest` | `Executable` | `GrpcRequest` |
-| `ConsensusQuery` | `ConsensusRequest` | `Executable` | `GrpcRequest` |
-| `AddressBookQuery` | `MirrorRequest` | `Executable` | `GrpcRequest` |
-| `MirrorNodeContractCallQuery` | `MirrorRequest` | `Executable` | `RestRequest` |
-| `MirrorNodeContractEstimateGasQuery` | `MirrorRequest` | `Executable` | `RestRequest` |
-| `TopicMessageQuery` | `MirrorRequest` | `Subscribable` | `GrpcRequest` |
-| `ServerStatusQuery` | `BlockNodeRequest` | `Executable` | `GrpcRequest` |
-| `BlockQuery` | `BlockNodeRequest` | `Executable` | `GrpcRequest` |
-| `BlockStreamQuery` | `BlockNodeRequest` | `Subscribable` | `GrpcRequest` |
+| Request | Base (network + execution) | Transport |
+|---|---|---|
+| `Transaction` | `ConsensusCall` | `GrpcTransport` |
+| `ConsensusQuery` | `ConsensusCall` | `GrpcTransport` |
+| `AddressBookQuery` | `MirrorCall` | `GrpcTransport` |
+| `MirrorNodeContractCallQuery` | `MirrorCall` | `RestTransport` |
+| `MirrorNodeContractEstimateGasQuery` | `MirrorCall` | `RestTransport` |
+| `TopicMessageQuery` | `MirrorStream` | `GrpcTransport` |
+| `ServerStatusQuery` | `BlockNodeCall` | `GrpcTransport` |
+| `BlockQuery` | `BlockNodeCall` | `GrpcTransport` |
+| `BlockStreamQuery` | `BlockNodeStream` | `GrpcTransport` |
 
 ## Usage Example
 
 ```
-// Create a transaction, set fields (including retry config inherited from Request)
-AccountCreateTransaction tx = new AccountCreateTransaction()
-tx.setKey(newAccountKey)
-tx.setInitialBalance(Hbar.from(10))
-tx.setMaxAttempts(5)
+// Build a transaction (mutable phase)
+AccountCreateTransactionBuilder builder = new AccountCreateTransactionBuilder()
+builder.setKey(newAccountKey)
+builder.setInitialBalance(Hbar.from(10))
 
-// Execute directly (auto-freezes, auto-signs with operator)
-TransactionResponse response = tx.execute(client)
+// Build and execute in one call (auto-signs with operator)
+Response<AccountCreateReceipt> response = builder.buildAndExecute(client)
 
 // Get the receipt
-TransactionReceipt receipt = response.queryReceipt(client)
+AccountCreateReceipt receipt = response.queryReceipt()
 ```
 
 ## Questions & Comments
 
-- Should `RequestConfig` default values for `maxAttempts`, `maxBackoff`, `minBackoff` be standardized across all SDKs, or configurable per-SDK?
+- Should `RetryPolicy` default values for `maxAttempts`, `maxBackoff`, `minBackoff` be standardized across all SDKs, or configurable per-SDK?

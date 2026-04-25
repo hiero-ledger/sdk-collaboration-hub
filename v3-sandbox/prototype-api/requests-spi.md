@@ -4,22 +4,24 @@ This section defines the internal SPI (Service Provider Interface) for the reque
 
 ## Description
 
-The [Requests Core Types](requests-core.md) define the public interfaces and base abstractions. This document defines the internal mechanics:
+The [Requests Core Types](requests-core.md) define the public base abstractions and configuration types. This document defines the internal mechanics:
 
 1. **Node and network types** — `ConsensusNode`, `MirrorNode`, `BlockNode`, `Network<$$Node>`, and concrete network implementations. These are not part of the public API.
-2. **`withRetry` execution loop** — The shared retry/backoff loop on `Request` that drives both unary and streaming execution.
-3. **SPI methods distributed across the 3 axes** — Each of the three public axes (network base, execution interface, transport interface) carries its own internal SPI methods:
-   - **Network base** → `getNetwork(client)` for network resolution
-   - **Execution interface** → `send()`, `mapResponse()` (for `Executable`); `openStream()` (for `Subscribable`)
-   - **Transport interface** → `buildRequest(node)` to build the transport-specific request, `shouldRetry(error)` with transport-specific retry logic (for `GrpcRequest` or `RestRequest`)
+2. **Execution helpers on `Request`** — `withRetry` drives the shared retry/backoff loop. `executeImpl` and `subscribeImpl` are protected helpers that wire the retry loop to the execution SPI, called by `execute()` and `subscribe()` on the concrete bases.
+3. **SPI methods across the hierarchy** — Each layer of the hierarchy carries its own internal SPI methods:
+   - **Concrete bases** (`ConsensusCall`, `MirrorCall`, etc.) → `getNetwork(client)` for network resolution
+   - **Concrete types** → `send()`, `mapResponse()` (for unary); `openStream()` (for streaming)
+   - **Transport interface** → `buildRequest(node)` to build the transport-specific request, `isRetryable(error)` with transport-specific retry defaults
 
 ### Design rationale
 
-The retry loop for unary requests (send → receive → retry on failure) and streaming subscriptions (open stream → deliver items → reconnect on failure) are structurally identical. Rather than duplicating the loop or introducing a separate `StreamingHandler` utility, a single `withRetry` method handles both patterns. The only difference is the `action` callback: unary types send a single request, streaming types open a long-lived connection.
+Network and execution pattern are unified in the class hierarchy, so `execute()` and `subscribe()` are sealed concrete implementations on each base — they cannot be accidentally overridden by concrete types. Each base implements `execute()` or `subscribe()` as a one-line delegation to `executeImpl` or `subscribeImpl` on `Request`, which handles the retry loop.
 
-`Request` does **not** define `getNetwork()` — it remains network-agnostic. Each network-specific base (`ConsensusRequest`, `MirrorRequest`, `BlockNodeRequest`) defines `getNetwork(client)` and passes the result to `withRetry`. This keeps `Request` free of network concerns and avoids forcing all request types through a single `getNetwork()` signature.
+`getNetwork()` is declared abstract on `Request` and implemented by each concrete base. This keeps network resolution close to the types that own it while allowing `executeImpl` and `subscribeImpl` to call it without knowing which network is involved.
 
-SPI methods are not grouped into separate `ExecutableSpi` / `SubscribableSpi` interfaces. Instead, they are distributed across the three axis interfaces that each request type already declares. This avoids redundant SPI interfaces and keeps each axis self-contained: the network base owns network resolution, the transport interface owns request building and retry logic, and the execution interface owns the response consumption pattern (send+map for unary, openStream for streaming).
+`isRetryable()` is declared abstract on `Request` and satisfied by the default implementation on whichever transport interface (`GrpcTransport` or `RestTransport`) the concrete type implements. This allows `withRetry` to call `this.isRetryable()` directly, removing it as an explicit parameter to the loop.
+
+`buildRequest()` is declared abstract on both `Request` (so `executeImpl`/`subscribeImpl` can call it) and on the transport interfaces (where the transport-specific signature and default behavior live). Each concrete type satisfies both by implementing the single method.
 
 ## SPI Schema
 
@@ -28,18 +30,22 @@ namespace requests-spi
 requires requests-core, common, client
 
 // ============================================================================
-// SHARED EXECUTION LOOP
+// EXECUTION HELPERS AND LOOP
 // ============================================================================
 
-// Protected method on Request. Not part of the public API.
-// Drives retry and backoff for both unary and streaming execution.
+// Protected methods on Request. Not part of the public API.
+//
+// withRetry drives retry and backoff for both unary and streaming execution.
 //
 // Parameters:
 //   network — The Network instance for node selection and health tracking.
-//             Obtained from getNetwork(client) on the caller's network-specific base.
+//             Obtained from getNetwork(client) on the concrete base.
 //   action  — A callback that performs the actual work for a single attempt.
-//             For unary: builds request, sends it, returns the response.
+//             For unary: builds the request, sends it, returns the response.
 //             For streaming: opens the stream and delivers items.
+//
+// Retry logic calls this.isRetryable(error), which is satisfied by the
+// default implementation on the concrete type's transport interface.
 //
 // The loop:
 //   1. Selects a node from the network.
@@ -48,12 +54,44 @@ requires requests-core, common, client
 //   4. On retryable failure: marks the node unhealthy, backs off, retries.
 //   5. On non-retryable failure: rethrows.
 //   6. On exceeding maxAttempts: throws max-attempts-exceeded.
+//
+// executeImpl is called by execute() on ConsensusCall, MirrorCall, BlockNodeCall.
+// The sender callback combines buildRequest + send + mapResponse for one attempt.
+//
+// subscribeImpl is called by subscribe() on MirrorStream, BlockNodeStream.
+// The streamer callback combines buildRequest + openStream for one attempt.
 abstraction Request {
     protected $$Result withRetry(
         network: Network<$$Node>,
-        action: @@throws(network-error) function<$$Result attempt(node: $$Node)>,
-        shouldRetry: function<bool shouldRetry(error: $$Error)>
+        action: @@throws(network-error) function<$$Result attempt(node: $$Node)>
     )
+
+    protected $$R executeImpl(
+        client: HieroClient,
+        sender: function<$$R(node: $$Node, request: $$TransportRequest)>
+    )
+    // Implementation:
+    //   network = this.getNetwork(client)
+    //   return this.withRetry(network, (node) -> {
+    //       req = this.buildRequest(node)
+    //       return sender(node, req)
+    //   })
+
+    protected subscribeImpl(
+        client: HieroClient,
+        streamer: function<void(node: $$Node, request: $$TransportRequest)>
+    )
+    // Implementation:
+    //   network = this.getNetwork(client)
+    //   this.withRetry(network, (node) -> {
+    //       req = this.buildRequest(node)
+    //       streamer(node, req)
+    //   })
+
+    // Abstract SPI methods implemented across the hierarchy:
+    protected abstract Network<$$Node> getNetwork(client: HieroClient)
+    protected abstract $$TransportRequest buildRequest(node: $$Node)
+    protected abstract bool isRetryable(error: $$Error)
 }
 
 
@@ -101,125 +139,129 @@ BlockNodeNetwork implements Network<BlockNode> { }
 // AXIS 1 SPI: NETWORK RESOLUTION — getNetwork()
 // ============================================================================
 
-// Each network-specific base defines getNetwork(client) to return the
-// appropriate Network instance from the client.
+// getNetwork() is declared abstract on Request and implemented by each concrete base.
 
-abstraction ConsensusRequest {
+abstraction ConsensusCall<$$Response> {
     protected ConsensusNetwork getNetwork(client: HieroClient)
     // Implementation: return client.consensusNetwork
 }
 
-abstraction MirrorRequest {
+abstraction MirrorCall<$$Response> {
     protected MirrorNetwork getNetwork(client: HieroClient)
     // Implementation: return client.mirrorNetwork
 }
 
-abstraction BlockNodeRequest {
+abstraction MirrorStream<$$Item> {
+    protected MirrorNetwork getNetwork(client: HieroClient)
+    // Implementation: return client.mirrorNetwork
+}
+
+abstraction BlockNodeCall<$$Response> {
+    protected BlockNodeNetwork getNetwork(client: HieroClient)
+    // Implementation: return client.blockNodeNetwork
+}
+
+abstraction BlockNodeStream<$$Item> {
     protected BlockNodeNetwork getNetwork(client: HieroClient)
     // Implementation: return client.blockNodeNetwork
 }
 
 
 // ============================================================================
-// AXIS 2 SPI: EXECUTION — Executable internal methods
+// AXIS 2 SPI: EXECUTION — send(), mapResponse(), openStream()
 // ============================================================================
 
-// Each type implementing Executable must provide these protected methods.
-// They are called by the execute() implementation within the withRetry loop.
-// Note: buildRequest() is on the transport interface (Axis 3), not here —
-// what you build depends on the transport (proto vs HTTP), not the execution pattern.
-
-interface Executable<$$Response> {
-
-    // Send the request to the given node and return the raw response.
-    // For gRPC types: sends a unary RPC via gRPC channel.
-    // For REST types: sends an HTTP request via HTTP client.
-    @@throws(network-error)
-    protected $$ProtoResponse send(node: $$Node, request: $$ProtoRequest)
-
-    // Map the raw response to the SDK return type.
-    protected $$Response mapResponse(response: $$ProtoResponse)
-}
-
-
-// ============================================================================
-// AXIS 2 SPI: EXECUTION — Subscribable internal methods
-// ============================================================================
-
-// Each type implementing Subscribable must provide an internal method to open
-// the server-streaming call. Called by the subscribe() implementation within
-// the withRetry loop. The item delivery mechanism is language-specific.
+// Each unary concrete type (Transaction, ConsensusQuery, AddressBookQuery, etc.)
+// must implement these protected methods. They are passed as a callback to
+// executeImpl() from execute():
+//
+//   execute(client):
+//     return executeImpl(client, (node, req) -> mapResponse(send(node, req)))
+//
 // Note: buildRequest() is on the transport interface (Axis 3), not here.
 
-interface Subscribable<$$Item> {
+// For each type extending ConsensusCall, MirrorCall, or BlockNodeCall:
+//
+//   @@throws(network-error)
+//   protected $$RawResponse send(node: $$Node, request: $$TransportRequest)
+//
+//   protected $$Response mapResponse(response: $$RawResponse)
 
-    // Open a server-streaming call to the given node.
-    // Items are delivered to the consumer. On stream end, returns normally.
-    // On stream failure, throws a network-error so withRetry can handle it.
-    @@throws(network-error)
-    protected void openStream(
-        node: $$Node,
-        request: $$ProtoRequest
-    )
-}
+
+// Each streaming concrete type (TopicMessageQuery, BlockStreamQuery) must
+// implement this protected method. It is passed as a callback to
+// subscribeImpl() from subscribe():
+//
+//   subscribe(client):
+//     subscribeImpl(client, (node, req) -> openStream(node, req))
+
+// For each type extending MirrorStream or BlockNodeStream:
+//
+//   @@throws(network-error)
+//   protected void openStream(node: $$Node, request: $$TransportRequest)
 
 
 // ============================================================================
-// AXIS 3 SPI: TRANSPORT — GrpcRequest / RestRequest
+// AXIS 3 SPI: TRANSPORT — GrpcTransport / RestTransport
 // ============================================================================
 
 // Transport interfaces own request building and retry logic.
 // buildRequest() depends on transport (proto for gRPC, HTTP for REST),
 // not on execution pattern (unary vs streaming).
 
-interface GrpcRequest {
+interface GrpcTransport {
     // Build the protobuf request for the given node.
     protected $$ProtoRequest buildRequest(node: $$Node)
 
     // Default behavior: retry on gRPC status UNAVAILABLE, RESOURCE_EXHAUSTED.
     // Concrete types may override for additional retryable statuses
     // (e.g. consensus BUSY, PLATFORM_TRANSACTION_NOT_CREATED).
-    bool shouldRetry(error: $$Error)
+    bool isRetryable(error: $$Error)
 }
 
-interface RestRequest {
+interface RestTransport {
     // Build the HTTP request (URL, headers, body) for the given node.
     protected $$HttpRequest buildRequest(node: $$Node)
 
     // Default behavior: retry on HTTP status 503 (Service Unavailable),
     // 429 (Too Many Requests), 408 (Request Timeout).
-    bool shouldRetry(error: $$Error)
+    bool isRetryable(error: $$Error)
 }
 
 
 // ============================================================================
-// EXECUTION FLOW — how the 3 axes fit together
+// EXECUTION FLOW — how the hierarchy fits together
 // ============================================================================
 
-// Unary execution (e.g. Transaction.execute):
+// Unary execution (e.g. Transaction.execute, AccountInfoQuery.execute):
 //
 //   execute(client):
-//     network = this.getNetwork(client)                     // Axis 1: network base
-//     return this.withRetry(network, (node) -> {             // from Request
-//       request = this.buildRequest(node)                     // Axis 3: GrpcRequest/RestRequest
-//       response = this.send(node, request)                   // Axis 2: Executable
-//       return this.mapResponse(response)                      // Axis 2: Executable
-//     }, (error) -> this.shouldRetry(error))                  // Axis 3: GrpcRequest/RestRequest
+//     return executeImpl(client, (node, req) -> mapResponse(send(node, req)))
+//
+//   executeImpl(client, sender):                          // from Request
+//     network = this.getNetwork(client)                   // Axis 1: concrete base
+//     return this.withRetry(network, (node) -> {          // from Request
+//       req = this.buildRequest(node)                      // Axis 3: GrpcTransport/RestTransport
+//       return sender(node, req)                           // Axis 2: send + mapResponse
+//     })
 //
 // Streaming execution (e.g. TopicMessageQuery.subscribe):
 //
 //   subscribe(client):
-//     network = this.getNetwork(client)                     // Axis 1: network base
-//     return this.withRetry(network, (node) -> {             // from Request
-//       request = this.buildRequest(node)                     // Axis 3: GrpcRequest
-//       this.openStream(node, request)                        // Axis 2: Subscribable
-//     }, (error) -> this.shouldRetry(error))                  // Axis 3: GrpcRequest
+//     subscribeImpl(client, (node, req) -> openStream(node, req))
+//
+//   subscribeImpl(client, streamer):                      // from Request
+//     network = this.getNetwork(client)                   // Axis 1: concrete base
+//     this.withRetry(network, (node) -> {                 // from Request
+//       req = this.buildRequest(node)                      // Axis 3: GrpcTransport
+//       streamer(node, req)                                // Axis 2: openStream
+//     })
 //
 // In both cases, withRetry handles:
 //   - Node selection via network.selectNode()
 //   - Health tracking via network.markHealthy() / markUnhealthy()
 //   - Backoff via exponential backoff between minBackoff and maxBackoff
-//   - Retry gating via shouldRetry(error) from the transport interface
+//   - Retry gating via this.isRetryable(error) from the transport interface
 //   - Attempt limiting via maxAttempts
 
 
@@ -230,7 +272,7 @@ interface RestRequest {
 The complete `withRetry` logic, expanded for clarity:
 
 ```
-Request.withRetry(network, action, shouldRetry):
+Request.withRetry(network, action):
     lastError = null
 
     for attempt in 1..this.maxAttempts:
@@ -244,7 +286,7 @@ Request.withRetry(network, action, shouldRetry):
         catch error:
             lastError = error
 
-            if not shouldRetry(error):
+            if not this.isRetryable(error):
                 throw error
 
             network.markUnhealthy(node)

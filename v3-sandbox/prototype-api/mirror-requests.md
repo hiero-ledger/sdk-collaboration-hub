@@ -4,11 +4,11 @@ This section defines request types that target mirror nodes — both gRPC and RE
 
 ## Description
 
-Mirror node requests all extend `MirrorRequest` (from [requests-core.md](requests-core.md)) for shared mirror network resolution, and declare their execution pattern and transport via the 3-axis model:
+Mirror node requests extend the appropriate mirror base from [requests-core.md](requests-core.md) and declare their transport via the interface they implement:
 
-- **`AddressBookQuery`** — Unary gRPC query. Extends `MirrorRequest`, implements `Executable` and `GrpcRequest`.
-- **`MirrorNodeContractCallQuery`** / **`MirrorNodeContractEstimateGasQuery`** — REST queries. Extend `MirrorRequest`, implement `Executable` and `RestRequest`.
-- **`TopicMessageQuery`** — Streaming gRPC subscription. Extends `MirrorRequest`, implements `Subscribable` and `GrpcRequest`.
+- **`AddressBookQuery`** — Unary gRPC query. Extends `MirrorCall`, implements `GrpcTransport`.
+- **`MirrorNodeContractCallQuery`** / **`MirrorNodeContractEstimateGasQuery`** — REST queries. Extend `MirrorCall`, implement `RestTransport`.
+- **`TopicMessageQuery`** — Streaming gRPC subscription. Extends `MirrorStream`, implements `GrpcTransport`.
 
 For the overall request hierarchy, see [requests.md](requests.md). For the internal execution flow, see [requests-spi.md](requests-spi.md).
 
@@ -23,24 +23,24 @@ requires requests-core, common
 // ============================================================================
 
 @@finalType
-AddressBookQuery extends MirrorRequest, Executable<NodeAddressBook>, GrpcRequest { }
+AddressBookQuery extends MirrorCall<NodeAddressBook> : GrpcTransport { }
 
 // ============================================================================
 // MIRROR REST QUERIES
 // ============================================================================
 
 @@finalType
-MirrorNodeContractCallQuery extends MirrorRequest, Executable<string>, RestRequest { }
+MirrorNodeContractCallQuery extends MirrorCall<string> : RestTransport { }
 
 @@finalType
-MirrorNodeContractEstimateGasQuery extends MirrorRequest, Executable<int64>, RestRequest { }
+MirrorNodeContractEstimateGasQuery extends MirrorCall<int64> : RestTransport { }
 
 // ============================================================================
 // MIRROR gRPC STREAMING
 // ============================================================================
 
 @@finalType
-TopicMessageQuery extends MirrorRequest, Subscribable<TopicMessage>, GrpcRequest {
+TopicMessageQuery extends MirrorStream<TopicMessage> : GrpcTransport {
     topicId: TopicId
     @@nullable startTime: zonedDateTime
     @@nullable endTime: zonedDateTime
