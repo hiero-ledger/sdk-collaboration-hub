@@ -211,4 +211,4 @@ Proposal is expected to be backwards compatible. Any deprecated APIs will not be
 
 This proposal removes the encoding for shard and realm values in EVM addresses as well as any assumptions for zero shard and realm values.
 
-It was proposed to keep `toSolidityAddress` and update its logic to not encode the shard and realm, but was rejected for for maintaining a consistent experience in the SDKs with `fromEvmAddress`.
+It was proposed to keep `toSolidityAddress` and update its logic to not encode the shard and realm, but was rejected for maintaining a consistent experience in the SDKs with `fromEvmAddress`.

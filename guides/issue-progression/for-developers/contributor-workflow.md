@@ -91,7 +91,7 @@ As you commit, make sure the commits are:
 - ✅ Signed correctly [Guide](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-developers/signing.md)
 
 ### Achieving Conventionally Named Commits
-A conventionally named commit is one that summarises in words what was just commited with a suitable pre-fix.
+A conventionally named commit is one that summarises in words what was just committed with a suitable prefix.
 
 This is correct:
 
@@ -143,7 +143,7 @@ Common examples include:
 - Refactoring a function or class in a way that changes its behaviour, even subtly
 - Changing default values or altering side effects
 
-When preparing a pull request, always evaluate whether any existing user code would stop working as a result of your changes even if its 'better'.
+When preparing a pull request, always evaluate whether any existing user code would stop working as a result of your changes even if it's 'better'.
 
 For example - before:
 ```python

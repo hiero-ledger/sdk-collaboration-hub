@@ -103,10 +103,10 @@ Generally, you want to keep all changes that were merged to main, but additional
 
 
 ### 4. Resolve conflicts in VS Code (recommended):
-Once you understand you have a merge conflict and have a vision of the the final document, we recommend using VS code.
+Once you understand you have a merge conflict and have a vision of the final document, we recommend using VS Code.
 
 
-VS Code makes solving merge-conflicts more easier with a 3-pane interface for resolving conflicts:
+VS Code makes solving merge-conflicts easier with a 3-pane interface for resolving conflicts:
 
 -> Incoming Change → code from main (left/top)
 
