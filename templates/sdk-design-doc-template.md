@@ -10,7 +10,7 @@ Brief description of the design, what it’s meant to accomplish, how it should 
 
 ## New APIs
 
-Define the names of the new APIs being added, as well as how they are interacted with. The API definitions provided her should follow the [API Guidelines](../guides/api-guideline.md) outlined in this repo.
+Define the names of the new APIs being added, as well as how they are interacted with. The API definitions provided here should follow the [API Guidelines](../guides/api-guideline.md) outlined in this repo.
 
 **NOTE:** Only public APIs should be listed in this section. Internal implementation details are left to the discretion of the implementer within their respective SDK.
 
@@ -43,7 +43,7 @@ ApiName2 {
 
 ## Updated APIs
 
-APIs that already exist in the SDKs that are getting updated in some way (generally fields are being added). The API definitions provided her should follow the [API Guidelines](../guides/api-guideline.md) outlined in this repo. You should only list the fields/methods being added to the API.
+APIs that already exist in the SDKs that are getting updated in some way (generally fields are being added). The API definitions provided here should follow the [API Guidelines](../guides/api-guideline.md) outlined in this repo. You should only list the fields/methods being added to the API.
 
 **NOTE:** Only public APIs should be listed in this section. Internal implementation details are left to the discretion of the implementer within their respective SDK.
 
@@ -100,4 +100,4 @@ The tests defined above should also be defined in the [TCK repository](https://g
 
 Define an example that shows how to use the new feature in code. The example should follow the intended use case flow as defined in the HIP (i.e. user stories), and validate that this intended use case achieves the desired output. The example should define a list of steps which show the user case flow, and provide any checks and validations needed to show the desired output. If necessary, multiple examples can be provided and defined.
 
-It it is deemed better, instead of defining a new example, to update an existing one, it should be stated what example is being updated and how. If more code is simply being added to the end of the example, the steps can simply be defined as if it was a new example and appended to the example. If, however, updating the example involves more complex changes, it may be best to redefine all the steps for the entire example.
+If it is deemed better, instead of defining a new example, to update an existing one, it should be stated what example is being updated and how. If more code is simply being added to the end of the example, the steps can simply be defined as if it was a new example and appended to the example. If, however, updating the example involves more complex changes, it may be best to redefine all the steps for the entire example.
