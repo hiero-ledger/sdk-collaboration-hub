@@ -28,6 +28,7 @@ NetworkSetting {
     // Modifications to the returned set do not affect the original
     @@immutable set<common.MirrorNode> getMirrorNodes()
 
+    @@immutable set<common.BlockNode> getBlockNodes()
 }
 
 // factory methods of `NetworkSetting` that should be added to the namespace in the best language dependent way

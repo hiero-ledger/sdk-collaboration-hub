@@ -40,6 +40,7 @@ The following basic data types should be used in the API documentation.
 | `bytes`                    | A sequence of bytes                                                   |
 | `list<TYPE>`               | A list of elements of type TYPE                                       |
 | `set<TYPE>`                | A set of elements of type TYPE                                        |
+| `collection<TYPE>`         | A collection of elements of type TYPE                                 |
 | `map<KEY, VALUE>`          | A map that maps KEY values to VALUE values                            |
 | `type`                     | A type identity that can be used to specify a complex type at runtime |
 | `uuid`                     | A universally unique identifier                                       |
@@ -510,7 +511,8 @@ constant MAX_TRANSACTIONS:int32 = 100
 
 The meta-language supports declaring methods that return an asynchronous stream of items. A stream is a pull-based async
 sequence that the consumer drives at its own pace. The SDK produces items (from a network subscription, gRPC stream,
-paginated query, etc.) and the consumer pulls them one at a time using the language's idiomatic async iteration construct.
+paginated query, etc.) and the consumer pulls them one at a time using the language's idiomatic async iteration
+construct.
 
 #### The `@@streaming` annotation
 
@@ -535,9 +537,9 @@ returns.
 Streams use a dedicated result wrapper to separate per-item errors (non-terminal) from stream-level errors (terminal).
 The `streamResult<TYPE>` data type represents a single item in the stream that is either a success value or an error:
 
-| Data Type             | Description                                                       |
-|-----------------------|-------------------------------------------------------------------|
-| `streamResult<TYPE>`  | A stream item that is either a success value of TYPE or an error  |
+| Data Type            | Description                                                      |
+|----------------------|------------------------------------------------------------------|
+| `streamResult<TYPE>` | A stream item that is either a success value of TYPE or an error |
 
 A streaming method that may produce per-item errors uses `streamResult` as its return type:
 
@@ -548,16 +550,16 @@ streamResult<TopicMessage> subscribe(topicId: string)
 
 Each language maps `streamResult<TYPE>` to its idiomatic result/either type:
 
-| Language   | Mapping                                              |
-|------------|------------------------------------------------------|
-| Rust       | `Result<T, E>` (standard library)                    |
-| Swift      | `Result<T, Error>` (standard library)                |
-| Go         | `(T, error)` multiple return / `iter.Seq2[T, error]` |
-| C++        | `std::expected<T, E>` (C++23) / `absl::StatusOr<T>`  |
-| Java       | Sealed `StreamItem<T>` interface                     |
+| Language   | Mapping                                                                     |
+|------------|-----------------------------------------------------------------------------|
+| Rust       | `Result<T, E>` (standard library)                                           |
+| Swift      | `Result<T, Error>` (standard library)                                       |
+| Go         | `(T, error)` multiple return / `iter.Seq2[T, error]`                        |
+| C++        | `std::expected<T, E>` (C++23) / `absl::StatusOr<T>`                         |
+| Java       | Sealed `StreamItem<T>` interface                                            |
 | TypeScript | Discriminated union `{ ok: true, value: T } \| { ok: false, error: Error }` |
-| JavaScript | Plain object with `status` field                     |
-| Python     | `Success[T] \| Failure` dataclass union              |
+| JavaScript | Plain object with `status` field                                            |
+| Python     | `Success[T] \| Failure` dataclass union                                     |
 
 When a streaming method does **not** use `streamResult` (i.e., the return type is a plain type), all errors are
 stream-level and terminal — the stream ends and the error is delivered through the language's native error mechanism
