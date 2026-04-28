@@ -1,6 +1,6 @@
 import { test, describe } from 'node:test';
 import * as assert from 'node:assert';
-import { HinTS } from '../src/HinTS';
+import * as HinTS from '../src/HinTS';
 
 describe('HIP-1200: hinTS threshold signature scheme', () => {
     test('should successfully generate keys with correct m and n', () => {
@@ -21,19 +21,22 @@ describe('HIP-1200: hinTS threshold signature scheme', () => {
 
     test('should generate valid partial signatures', () => {
         const { shares } = HinTS.generateKeys(5, 3);
-        const partialSig = HinTS.partialSign("test message", shares[0]!);
-        assert.strictEqual(partialSig.id, shares[0]!.id);
+        const shareZero = shares[0];
+        if (!shareZero) throw new Error("Share missing");
+        
+        const partialSig = HinTS.partialSign("test message", shareZero);
+        assert.strictEqual(partialSig.id, shareZero.id);
         assert.ok(partialSig.partialSig !== undefined);
     });
 
     test('should aggregate signatures and verify correctly', () => {
         const message = "Hello, Hiero!";
         const { shares, m, publicKey } = HinTS.generateKeys(5, 3);
-        
+
         const partialSigs = shares.slice(0, 3).map(share => HinTS.partialSign(message, share));
-        
+
         const aggregatedSig = HinTS.aggregateSignatures(partialSigs, m);
-        
+
         const isValid = HinTS.verify(message, aggregatedSig, publicKey);
         assert.strictEqual(isValid, true);
     });
@@ -41,19 +44,21 @@ describe('HIP-1200: hinTS threshold signature scheme', () => {
     test('should fail to aggregate with fewer than m shares', () => {
         const message = "Hello, Hiero!";
         const { shares, m } = HinTS.generateKeys(5, 3);
-        
+
         const partialSigs = shares.slice(0, 2).map(share => HinTS.partialSign(message, share));
-        
+
         assert.throws(() => HinTS.aggregateSignatures(partialSigs, m), /Insufficient shares/);
     });
 
     test('should verify with any combination of m shares', () => {
         const message = "Hello, Hiero!";
         const { shares, m, publicKey } = HinTS.generateKeys(5, 3);
+
+        const selectedShares = [shares[1], shares[3], shares[4]];
+        const validShares = selectedShares.filter(s => s !== undefined) as HinTS.KeyShare[];
         
-        // Take a different set of 3 shares (e.g., index 1, 3, 4)
-        const partialSigs = [shares[1]!, shares[3]!, shares[4]!].map(share => HinTS.partialSign(message, share));
-        
+        const partialSigs = validShares.map(share => HinTS.partialSign(message, share));
+
         const aggregatedSig = HinTS.aggregateSignatures(partialSigs, m);
         const isValid = HinTS.verify(message, aggregatedSig, publicKey);
         assert.strictEqual(isValid, true);
@@ -61,10 +66,10 @@ describe('HIP-1200: hinTS threshold signature scheme', () => {
 
     test('should fail verification if message is tampered with', () => {
         const { shares, m, publicKey } = HinTS.generateKeys(5, 3);
-        
+
         const partialSigs = shares.slice(0, 3).map(share => HinTS.partialSign("Original message", share));
         const aggregatedSig = HinTS.aggregateSignatures(partialSigs, m);
-        
+
         const isValid = HinTS.verify("Tampered message", aggregatedSig, publicKey);
         assert.strictEqual(isValid, false);
     });
@@ -72,10 +77,10 @@ describe('HIP-1200: hinTS threshold signature scheme', () => {
     test('should fail verification for incorrect signature', () => {
         const message = "Hello, Hiero!";
         const { shares, m, publicKey } = HinTS.generateKeys(5, 3);
-        
+
         const partialSigs = shares.slice(0, 3).map(share => HinTS.partialSign(message, share));
         const aggregatedSig = HinTS.aggregateSignatures(partialSigs, m);
-        
+
         const isValid = HinTS.verify(message, aggregatedSig + 1n, publicKey);
         assert.strictEqual(isValid, false);
     });

@@ -1,4 +1,4 @@
-import { HinTS } from './src/HinTS';
+import * as HinTS from './src/HinTS';
 
 console.log("=== HIP-1200: hinTS Threshold Signature Scheme Demo ===\n");
 
@@ -18,7 +18,7 @@ console.log(`2. Message to sign: "${message}"\n`);
 // 3. Partial Signing
 console.log(`3. Generating partial signatures using only ${m} shares...`);
 // Let's use share #1, #3, and #5
-const selectedShares = [shares[0]!, shares[2]!, shares[4]!];
+const selectedShares = [shares[0], shares[2], shares[4]].filter(s => s !== undefined) as HinTS.KeyShare[];
 const partialSigs = selectedShares.map(share => {
     const partial = HinTS.partialSign(message, share);
     console.log(`   Share ID ${share.id} generated partial signature: ${partial.partialSig}`);
