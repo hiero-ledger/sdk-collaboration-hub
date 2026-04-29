@@ -41,7 +41,7 @@ A good changelog entry should:
 1. **Open `CHANGELOG.md`** in the repository root
 2. **Write under title: [Unreleased]** - Add your entry at the top of the file, in the appropriate section under `[Unreleased]`
 3. **Write under the appropriate subheading(s)** - Find the relevant subheading(s) under [UNRELEASED]
-4. **Use conventional commit language** - Be concise but informative with a pre-fix e.g. `feat`
+4. **Use conventional commit language** - Be concise but informative with a prefix e.g. `feat`
 5. **Link to the issue and PR** - Include a reference to the PR and issue resolved
 6. **Use markdown** - Follow the bullet point format
 

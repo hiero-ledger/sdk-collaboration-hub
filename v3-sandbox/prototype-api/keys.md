@@ -12,14 +12,14 @@ A private key is normally generated as a random key for a specific algorithm.
 A public key can be derived from a private key.
 
 To read or write keys different formats are supported.
-The most easy way is to read or write the raw bytes of the key.
-Todo so the algorithm must be known.
+The easiest way is to read or write the raw bytes of the key.
+To do so, the algorithm must be known.
 
-To make import and export of keys more convenient, so called key containers exist.
+To make import and export of keys more convenient, so-called key containers exist.
 Like algorithms those containers are well defined and standardized.
 A container normally contains the raw bytes of the key and the algorithm.
 To import and export a key in a container an encoding must be specified.
-Here not all container formats support all encodings by its spec and the encoding can end in a byte array result or a
+Not all container formats support all encodings according to their specification, and the encoding can end in a byte array result or a
 string result.
 
 ## API Schema
@@ -111,7 +111,7 @@ PublicKey generatePublicKey(algorithm: KeyAlgorithm)
 @@throws(illegal-format) PrivateKey createPrivateKey(container: keys.io.KeyFormat, value: bytes) // if container.format is not BYTES an illegal format error is thrown
 @@throws(illegal-format) PublicKey createPublicKey(container: keys.io.KeyFormat, value: bytes) // if container.format is not BYTES an illegal format error is thrown
 
-//Read a key based on our prefered format (container & encoding) from a string
+//Read a key based on our preferred format (container & encoding) from a string
 @@throws(illegal-format) PrivateKey createPrivateKey(value: string) // reads string as PKCS#8 PEM
 @@throws(illegal-format) PublicKey createPublicKey(value: string) // reads string as SPKI PEM
 
@@ -172,7 +172,7 @@ Here you can find the complete list of rules as a basic implementation of the en
 
 ### Key examples
 
-The following examples show the different key formats as String representations.
+The following examples show the different key formats as string representations.
 
 #### PKCS#8 + DER (Private Key)
 
@@ -252,7 +252,7 @@ z6Mksjxie2jA44kVrY8Wj63zqPQAk8SjP2v1tdyASz93Z5mG
 
 The topic has been discussed in the SDK Community
 call (https://zoom.us/rec/share/oDRfe45YHrQy71lU0RvWs3dnERq2b4KeTRW10emcTXkEb-9gQJUfLa6Lzngm8TRI.ndb4Z4pBanr4DKr0 / https://zoom-lfx.platform.linuxfoundation.org/meeting/94709702244-1763391600000/summaries?password=bf9431fc-3a4d-4e1d-a81a-e44ef16d8abc).
-The current result is that we can not support all possible key formats with a single method that has only a string as
+The current result is that we cannot support all possible key formats with a single method that has only a string as
 input.
 Having a more configurable method based on enums must be the way to go.
 We still believe that we should provide a convenience method that can be used to create a key based on a string.
