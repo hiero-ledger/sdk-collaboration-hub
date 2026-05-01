@@ -157,7 +157,7 @@ from dataclasses import dataclass
 from threading import Lock
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class Receipt:
     transaction_id: str
     status: str
