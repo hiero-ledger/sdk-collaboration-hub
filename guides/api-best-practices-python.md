@@ -130,7 +130,7 @@ from typing import Optional
 
 @dataclass(frozen=True)
 class TransactionMemo:
-    text: Optional[str]
+    text: str | None
 
 
 @dataclass
