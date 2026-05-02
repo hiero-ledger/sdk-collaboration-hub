@@ -83,12 +83,11 @@ These labels identify which area of the repository is affected. They answer the 
 | `scope: api` | Related to the public SDK API surface or interfaces | `#aecbfa` |
 | `scope: build` | Related to the build system (CMake, Maven, Gradle, Cargo, npm, etc.) | `#8b949e` |
 | `scope: ci` | Related to GitHub Actions, automated testing workflows, or CI/CD pipelines | `#6e7681` |
-| `scope: core` | Related to the core SDK framework: transaction/query execution, signing, serialization, and retry logic | `#79b8ff` |
+| `scope: core` | Related to the core SDK framework: transaction/query execution, signing, serialization, and retry logic | `#6cb6ff` |
 | `scope: crypto` | Related to cryptographic operations, key management, or signing | `#9a6ede` |
 | `scope: dependencies` | Related to dependency updates, version bumps, or dependency management | `#57606a` |
 | `scope: docs` | Related to READMEs, guides, API documentation, or code comments | `#56d364` |
 | `scope: examples` | Related to the example projects or code snippets provided for users | `#3fb950` |
-| `scope: grpc` | Related to gRPC communication or protobuf definitions | `#1f6feb` |
 | `scope: network` | Related to network communication, including gRPC (consensus nodes) and HTTP/REST (mirror nodes) | `#388bfd` |
 | `scope: security` | Related to security vulnerabilities or security-sensitive areas of the codebase | `#d18616` |
 | `scope: tests` | Related to unit tests, integration tests, or test infrastructure | `#d4a017` |
@@ -125,12 +124,11 @@ Below is the complete list of all standardized labels for easy reference:
 | `scope: api` | Related to the public SDK API surface | `#aecbfa` |
 | `scope: build` | Related to the build system | `#8b949e` |
 | `scope: ci` | Related to GitHub Actions or CI/CD | `#6e7681` |
-| `scope: core` | Related to the core SDK framework | `#79b8ff` |
+| `scope: core` | Related to the core SDK framework | `#6cb6ff` |
 | `scope: crypto` | Related to cryptographic operations | `#9a6ede` |
 | `scope: dependencies` | Related to dependency updates | `#57606a` |
 | `scope: docs` | Related to documentation | `#56d364` |
 | `scope: examples` | Related to example projects or snippets | `#3fb950` |
-| `scope: grpc` | Related to gRPC/protobuf | `#1f6feb` |
 | `scope: network` | Related to network communication (gRPC and HTTP/REST) | `#388bfd` |
 | `scope: security` | Related to security vulnerabilities or sensitive areas | `#d18616` |
 | `scope: tests` | Related to tests or test infrastructure | `#d4a017` |
