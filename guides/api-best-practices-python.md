@@ -112,12 +112,12 @@ class AccountId:
 
 ## 5. Nullability And Collection Semantics
 
-Map `@@nullable` to `Optional[T]` and explicit `None` handling.
+Map `@@nullable` to `T | None` and explicit `None` handling.
 Collections should never be nullable in public APIs; return empty collections instead.
 
 Recommended pattern:
 
-- Use `Optional[T]` only where absence has domain meaning.
+- Use `T | None` only where absence has domain meaning.
 - Never return `None` for collection return types (`list`, `set`, `dict`).
 - Prefer immutable defaults in dataclasses (`tuple`, `frozenset`) and `default_factory` for mutable internals.
 
@@ -145,7 +145,7 @@ When `@@threadSafe` is required, document and enforce synchronization boundaries
 
 Recommended pattern:
 
-- Use `@dataclass(frozen=True)` for immutable value objects.
+- Use `@dataclass(frozen=True, slots=True)` for immutable value objects.
 - Use immutable containers in public models (`tuple`, `frozenset`).
 - For mutable shared state, protect critical sections with `threading.Lock`.
 - Keep thread-safe classes small and focused; avoid exposing mutable internals.
