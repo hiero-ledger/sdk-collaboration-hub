@@ -20,7 +20,7 @@ namespace transactions
 requires common, keys, client
 
 // Defines the status of a transaction. Since we can have custom transaction types based on custom
-// services in the consensus node we can not use an enum here anymore.
+// services in the consensus node we cannot use an enum here anymore.
 abstraction TransactionStatus {
   @@immutable code:int32 // the status code that should be unique based on the consensus node
 }

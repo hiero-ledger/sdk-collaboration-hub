@@ -78,12 +78,12 @@ OPERATOR_KEY=123456789
 NETWORK=testnet
 ```
 
-We have added `.env` to `.gitignore` to help ensure its never committed.
+We have added `.env` to `.gitignore` to help ensure it's never committed.
 
 ## 3. Set up a GPG key for Signing
 Follow [Signing Guide](https://github.com/hiero-ledger/sdk-collaboration-hub/tree/main/guides/issue-progression/for-developers/signing.md)
 
-Ensure you later [add the GPG key to Github](https://github.com/settings/gpg/new)
+Ensure you later [add the GPG key to GitHub](https://github.com/settings/gpg/new)
 
 ## 4. Fork the Repository
 

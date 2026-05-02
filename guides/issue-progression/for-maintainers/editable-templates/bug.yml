@@ -33,7 +33,7 @@ body:
     id: context
     attributes:
       label: Additional context
-      description: Attach any logs or screenshots relevent to the problem.
+      description: Attach any logs or screenshots relevant to the problem.
       placeholder: |
         ![Screenshot](bug.png)
 
