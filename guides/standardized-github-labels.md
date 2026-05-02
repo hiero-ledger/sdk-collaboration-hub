@@ -30,19 +30,19 @@ Status labels track the lifecycle of an issue or pull request. They are split in
 
 | Label | Description | Color |
 | :---- | :---------- | :---- |
-| `status: needs triage` | New issue that needs to be reviewed and categorized by maintainers | `#fbca04` |
-| `status: needs info` | A maintainer has reviewed the issue but requires more information from the submitter | `#d876e3` |
+| `status: needs triage` | New issue that needs to be reviewed and categorized by maintainers | `#0969da` |
+| `status: needs info` | A maintainer has reviewed the issue but requires more information from the submitter | `#c24e00` |
 | `status: blocked` | Cannot proceed due to an external dependency, upstream issue, or required decision | `#000000` |
-| `status: ready for dev` | Fully defined and ready for a contributor to pick up | `#c2e0c6` |
-| `status: in progress` | A contributor is actively working on this issue | `#fef2c0` |
+| `status: ready for dev` | Fully defined and ready for a contributor to pick up | `#2da44e` |
+| `status: in progress` | A contributor is actively working on this issue | `#0e8a80` |
 
 #### Pull Requests
 
 | Label | Description | Color |
 | :---- | :---------- | :---- |
-| `status: needs review` | The pull request is ready for maintainer review | `#1d76db` |
-| `status: needs revision` | The pull request requires changes from the author before it can be reviewed or merged | `#e99695` |
-| `status: awaiting merge` | The pull request is approved and ready to merge once CI passes | `#6f42c1` |
+| `status: needs review` | The pull request is ready for maintainer review | `#0969da` |
+| `status: needs revision` | The pull request requires changes from the author before it can be reviewed or merged | `#c24e00` |
+| `status: awaiting merge` | The pull request is approved and ready to merge once CI passes | `#1a7f37` |
 
 ---
 
@@ -80,16 +80,18 @@ These labels identify which area of the repository is affected. They answer the 
 
 | Label | Description | Color |
 | :---- | :---------- | :---- |
-| `scope: api` | Related to the public SDK API surface or interfaces | `#bfdadc` |
-| `scope: build` | Related to the build system (CMake, Maven, Gradle, Cargo, npm, etc.) | `#cfd3d7` |
-| `scope: ci` | Related to GitHub Actions, automated testing workflows, or CI/CD pipelines | `#62b0e2` |
-| `scope: crypto` | Related to cryptographic operations, key management, or signing | `#b4a7d6` |
-| `scope: dependencies` | Related to dependency updates, version bumps, or dependency management | `#0366d6` |
-| `scope: docs` | Related to READMEs, guides, API documentation, or code comments | `#0075ca` |
-| `scope: examples` | Related to the example projects or code snippets provided for users | `#bfd4f2` |
-| `scope: grpc` | Related to gRPC communication, protobuf definitions, or the network layer | `#5319e7` |
-| `scope: security` | Related to security vulnerabilities or security-sensitive areas of the codebase | `#e11d21` |
-| `scope: tests` | Related to unit tests, integration tests, or test infrastructure | `#c5def5` |
+| `scope: api` | Related to the public SDK API surface or interfaces | `#aecbfa` |
+| `scope: build` | Related to the build system (CMake, Maven, Gradle, Cargo, npm, etc.) | `#8b949e` |
+| `scope: ci` | Related to GitHub Actions, automated testing workflows, or CI/CD pipelines | `#6e7681` |
+| `scope: core` | Related to the core SDK framework: transaction/query execution, signing, serialization, and retry logic | `#79b8ff` |
+| `scope: crypto` | Related to cryptographic operations, key management, or signing | `#9a6ede` |
+| `scope: dependencies` | Related to dependency updates, version bumps, or dependency management | `#57606a` |
+| `scope: docs` | Related to READMEs, guides, API documentation, or code comments | `#56d364` |
+| `scope: examples` | Related to the example projects or code snippets provided for users | `#3fb950` |
+| `scope: grpc` | Related to gRPC communication or protobuf definitions | `#1f6feb` |
+| `scope: network` | Related to network communication, including gRPC (consensus nodes) and HTTP/REST (mirror nodes) | `#388bfd` |
+| `scope: security` | Related to security vulnerabilities or security-sensitive areas of the codebase | `#d18616` |
+| `scope: tests` | Related to unit tests, integration tests, or test infrastructure | `#d4a017` |
 
 ---
 
@@ -100,15 +102,15 @@ Below is the complete list of all standardized labels for easy reference:
 | Label | Description | Color |
 | :---- | :---------- | :---- |
 | **Status — Issues** | | |
-| `status: needs triage` | New issue that needs to be reviewed and categorized | `#fbca04` |
-| `status: needs info` | Reviewed; waiting on more information from the submitter | `#d876e3` |
+| `status: needs triage` | New issue that needs to be reviewed and categorized | `#0969da` |
+| `status: needs info` | Reviewed; waiting on more information from the submitter | `#c24e00` |
 | `status: blocked` | Cannot proceed due to external dependency or required decision | `#000000` |
-| `status: ready for dev` | Fully defined and ready for a contributor to pick up | `#c2e0c6` |
-| `status: in progress` | A contributor is actively working on this issue | `#fef2c0` |
+| `status: ready for dev` | Fully defined and ready for a contributor to pick up | `#2da44e` |
+| `status: in progress` | A contributor is actively working on this issue | `#0e8a80` |
 | **Status — Pull Requests** | | |
-| `status: needs review` | Ready for maintainer review | `#1d76db` |
-| `status: needs revision` | Requires changes from the author before it can proceed | `#e99695` |
-| `status: awaiting merge` | Approved and ready to merge once CI passes | `#6f42c1` |
+| `status: needs review` | Ready for maintainer review | `#0969da` |
+| `status: needs revision` | Requires changes from the author before it can proceed | `#c24e00` |
+| `status: awaiting merge` | Approved and ready to merge once CI passes | `#1a7f37` |
 | **Priority** | | |
 | `priority: critical` | Must be fixed immediately | `#b60205` |
 | `priority: high` | Important; should be prioritized in current sprint | `#d93f0b` |
@@ -120,16 +122,18 @@ Below is the complete list of all standardized labels for easy reference:
 | `skill: intermediate` | Requires familiarity with codebase structure | `#6f42c1` |
 | `skill: advanced` | Requires deep understanding; may span modules | `#4a2c7a` |
 | **Scope** | | |
-| `scope: api` | Related to the public SDK API surface | `#bfdadc` |
-| `scope: build` | Related to the build system | `#cfd3d7` |
-| `scope: ci` | Related to GitHub Actions or CI/CD | `#62b0e2` |
-| `scope: crypto` | Related to cryptographic operations | `#b4a7d6` |
-| `scope: dependencies` | Related to dependency updates | `#0366d6` |
-| `scope: docs` | Related to documentation | `#0075ca` |
-| `scope: examples` | Related to example projects or snippets | `#bfd4f2` |
-| `scope: grpc` | Related to gRPC/protobuf/network layer | `#5319e7` |
-| `scope: security` | Related to security vulnerabilities or sensitive areas | `#e11d21` |
-| `scope: tests` | Related to tests or test infrastructure | `#c5def5` |
+| `scope: api` | Related to the public SDK API surface | `#aecbfa` |
+| `scope: build` | Related to the build system | `#8b949e` |
+| `scope: ci` | Related to GitHub Actions or CI/CD | `#6e7681` |
+| `scope: core` | Related to the core SDK framework | `#79b8ff` |
+| `scope: crypto` | Related to cryptographic operations | `#9a6ede` |
+| `scope: dependencies` | Related to dependency updates | `#57606a` |
+| `scope: docs` | Related to documentation | `#56d364` |
+| `scope: examples` | Related to example projects or snippets | `#3fb950` |
+| `scope: grpc` | Related to gRPC/protobuf | `#1f6feb` |
+| `scope: network` | Related to network communication (gRPC and HTTP/REST) | `#388bfd` |
+| `scope: security` | Related to security vulnerabilities or sensitive areas | `#d18616` |
+| `scope: tests` | Related to tests or test infrastructure | `#d4a017` |
 
 ---
 
