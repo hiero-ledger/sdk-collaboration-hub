@@ -103,6 +103,6 @@ Blank templates are optional and are enabled in:
 
 1. Create a pull request
 
-2. Create the required directory with the desired, pre-fixed templates
+2. Create the required directory with the desired, prefixed templates
 
 3. Merge to main

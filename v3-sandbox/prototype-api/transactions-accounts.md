@@ -10,28 +10,21 @@ domain-specific setters live on the builder and `build()` produces a universal `
 ## API Schema
 
 ```
-namespace transactions-accounts
+namespace transactionsAccounts
 requires common, transactions, keys
 
 @@finalType
-AccountCreateTransactionBuilder extends transactions.TransactionBuilder<AccountCreateTransactionBuilder> {
-    @@nullable accountMemo:string
-    @@default(0) initialBalance:common.Hbar
-    key:keys.PublicKey
+AccountCreateTransactionBuilder extends transactions.TransactionBuilder<AccountCreateTransactionBuilder, transactions.Response<AccountCreateReceipt>> {
+    @@nullable accountMemo: string
+    @@default(0) initialBalance: common.Hbar
+    key: keys.PublicKey
 }
 
 @@finalType
-AccountCreateResponse extends transactions.Response<AccountCreateReceipt, AccountCreateRecord> {
-}
-
-@@finalType
+// Extends the base Receipt with the account ID assigned by the consensus node.
+// This is the only new field: everything else (status, exchangeRate, etc.) lives on Receipt.
 AccountCreateReceipt extends transactions.Receipt {
-    @@immutable accountId:common.AccountId
-}
-
-@@finalType
-AccountCreateRecord extends transactions.Record<AccountCreateReceipt> {
-    @@immutable accountId:common.AccountId
+    @@immutable accountId: common.AccountId
 }
 
 ```
@@ -46,7 +39,7 @@ Creates a new account with a balance of 100 hbars using `buildAndExecute` for a 
 HieroClient client = ...
 PublicKey keyOfNewAccount = ...
 
-AccountCreateResponse response = new AccountCreateTransactionBuilder()
+Response<AccountCreateReceipt> response = new AccountCreateTransactionBuilder()
     .setKey(keyOfNewAccount)
     .setInitialBalance(new Hbar(100, HbarUnit.HBAR))
     .buildAndExecute(client);
@@ -56,13 +49,14 @@ AccountId newAccountId = response.queryReceipt().getAccountId();
 
 ### Multi-party signing
 
-Creates a new account where both the operator and another party need to sign.
+Creates a new account where both the operator and another party need to sign. Because `build()` returns
+`Transaction<Response<AccountCreateReceipt>>`, the typed response is preserved through the signing chain.
 
 ```
 HieroClient client = ...
 PublicKey keyOfNewAccount = ...
 
-Transaction tx = new AccountCreateTransactionBuilder()
+Transaction<Response<AccountCreateReceipt>> tx = new AccountCreateTransactionBuilder()
     .setKey(keyOfNewAccount)
     .setInitialBalance(new Hbar(100, HbarUnit.HBAR))
     .build(client);
@@ -70,7 +64,7 @@ Transaction tx = new AccountCreateTransactionBuilder()
 tx.sign(operatorKey);
 tx.sign(otherPartyKey);
 
-AccountCreateResponse response = tx.execute(client);
+Response<AccountCreateReceipt> response = tx.execute(client);
 AccountId newAccountId = response.queryReceipt().getAccountId();
 ```
 

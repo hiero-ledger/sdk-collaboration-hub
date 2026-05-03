@@ -34,50 +34,24 @@ Defensive implementation does **not** mean:
 
 Use the following canonical mappings when turning meta types into Java:
 
-| Generic Type                                                                     | Java Type                                                                                 | Notes |
-|----------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------|-------|
-| `string`                                                                         |
- `java.lang.String`                                                               | -                                                                                         |
-| `intX`                                                                           | `byte`, `short`, `int`, `long`, `java.lang.Byte`, `java.lang.Short`, `java.lang.Integer`, 
- `java.lang.Long`, `java.math.BigInteger`                                         | For all definitions that are not `@@nullable` the primitive types should be               
- used                                                                             |
-| `uintX`                                                                          | `byte`, `short`, `int`, `long`, `java.lang.Byte`, `java.lang.Short`, `java.lang.Integer`, 
- `java.lang.Long`, `java.math.BigInteger`                                         | For all definitions that are not `@@nullable` the primitive types should be               
- used                                                                             |
-| `double`                                                                         | `double`/                                                                                 
- `java.lang.Double`                                                               |
- For all definitions that are not `@@nullable` the primitive types should be used |
-| `decimal`                                                                        |
- `java.math.BigDecimal`                                                           | -                                                                                         |
-| `bool`                                                                           | `boolean`/                                                                                
- `java.lang.Boolean`                                                              |
- For all definitions that are not `@@nullable` the primitive types should be used |
-| `bytes`                                                                          | `byte[]`/                                                                                 
- `java.lang.Byte[]`                                                               |
- For all definitions that are not `@@nullable` the primitive types should be used |
-| `list<TYPE>`                                                                     |
- `java.util.List<TYPE>`                                                           |
- lists in the public API should always be immutable                               |
-| `set<TYPE>`                                                                      |
- `java.util.Set<TYPE>`                                                            |
- sets in the public API should always be immutable                                |
-| `map<KEY, VALUE>`                                                                |
- `java.util.Map<KEY, VALUE>`                                                      |
- maps in the public API should always be immutable                                |
-| `date`                                                                           |
- `java.time.LocalDate`                                                            | -                                                                                         |
-| `time`                                                                           |
- `java.time.LocalTime`                                                            | -                                                                                         |
-| `dateTime`                                                                       |
- `java.time.LocalDateTime`                                                        | -                                                                                         |
-| `zonedDateTime`                                                                  |
- `java.time.ZonedDateTime`                                                        | -                                                                                         |
-| `type`                                                                           |
- `java.lang.Class<?>`                                                             |
- Used for runtime type information, typically with generics `Class<T>`            |
-| `function<...>`                                                                  | `@FunctionalInterface` or                                                                 
- `java.util.function.*`                                                           |
- See [Function Types](#function-types) section below                              |
+| Generic Type      | Java Type                                                                                                                          | Notes                                                                            |
+|-------------------|------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------|
+| `string`          | `java.lang.String`                                                                                                                 | -                                                                                |
+| `intX`            | `byte`, `short`, `int`, `long`, `java.lang.Byte`, `java.lang.Short`, `java.lang.Integer`, `java.lang.Long`, `java.math.BigInteger` | For all definitions that are not `@@nullable` the primitive types should be used |
+| `uintX`           | `byte`, `short`, `int`, `long`, `java.lang.Byte`, `java.lang.Short`, `java.lang.Integer`, `java.lang.Long`, `java.math.BigInteger` | For all definitions that are not `@@nullable` the primitive types should be used |
+| `double`          | `double`/ `java.lang.Double`                                                                                                       | For all definitions that are not `@@nullable` the primitive types should be used |
+| `decimal`         | `java.math.BigDecimal`                                                                                                             | -                                                                                |
+| `bool`            | `boolean`/`java.lang.Boolean`                                                                                                      | For all definitions that are not `@@nullable` the primitive types should be used |
+| `bytes`           | `byte[]`/`java.lang.Byte[]`                                                                                                        | For all definitions that are not `@@nullable` the primitive types should be used |
+| `list<TYPE>`      | `java.util.List<TYPE>`                                                                                                             | lists in the public API should always be immutable                               |
+| `set<TYPE>`       | `java.util.Set<TYPE>`                                                                                                              | sets in the public API should always be immutable                                |
+| `map<KEY, VALUE>` | `java.util.Map<KEY, VALUE>`                                                                                                        | maps in the public API should always be immutable                                |
+| `date`            | `java.time.LocalDate`                                                                                                              | -                                                                                |
+| `time`            | `java.time.LocalTime`                                                                                                              | -                                                                                |
+| `dateTime`        | `java.time.LocalDateTime`                                                                                                          | -                                                                                |
+| `zonedDateTime`   | `java.time.ZonedDateTime`                                                                                                          | -                                                                                |
+| `type`            | `java.lang.Class<?>`                                                                                                               | Used for runtime type information, typically with generics `Class<T>`            |
+| `function<...>`   | `@FunctionalInterface` or `java.util.function.*`                                                                                   | See [Function Types](#function-types) section below                              |
 
 ### Type Parameter for Runtime Type Information
 
@@ -461,7 +435,7 @@ public enum TransactionStatus {
 ## Collections
 
 The public API must never return `null` for collections. Instead, an empty collection must be returned.
-The most easy way to achieve this is to use one of the static `java.util.Collections.emptyList()`/
+The easiest way to achieve this is to use one of the static `java.util.Collections.emptyList()`/
 `java.util.Collections.emptySet()`/`java.util.Collections.emptyMap()`/`List.of()`/`Set.of()`/`Map.of()` factory methods.
 Since the API must never return `null` for collections it never makes sense to wrap a collection in a
 `java.util.Optional` in the public API.
@@ -659,7 +633,7 @@ public class Example {
         return name.length(); //Without early checks the exception will be thrown here what can be long after the creation of the object
     }
 
-    public int getNickNameLenght() {
+    public int getNickNameLength() {
         return nickName.length(); //Without early checks the exception will be thrown here what can be long after the creation of the object
     }
 }
@@ -1253,6 +1227,7 @@ Configuration {
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
 import org.hiero.sdk.annotation.ThreadSafe;
 
 public final class Configuration {
@@ -1347,6 +1322,7 @@ DataService {
 // Java implementation
 
 import java.util.concurrent.atomic.AtomicLong;
+
 import org.hiero.sdk.annotation.ThreadSafe;
 
 public final class DataService {
@@ -1389,6 +1365,7 @@ DataCache {
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.atomic.AtomicLong;
+
 import org.hiero.sdk.annotation.ThreadSafe;
 
 public final class DataCache {
@@ -1535,8 +1512,10 @@ are built around them.
 |--------------------------|-------------------------------------------|---------------------------------------|
 | `timeout-error`          | `java.util.concurrent.TimeoutException`   | Standard for timeout scenarios        |
 | `invalid-argument-error` | `java.lang.IllegalArgumentException`      | Standard for bad input                |
+| `illegal-format`         | `java.lang.IllegalArgumentException`      | Standard for malformed input format   |
 | `invalid-state-error`    | `java.lang.IllegalStateException`         | Standard for wrong object state       |
 | `io-error`               | `java.io.IOException`                     | Standard for I/O failures             |
+| `not-found-error`        | `java.util.NoSuchElementException`        | Standard for missing elements         |
 | `unsupported-error`      | `java.lang.UnsupportedOperationException` | Standard for unimplemented operations |
 
 Only define a custom exception class when no suitable standard exception exists — typically for SDK-specific error
@@ -2847,6 +2826,314 @@ package org.hiero.accounts;
 
 **Note**: This creates a dependency, so `org.hiero.transactions` types appear in the public API. Consider whether
 `requires transitive` is needed (see [JPMS section](#java-platform-module-system-jpms)).
+
+## Streaming
+
+The meta-language `@@streaming` annotation declares methods that return an asynchronous stream of items. In Java, the
+SDK must provide two consumption modes:
+
+1. **Pull-based** (primary) — The canonical implementation. Returns a `HieroStream<T>` that the consumer iterates over
+   using a standard `for` loop or `Iterator`. All retry, reconnect, and domain logic lives here.
+2. **Push-based** (convenience adapter) — Built on top of the pull implementation using `java.util.concurrent.Flow`. The
+   push adapter contains zero domain logic and is derived automatically from the pull stream.
+
+### The `HieroStream<T>` interface (pull-based)
+
+The primary pull-based API is a custom `HieroStream<T>` interface that extends `Iterable<T>` and `AutoCloseable`. This
+allows consumers to use try-with-resources for automatic cleanup and enhanced `for` loops for iteration.
+See [java-files/HieroStream.java](java-files/HieroStream.java) for the full source with Javadoc.
+
+```java
+public interface HieroStream<T> extends Iterable<T>, AutoCloseable {
+
+    @Override
+    @NonNull
+    Iterator<T> iterator();
+
+    @Override
+    void close();
+}
+```
+
+Consumer usage:
+
+```
+try(HieroStream<StreamItem<TopicMessage>> stream = topicSubscription.subscribe(client)) {
+        for(StreamItem<TopicMessage> item :stream) {
+            switch(item) {
+                case StreamItem.Success<TopicMessage> s -> process(s.value());
+                case StreamItem.Error<TopicMessage> e ->log.warn("Bad message",e.error());
+            }
+        }
+} // AutoCloseable cancels the stream and releases resources
+```
+
+The `Iterator` returned by `HieroStream` blocks on `next()` until the next item is available. On Java 21+, this is
+efficient when consumed on a virtual thread — the virtual thread parks without blocking an OS thread. On older Java
+versions, the blocking is real but acceptable for most use cases since the consumer typically dedicates a thread to
+stream processing.
+
+### The `StreamItem<T>` sealed interface (per-item Result type)
+
+The meta-language `streamResult<TYPE>` maps to a sealed interface in Java. This type represents a single item in the
+stream that is either a success value or an error. It allows per-item error handling without terminating the stream.
+See [java-files/StreamItem.java](java-files/StreamItem.java) for the full source with Javadoc.
+
+```java
+public sealed interface StreamItem<T> permits StreamItem.Success, StreamItem.Error {
+
+    record Success<T>(@NonNull T value) implements StreamItem<T> {
+
+        public Success {
+            Objects.requireNonNull(value, "value must not be null");
+        }
+    }
+
+    record Error<T>(@NonNull Throwable error) implements StreamItem<T> {
+
+        public Error {
+            Objects.requireNonNull(error, "error must not be null");
+        }
+    }
+}
+```
+
+Consumer code uses pattern matching (Java 17+) to handle each variant:
+
+```
+for(StreamItem<TopicMessage> item : stream) {
+    switch(item){
+        case StreamItem.Success<TopicMessage> s -> process(s.value());
+        case StreamItem.Error<TopicMessage> e ->  log.warn("Item error: {}",e.error().getMessage());
+    }
+}
+```
+
+When a streaming method in the meta-language uses a plain return type (not `streamResult`), the Java stream yields `T`
+directly and all errors are terminal — they surface as exceptions from `Iterator.next()` or `Iterator.hasNext()`.
+
+### Push-based adapter using `java.util.concurrent.Flow`
+
+The push-based API is a convenience adapter built on top of the pull-based `HieroStream<T>`. It implements
+`java.util.concurrent.Flow.Publisher<T>` (Java 9+) so that consumers can use the standard reactive streams interface.
+The adapter contains no domain logic — it drives the pull loop on a virtual thread and delivers items to the
+`Flow.Subscriber`. See [java-files/HieroPublisher.java](java-files/HieroPublisher.java) and
+[java-files/HieroSubscription.java](java-files/HieroSubscription.java) for the full source with Javadoc.
+
+#### The `HieroPublisher<T>` adapter
+
+```java
+import java.util.Objects;
+import java.util.concurrent.Flow;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+
+public final class HieroPublisher<T> implements Flow.Publisher<T> {
+
+    private final HieroStream<T> stream;
+
+    public HieroPublisher(@NonNull final HieroStream<T> stream) {
+        this.stream = Objects.requireNonNull(stream, "stream must not be null");
+    }
+
+    @Override
+    public void subscribe(@NonNull final Flow.Subscriber<? super T> subscriber) {
+        Objects.requireNonNull(subscriber, "subscriber must not be null");
+        subscriber.onSubscribe(new HieroSubscription<>(stream, subscriber));
+    }
+}
+```
+
+#### The `HieroSubscription<T>` implementation
+
+The subscription drives the pull-based `HieroStream` on a virtual thread and respects backpressure through the
+`Flow.Subscription.request(long)` protocol:
+
+```java
+final class HieroSubscription<T> implements Flow.Subscription {
+
+    private final HieroStream<T> stream;
+    private final Flow.Subscriber<? super T> subscriber;
+    private final AtomicLong requested = new AtomicLong(0);
+    private final AtomicBoolean cancelled = new AtomicBoolean(false);
+
+    HieroSubscription(@NonNull final HieroStream<T> stream,
+                      @NonNull final Flow.Subscriber<? super T> subscriber) {
+        this.stream = stream;
+        this.subscriber = subscriber;
+        Thread.ofVirtual().start(this::drainLoop);
+    }
+
+    @Override
+    public void request(final long n) {
+        if (n <= 0) {
+            cancel();
+            subscriber.onError(new IllegalArgumentException("request count must be positive"));
+            return;
+        }
+        requested.addAndGet(n);
+    }
+
+    @Override
+    public void cancel() {
+        if (cancelled.compareAndSet(false, true)) {
+            stream.close();
+        }
+    }
+
+    private void drainLoop() {
+        try {
+            for (T item : stream) {
+                // Wait until demand is available
+                while (requested.get() <= 0) {
+                    if (cancelled.get()) {
+                        return;
+                    }
+                    Thread.sleep(1); // virtual thread parks cheaply
+                }
+                if (cancelled.get()) {
+                    return;
+                }
+                requested.decrementAndGet();
+                subscriber.onNext(item);
+            }
+            if (!cancelled.get()) {
+                subscriber.onComplete();
+            }
+        } catch (final Exception e) {
+            if (!cancelled.get()) {
+                subscriber.onError(e);
+            }
+        }
+    }
+}
+```
+
+#### Consumer usage with `Flow.Subscriber`
+
+```
+HieroStream<StreamItem<TopicMessage>> pullStream = topicSubscription.subscribe(client);
+Flow.Publisher<StreamItem<TopicMessage>> publisher = new HieroPublisher<>(pullStream);
+
+publisher.subscribe(new Flow.Subscriber<>() {
+
+    private Flow.Subscription subscription;
+
+    @Override
+    public void onSubscribe(@NonNull final Flow.Subscription subscription){
+        this.subscription = subscription;
+        subscription.request(1); // request first item
+    }
+
+    @Override
+    public void onNext(@NonNull final StreamItem<TopicMessage> item){
+        switch (item) {
+            case StreamItem.Success<TopicMessage> s -> process(s.value());
+            case StreamItem.Error<TopicMessage> e -> log.warn("Bad message", e.error());
+        }
+        subscription.request(1); // request next item
+    }
+
+    @Override
+    public void onError(@NonNull final Throwable throwable){
+        log.error("Stream failed", throwable);
+    }
+
+    @Override
+    public void onComplete() {
+        log.info("Stream completed");
+    }
+});
+```
+
+#### Integration with reactive libraries
+
+Since `HieroPublisher<T>` implements the standard `java.util.concurrent.Flow.Publisher<T>` interface, it integrates
+directly with any reactive library that supports the Reactive Streams specification:
+
+```
+// Project Reactor (via JdkFlowAdapter)
+
+import reactor.adapter.JdkFlowAdapter;
+
+Flux<StreamItem<TopicMessage>> flux = JdkFlowAdapter.flowPublisherToFlux(
+        new HieroPublisher<>(topicSubscription.subscribe(client)));
+flux.filter(item ->item instanceof StreamItem.Success)
+        .map(item ->((StreamItem.Success<TopicMessage>)item).value())
+        .subscribe(msg ->process(msg));
+```
+
+```java
+// RxJava 3 (via jdk9-interop)
+
+import hu.akarnokd.rxjava3.jdkinterop.FlowInterop;
+
+Flowable<StreamItem<TopicMessage>> flowable = FlowInterop.fromFlowPublisher(
+        new HieroPublisher<>(topicSubscription.subscribe(client))
+);
+```
+
+### Why `Flow` over callbacks
+
+The Java `Flow` API (JSR 166, `java.util.concurrent.Flow`) was chosen over a custom callback interface for the
+push-based
+adapter because:
+
+1. **Standard library** — `Flow` is part of `java.base` since Java 9. No external dependency.
+2. **Backpressure built in** — The `request(n)` protocol prevents the producer from overwhelming the consumer. A custom
+   callback interface would need to reinvent this.
+3. **Reactive Streams interop** — `Flow.Publisher` is the Java standard mapping of the Reactive Streams specification.
+   It integrates directly with Project Reactor, RxJava, Vert.x, and any other reactive library via adapter utilities.
+4. **Well-understood contract** — The `Flow` specification defines clear rules for `onSubscribe`, `onNext`, `onError`,
+   and `onComplete` ordering, thread safety, and cancellation. A custom callback interface would need to document and
+   enforce all of these from scratch.
+
+### Architecture: pull is canonical, push is derived
+
+The pull-based `HieroStream<T>` is the single source of truth for all streaming logic. The push-based
+`HieroPublisher<T>`
+is a stateless adapter that drives the pull loop. This means:
+
+- All retry, reconnect, and node selection logic is implemented once in the pull stream.
+- The push adapter contains zero domain logic — it only bridges pull to push.
+- Bug fixes and improvements to streaming behavior apply to both consumption modes automatically.
+- SDK implementors only need to implement `HieroStream<T>`. The push adapter is provided by the SDK framework.
+
+```
+Network (gRPC/WebSocket) → SDK internal retry/reconnect → HieroStream<T> (pull)
+                                                              ↓
+                                                         HieroPublisher<T> (push adapter)
+                                                              ↓
+                                                         Flow.Subscriber<T> (consumer)
+```
+
+### Providing both APIs from a single method
+
+Streaming methods in the SDK should provide a pull-based return type as the primary API. The push-based `Publisher` can
+be obtained by wrapping the pull stream. A convenience method may be provided:
+
+```java
+public interface TopicSubscription {
+
+    // Primary: pull-based
+    @NonNull
+    HieroStream<StreamItem<TopicMessage>> subscribe(@NonNull Client client);
+
+    // Convenience: push-based adapter
+    @NonNull
+    default Flow.Publisher<StreamItem<TopicMessage>> subscribePublisher(@NonNull final Client client) {
+        return new HieroPublisher<>(subscribe(client));
+    }
+}
+```
+
+### Error handling summary
+
+| Error level    | Pull-based (`HieroStream`)                     | Push-based (`Flow.Publisher`)             |
+|----------------|------------------------------------------------|-------------------------------------------|
+| Per-item error | `StreamItem.Error` variant in the iteration    | `StreamItem.Error` delivered via `onNext` |
+| Stream-level   | Exception from `Iterator.next()` / `hasNext()` | Delivered via `onError`                   |
+| Cancellation   | `close()` / try-with-resources                 | `Subscription.cancel()`                   |
 
 ## Questions & Comments
 
