@@ -30,6 +30,20 @@ Examples mirror the current synchronous SDK patterns.
 Python is dynamically typed. Enforce types at API boundaries with input validation and
 conversion helpers, and document expectations with type hints and docstrings.
 
+Type enforcement flow (typical):
+
+| Meta type         | Input type                          | Internal type                 | Return type                   | Validation                                 |
+|-------------------|-------------------------------------|-------------------------------|-------------------------------|--------------------------------------------|
+| `string`          | `str`                               | `str`                         | `str`                         | length, pattern, non-empty where required  |
+| `intX`            | `int` or numeric `str`              | `int`                         | `int`                         | range checks, reject `bool`                |
+| `uintX`           | `int` or numeric `str`              | `int`                         | `int`                         | range checks, `>= 0`                       |
+| `bytes`           | `bytes`, `bytearray`, hex `str`     | `bytes`                       | `bytes`                       | length checks, hex decode if needed        |
+| `list<T>`         | `Iterable[T]`                       | `list[T]`                     | `list[T]`                     | per-item validation                        |
+| `map<K, V>`       | `Mapping[K, V]`                     | `dict[K, V]`                  | `dict[K, V]`                  | key/value validation                       |
+| `dateTime`        | `datetime.datetime`                 | `datetime.datetime` (UTC)     | `datetime.datetime`           | require `tzinfo`, normalize to UTC         |
+| `zonedDateTime`   | `datetime.datetime`                 | `datetime.datetime` (ZoneInfo)| `datetime.datetime`           | require `tzinfo` is `ZoneInfo`             |
+| `function<...>`   | `collections.abc.Callable[...]`     | `collections.abc.Callable[...]`| `collections.abc.Callable[...]`| `callable(...)` checks                      |
+
 ## 2. Error Model Mapping For @@throws
 
 `@@throws(error-type-a[, ...])` maps to Python exceptions. Keep transport and protocol details out of the public
