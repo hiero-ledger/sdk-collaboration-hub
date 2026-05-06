@@ -3,6 +3,7 @@
 This document translates the [language-agnostic API meta-definition](api-guideline.md) into concrete Python patterns,
 conventions, and ready-to-copy templates.
 It aims to keep SDK APIs consistent, ergonomic, and maintainable across modules.
+Examples mirror the current synchronous SDK patterns.
 
 ## 1. Type Mapping Table
 
@@ -15,7 +16,7 @@ It aims to keep SDK APIs consistent, ergonomic, and maintainable across modules.
 | `decimal`         | `decimal.Decimal`                 | Use for money and exact decimal arithmetic        |
 | `bool`            | `bool`                            | -                                                 |
 | `bytes`           | `bytes` or `bytearray`            | Prefer `bytes` in public immutable APIs           |
-| `list<TYPE>`      | `list[TYPE]`                      | Use `typing.List` for older Python versions       |
+| `list<TYPE>`      | `list[TYPE]`                      | Use built-in generics (Python 3.10+)              |
 | `set<TYPE>`       | `set[TYPE]`                       | Use `frozenset` for immutable values              |
 | `map<KEY, VALUE>` | `dict[KEY, VALUE]`                | Use `Mapping` in type hints for read-only inputs  |
 | `type`            | `type[Any]`                       | Use for runtime type identity                     |
@@ -23,13 +24,17 @@ It aims to keep SDK APIs consistent, ergonomic, and maintainable across modules.
 | `date`            | `datetime.date`                   | -                                                 |
 | `time`            | `datetime.time`                   | -                                                 |
 | `dateTime`        | `datetime.datetime`               | Prefer timezone-aware UTC values when possible    |
-| `zonedDateTime`   | `datetime.datetime` with `tzinfo` | Use `zoneinfo.ZoneInfo` (Python 3.9+)             |
-| `function<...>`   | `typing.Callable[...]`            | Prefer named `Protocol` for complex callbacks     |
+| `zonedDateTime`   | `datetime.datetime` with `tzinfo` | Prefer `zoneinfo.ZoneInfo` (concrete `tzinfo`)    |
+| `function<...>`   | `collections.abc.Callable[...]`   | Prefer named `Protocol` for complex callbacks     |
+
+Python is dynamically typed. Enforce types at API boundaries with input validation and
+conversion helpers, and document expectations with type hints and docstrings.
 
 ## 2. Error Model Mapping For @@throws
 
 `@@throws(error-type-a[, ...])` maps to Python exceptions. Keep transport and protocol details out of the public
-exception hierarchy and expose stable SDK-level error identifiers.
+exception hierarchy and expose stable SDK-level error identifiers. In the current SDK, precheck and receipt failures
+use `PrecheckError` and `ReceiptStatusError`; preserve those patterns for parity.
 
 Recommended pattern:
 
@@ -55,26 +60,8 @@ class InvalidSignatureError(HieroSdkError):
 
 ## 3. Async Model Mapping For @@async
 
-`@@async` methods should be represented as `async def` and return awaited values, not callback-based APIs.
-
-Recommended pattern:
-
-- Public async APIs are `async def` methods.
-- If synchronous convenience methods are provided, implement them as thin wrappers around async methods.
-- Do not combine callback parameters with coroutine return values in one method.
-
-Example:
-
-```python
-class Client:
-    async def submit(self, tx_bytes: bytes) -> bytes:
-        ...
-
-    def submit_sync(self, tx_bytes: bytes) -> bytes:
-        import asyncio
-
-        return asyncio.run(self.submit(tx_bytes))
-```
+The current Python SDK is synchronous, so prefer blocking methods and avoid `async def` in public APIs.
+If async support is introduced in the future, keep it separate from callback-based APIs and return awaitable values.
 
 ## 4. Factory And Static Method Conventions
 
@@ -93,7 +80,7 @@ Example:
 from dataclasses import dataclass
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class AccountId:
     shard: int
     realm: int
@@ -125,10 +112,9 @@ Example:
 
 ```python
 from dataclasses import dataclass, field
-from typing import Optional
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class TransactionMemo:
     text: str | None
 
@@ -176,75 +162,45 @@ class NonceStore:
 
 ## 7. Runnable Build-Sign-Send Example
 
-The following example is a runnable end-to-end flow showing build, sign, and send with async submission.
+The following example is a runnable end-to-end flow showing build, sign, and send using the current synchronous SDK API.
 
 ```python
-import asyncio
-import hashlib
-from dataclasses import dataclass
+import os
+
+from hiero_sdk_python import (
+    AccountId,
+    Client,
+    Hbar,
+    Network,
+    PrivateKey,
+    ResponseCode,
+    TransferTransaction,
+)
 
 
-@dataclass(frozen=True)
-class SignedTransaction:
-    body: bytes
-    signature: bytes
+def main() -> None:
+    client = Client(Network("testnet"))
+    operator_id = AccountId.from_string(os.environ["OPERATOR_ID"])
+    operator_key = PrivateKey.from_string(os.environ["OPERATOR_KEY"])
+    client.set_operator(operator_id, operator_key)
 
+    recipient_id = AccountId.from_string(os.environ.get("RECIPIENT_ID", "0.0.1234"))
 
-class TransferTransactionBuilder:
-    def __init__(self) -> None:
-        self._from_account = ""
-        self._to_account = ""
-        self._amount_tinybar = 0
-
-    def from_account(self, value: str) -> "TransferTransactionBuilder":
-        self._from_account = value
-        return self
-
-    def to_account(self, value: str) -> "TransferTransactionBuilder":
-        self._to_account = value
-        return self
-
-    def amount_tinybar(self, value: int) -> "TransferTransactionBuilder":
-        self._amount_tinybar = value
-        return self
-
-    def build(self) -> bytes:
-        payload = f"{self._from_account}|{self._to_account}|{self._amount_tinybar}"
-        return payload.encode("utf-8")
-
-
-class PrivateKey:
-    def __init__(self, seed: bytes) -> None:
-        self._seed = seed
-
-    def sign(self, message: bytes) -> bytes:
-        return hashlib.sha256(self._seed + message).digest()
-
-
-class Client:
-    async def send(self, tx: SignedTransaction) -> str:
-        await asyncio.sleep(0.01)
-        digest = hashlib.sha256(tx.body + tx.signature).hexdigest()
-        return f"ok:{digest[:16]}"
-
-
-async def main() -> None:
-    tx_body = (
-        TransferTransactionBuilder()
-        .from_account("0.0.1001")
-        .to_account("0.0.1002")
-        .amount_tinybar(100)
-        .build()
+    receipt = (
+        TransferTransaction()
+        .add_hbar_transfer(operator_id, Hbar.from_tinybars(-1_000))
+        .add_hbar_transfer(recipient_id, Hbar.from_tinybars(1_000))
+        .freeze_with(client)
+        .sign(operator_key)
+        .execute(client)
     )
 
-    key = PrivateKey(seed=b"demo-key")
-    signed_tx = SignedTransaction(body=tx_body, signature=key.sign(tx_body))
+    if receipt.status != ResponseCode.SUCCESS:
+        raise RuntimeError(f"Transfer failed: {receipt.status}")
 
-    client = Client()
-    receipt = await client.send(signed_tx)
-    print("receipt", receipt)
+    print("Transfer OK:", receipt.transaction_id)
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
 ```
