@@ -33,10 +33,10 @@ SmartContractService {
 
 // Factory methods for params to wrap native types in solidity types
 Param<string> ofString(value:string)
-Param<string> ofBytes(value:string)
-Param<string> ofBytes23(value:string)
-Param<bytes> ofBytes(value:bytes)
-Param<bytes> ofBytes23(value:bytes)
+Param<bytes> ofBytesFromString(value:string)   // hex/base64 encoded string -> bytes
+Param<bytes> ofBytesFromBytes(value:bytes)     // raw bytes -> bytes
+Param<bytes> ofBytes23FromString(value:string) // hex/base64 encoded string -> bytes23
+Param<bytes> ofBytes23FromBytes(value:bytes)   // raw bytes -> bytes23
 Param<string> ofAddress(value:string)
 Param<common.Address> ofAddress(value:common.Address)
 Param<boolean> ofBool(value:boolean)
