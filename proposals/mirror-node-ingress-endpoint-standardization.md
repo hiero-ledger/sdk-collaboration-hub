@@ -11,27 +11,23 @@ Mirror Node URL from the user, and that single URL is what should be used everyw
 rewriting.
 
 The Mirror Node team is migrating endpoints from the legacy JS REST API service to the new Java API service. As a
-result, individual Mirror Node operations live behind different internal ports, and the SDKs have grown ad-hoc
-port-rewrite logic to reach the right service. The JavaScript SDK is the most visible offender. For example, when
-the configured `mirrorNodeUrl` points at `localhost`, the SDK currently does things like:
-
-```js
-// Current behavior in some SDK paths:
-if (mirrorNodeUrl.includes("localhost") || mirrorNodeUrl.includes("127.0.0.1")) {
-    mirrorNodeUrl = mirrorNodeUrl.replace("5551", "8384");
-}
-```
+result, individual Mirror Node operations live behind different internal ports, and some SDKs have grown ad-hoc
+port-rewrite logic to reach the right service. These rewrites sit at multiple distinct call sites — not in a single
+block — and each call site targets a different Mirror Node service. For example, requests served by the Java API
+(such as fee estimation and registered-node address book queries) rewrite the configured port `5551` to `8084`,
+while Mirror Node Web3 contract queries rewrite `5551` to `8545`. The set of Java-API-bound rewrites is actively
+growing as the Mirror Node team migrates more endpoints away from the legacy JS REST API service.
 
 This pattern is fragile. It hardcodes Mirror Node's internal service topology into the SDKs; every time Mirror Node
-consolidates, renames, or moves a service port, every SDK has to chase the change. The rewrite only fires for
+consolidates, renames, or moves a service port, every SDK has to chase the change. The rewrites only fire for
 `localhost` / `127.0.0.1`, which means production-like setups using a real ingress already work without rewriting —
 confirming that rewriting is purely a workaround for the local/CI case.
 
 [Solo](https://github.com/hiero-ledger/hiero-solo-action) exposes Mirror Node behind a **single ingress endpoint**
 that fronts every Mirror Node service on a single port. The SDKs will treat the user-supplied Mirror Node URL as
-authoritative, remove all in-SDK port-rewrite logic, and update the `MirrorNetwork.LOCAL_NODE` constants (and
-language equivalents) to point at the Solo ingress port. CI does not need separate work: each SDK's CI pipeline
-spins up the same local network the developer runs locally, so fixing the SDK source code fixes both.
+authoritative, remove all in-SDK port-rewrite logic, and update each SDK's local mirror network preset to point at
+the Solo ingress endpoint. CI does not need separate work: each SDK's CI pipeline spins up the same local network
+the developer runs locally, so fixing the SDK source code fixes both.
 
 **Once this proposal is implemented, every Solo network used for SDK development must be started with the ingress
 controller enabled.** This applies in both directions:
@@ -68,22 +64,19 @@ signatures and semantics.
 
 ## Internal Changes
 
-The change is entirely internal to each SDK.
+The change is entirely internal to each SDK and is captured by a single end-state rule:
 
-Every code path in every SDK that conditionally rewrites the Mirror Node URL port — typically guarded by a
-`localhost` / `127.0.0.1` check — must be deleted. The SDK must use the configured Mirror Node URL as-is for the
-operation it is performing. Example of code to remove (JavaScript SDK, illustrative):
+> The user-supplied Mirror Node URL must be used as-is for every Mirror Node operation. No SDK code path may mutate
+> the URL (host, port, scheme, or path prefix) based on whether the host is `localhost` / `127.0.0.1` or any other
+> characteristic of the configured value.
 
-```js
-// REMOVE: ad-hoc port rewriting that hardcodes Mirror Node service topology.
-if (mirrorNodeUrl.includes("localhost") || mirrorNodeUrl.includes("127.0.0.1")) {
-    mirrorNodeUrl = mirrorNodeUrl.replace("5551", "8384");
-}
-```
-
-Each SDK owner is responsible for auditing their codebase for equivalent rewrites — including any path that swaps
-between gRPC and REST ports for the same Mirror Node URL — and removing them. After this change, the configured URL
-is the single source of truth for every Mirror Node service the SDK calls.
+Each SDK owner is responsible for auditing their codebase and removing anything that violates this rule. Common
+violating shapes include `localhost`-guarded port replacement, per-network port-translation maps, and
+transport-specific overrides; some SDKs may already comply and need no change. In the SDKs that do violate the rule
+today, the violations span multiple distinct call sites — for example, fee estimation and registered-node address
+book queries rewrite to the Java REST API port `8084`, while Mirror Node contract queries rewrite to the Web3 port
+`8545` — and the set of `8084`-bound rewrites continues to grow as the Mirror Node team migrates more endpoints from
+the legacy JS REST API service.
 
 In parallel, each SDK's local-environment preset — for example `MirrorNetwork.LOCAL_NODE` and
 `WebMirrorNetwork.LOCAL_NODE` in the JavaScript SDK, and the equivalent constants in the Java, Go, Rust, Python, C++,
@@ -92,7 +85,18 @@ values are removed from the SDK source: no fallback is needed because the ingres
 
 After this work lands, both local development and CI must run Solo with the ingress controller enabled (see
 [Summary](#summary)). This is a hard prerequisite, not a recommendation: SDK integration tests will fail against any
-local network that does not expose the Mirror Node services through the ingress.
+local network that does not expose the Mirror Node services through the ingress. The cleanup itself is **gated** on
+[`hiero-solo-action#120`](https://github.com/hiero-ledger/hiero-solo-action/issues/120), which still has open design
+questions (which local port the ingress is forwarded to, and whether the ingress controller is enabled by default or
+behind a flag). As of the latest action release `v0.19.0`, the ingress controller is enabled only as a side effect
+of `installRelay: true`; there is no first-class input for it. **No SDK can complete this cleanup until that PR
+lands and a corresponding `hiero-solo-action` release ships.**
+
+Once the gate lifts, each SDK can land the cleanup as a single atomic PR in its own repository, with three
+coordinated changes: (1) bump or reconfigure `hiero-solo-action` to enable the ingress controller in CI; (2) remove
+the in-SDK port-rewrite logic that violates the end-state rule above; and (3) update the SDK's local mirror network
+preset to point at the Solo ingress endpoint. Because each SDK's CI uses the same Solo network developers run
+locally, this keeps source and CI in sync without cross-repo coordination.
 
 ### Response Codes
 
@@ -109,9 +113,9 @@ Node operations.
 
 No new tests are required for this proposal. Each SDK's existing unit and integration test suites already cover the
 Mirror Node-backed operations affected by this change. The acceptance criterion is that, after the in-SDK
-port-rewrite logic is removed and `MirrorNetwork.LOCAL_NODE` is updated, every SDK's existing test suite continues to
-pass with **no regressions** when run against a Solo local network started with the ingress controller enabled —
-both locally and in CI.
+port-rewrite logic is removed and the local mirror network preset is updated, every SDK's existing test suite
+continues to pass with **no regressions** when run against a Solo local network started with the ingress controller
+enabled — both locally and in CI.
 
 ### TCK
 
