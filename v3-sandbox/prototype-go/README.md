@@ -24,4 +24,4 @@ go mod tidy
 go test ./keys/
 ```
 
-Requires Go 1.21+.
+Requires Go 1.24+.
