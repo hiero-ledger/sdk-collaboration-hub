@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars, @typescript-eslint/no-unused-vars */
 import type { KeyAlgorithm } from "./KeyAlgorithm.js";
 import type { KeyType } from "./KeyType.js";
 

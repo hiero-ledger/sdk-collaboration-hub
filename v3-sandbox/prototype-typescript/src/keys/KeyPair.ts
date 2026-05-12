@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars, @typescript-eslint/no-unused-vars */
 import { KeyAlgorithm } from "./KeyAlgorithm.js";
 import { PrivateKey } from "./PrivateKey.js";
 import type { PublicKey } from "./PublicKey.js";
