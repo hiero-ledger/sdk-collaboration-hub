@@ -1,9 +1,6 @@
 # Mirror Node Ingress and Windows-Compatible Local Defaults for Local & CI Environments
 
 **Date Submitted:** 2026-05-08
-**Amended:** 2026-05-14 — concretized the Mirror Node ingress port as `38081` (agreed with the Solo team) and
-extended the scope to align the SDKs' other local-environment port defaults with the Windows-compatible values
-introduced in [hiero-ledger/solo#3618](https://github.com/hiero-ledger/solo/pull/3618).
 
 ## Summary
 
@@ -48,12 +45,26 @@ The full alignment table:
 | Consensus Node gRPC    | `50211`  | `50211`             | `35211`        |
 | JSON-RPC Relay         | `7546`   | `7546`              | `37546`        |
 | Mirror Node ingress    | `80`     | `8081`              | `38081`        |
-| Hiero Explorer (UI)    | `8080`   | `8080`              | `38080`        |
 
 SDKs only need to update the local-default constants for the services they actually expose to users. In practice
 this means: every SDK updates its consensus-node default (`35211`) and its Mirror Node ingress default (`38081`);
-SDKs that ship a JSON-RPC Relay local default additionally update it to `37546`. The Hiero Explorer port is listed
-for completeness — no SDK currently holds a constant for it.
+SDKs that ship a JSON-RPC Relay local default additionally update it to `37546`.
+
+The set above does **not** yet cover the per-node **gRPC Web proxy ports** that the SDKs use to reach the consensus
+nodes from browser runtimes. `hiero-solo-action` currently exposes these as `grpcProxyPort` `8080` for node 1 and
+`grpcProxyPort` `8081` for node 2. Both values collide with the previous local ports that solo#3618 moved away from
+(Hiero Explorer was on `8080` and the Mirror Node ingress was on `8081`) and are inconsistent with the new
+high-port (`3xxxx`) convention adopted for the rest of the alignment. They do not fall inside the Windows
+ephemeral port range (`49152–65535`), so they are not strictly *broken* on Windows today, but the inconsistency
+means a developer running Solo CLI and `hiero-solo-action` defaults side-by-side will see a confusing mix of port
+conventions. **This proposal therefore leaves two questions open for the team to decide before the SDKs land their
+cleanup PRs:** (1) do we move the per-node gRPC Web proxy ports into the `3xxxx` range to match the rest of the
+Windows-compatible alignment (for example node 1 → `38211`, node 2 → `38212`, scaling for additional nodes), or
+keep them at `8080` / `8081` since they technically still work on Windows; and (2) whichever values we choose, the
+SDKs' JS-Web local defaults must be updated in lockstep with `hiero-solo-action`, so this proposal must record the
+decision before any SDK PR is merged. This sub-decision is **not gating** on the rest of the proposal — the Mirror
+Node ingress cleanup and the consensus-node / JSON-RPC Relay alignment above can land independently of the gRPC Web
+proxy choice.
 
 **Once this proposal is implemented, every Solo network used for SDK development must be started with the ingress
 controller enabled.** This applies in both directions:
