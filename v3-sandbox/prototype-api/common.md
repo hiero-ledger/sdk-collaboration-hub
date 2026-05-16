@@ -29,16 +29,29 @@ enum HbarUnit {
     static list<HbarUnit> values()  // returns all HbarUnit values
 }
 
-// Hbar is a wrapper around int64 that represents a amount of Hbar based on a given unit.
+// Hbar is a wrapper around int64 that represents an amount of Hbar based on a given unit.
+// Negative amounts are valid and represent debits (e.g. the sending side of a transfer).
 Hbar {
-    @@immutable amount: int64 // amount in the given unit
+    @@immutable amount: int64 // amount in the given unit; may be negative
     @@immutable unit: HbarUnit // unit of the amount
-    
+
     // Convert this Hbar to a different unit
     Hbar to(targetUnit: HbarUnit)
-    
+
     // Get total amount in tinybars
     int64 toTinybars()
+
+    // Returns a new Hbar with the sign of amount flipped
+    Hbar negate()
+
+    // Creates an Hbar with the given amount and unit
+    @@static Hbar of(amount: int64, unit: HbarUnit)
+
+    // Creates an Hbar from a raw tinybar count
+    @@static Hbar fromTinybars(tinybars: int64)
+
+    // Returns the zero hbar value
+    @@static Hbar zero()
 }
 
 // Represents the exchange rate of Hbar in USD cents.
