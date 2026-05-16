@@ -41,7 +41,7 @@ PublicKey keyOfNewAccount = ...
 
 Response<AccountCreateReceipt> response = new AccountCreateTransactionBuilder()
     .setKey(keyOfNewAccount)
-    .setInitialBalance(new Hbar(100, HbarUnit.HBAR))
+    .setInitialBalance(Hbar.of(100, HbarUnit.HBAR))
     .buildAndExecute(client);
 
 AccountId newAccountId = response.queryReceipt().getAccountId();
@@ -58,7 +58,7 @@ PublicKey keyOfNewAccount = ...
 
 Transaction<Response<AccountCreateReceipt>> tx = new AccountCreateTransactionBuilder()
     .setKey(keyOfNewAccount)
-    .setInitialBalance(new Hbar(100, HbarUnit.HBAR))
+    .setInitialBalance(Hbar.of(100, HbarUnit.HBAR))
     .build(client);
 
 tx.sign(operatorKey);
