@@ -13,11 +13,13 @@ The transaction lifecycle has two phases, each with its own type:
 
 `build()` transitions from phase 1 to phase 2. `buildAndExecute()` is a convenience that handles both phases in one call for simple single-signer flows.
 
+`Transaction` extends `ConsensusCall<$$Response>` from the request hierarchy and implements `GrpcTransport`. See [requests.md](requests.md) for the full hierarchy and [requests-core.md](requests-core.md) for base type definitions.
+
 ## API Schema
 
 ```
 namespace transactions
-requires common, keys, client
+requires common, keys, client, requests-core
 
 // Defines the status of a transaction. Since we can have custom transaction types based on custom
 // services in the consensus node we cannot use an enum here anymore.
@@ -74,19 +76,16 @@ abstraction TransactionBuilder<$$Builder extends TransactionBuilder, $$Response 
   $$Response buildAndExecute(client: client.HieroClient)
 }
 
-// An immutable transaction ready for signing, serialization, and submission. The transaction body
-// cannot be modified after build — only network execution config and signatures can be added.
+// An immutable transaction ready for signing, serialization, and submission. Extends
+// ConsensusCall<$$Response> from the request hierarchy (see requests-core.md) and implements
+// GrpcTransport. The transaction body cannot be modified after build — only network
+// execution config and signatures can be added.
 //
 // The generic parameter $$Response carries the typed response produced when the transaction is
 // executed. This ensures that the typed return value is preserved through the full
 // build() → sign() → execute() chain, including multi-party signing flows.
 @@finalType
-Transaction<$$Response extends Response> {
-  // Network execution config — does not affect the signed transaction body
-  @@nullable maxAttempts: int32
-  @@nullable maxBackoff: int64
-  @@nullable minBackoff: int64
-  @@nullable attemptTimeout: int64
+Transaction<$$Response extends Response> extends requests-core.ConsensusCall<$$Response> : requests-core.GrpcTransport {
 
   // Sign the transaction with the given key pair. Returns self to allow chaining.
   Transaction<$$Response> sign(keyPair: keys.KeyPair)
