@@ -69,6 +69,9 @@ MirrorNode {
     @@immutable restBaseUrl: string // base url of the mirror node REST API (scheme://host[:port]/api/v1)
 }
 
+BlockNode {
+}
+
 // Represents the base of an address on a network.
 abstraction Address {
     @@immutable shard: uint64 // shard number
@@ -94,6 +97,9 @@ ContractId extends Address {
 }
 
 FileId extends Address {
+}
+
+TokenId extends Address {
 }
 
 // factory methods of AccountId that should be added to the namespace in the best language dependent way
