@@ -25,13 +25,27 @@ abstraction TransactionStatus {
   @@immutable code:int32 // the status code that should be unique based on the consensus node
 }
 
-// Defines the status codes that are currently used by services that are part of the consensus node repository
+// Defines the status codes that are currently used by services that are part of the consensus node repository.
+// Integer values map 1:1 to the ResponseCodeEnum in response_code.proto (hiero-protobufs).
+// The full list of codes is defined in that file; only the most commonly encountered codes are listed here.
 enum BasicTransactionStatus extends TransactionStatus {
-    OK
-    INVALID_TRANSACTION
-    PAYER_ACCOUNT_NOT_FOUND
-    ...
-    GRPC_WEB_PROXY_NOT_SUPPORTED
+    OK = 0
+    INVALID_TRANSACTION = 3
+    PAYER_ACCOUNT_NOT_FOUND = 4
+    INVALID_NODE_ACCOUNT = 5
+    TRANSACTION_EXPIRED = 9
+    INSUFFICIENT_PAYER_BALANCE = 10
+    DUPLICATE_TRANSACTION = 11
+    BUSY = 12
+    NOT_SUPPORTED = 13
+    INVALID_ACCOUNT_ID = 15
+    INVALID_CONTRACT_ID = 16
+    RECORD_NOT_FOUND = 18
+    RECEIPT_NOT_FOUND = 19
+    ACCOUNT_DELETED = 25
+    INSUFFICIENT_ACCOUNT_BALANCE = 29
+    // ... additional codes defined in ResponseCodeEnum in response_code.proto
+    GRPC_WEB_PROXY_NOT_SUPPORTED = 1000
 }
 
 // Id of a transaction
@@ -281,6 +295,26 @@ BazTransactionBuilder extends transactions.TransactionBuilder<BazTransactionBuil
     // domain-specific fields
 }
 ```
+
+## Implementation Notes
+
+### TransactionStatus to protobuf enum conversion
+
+`BasicTransactionStatus.code` maps 1:1 to the integer value of the corresponding `ResponseCodeEnum` variant
+in `response_code.proto` ([hiero-protobufs](https://github.com/hashgraph/hiero-protobufs)). No arithmetic or
+remapping is needed: the raw integer from the gRPC response is the code.
+
+The recommended location for the conversion is `TransactionSupport.convert()` defined in `transactions-spi.md`.
+A factory method on `BasicTransactionStatus` makes the mapping explicit:
+
+```
+@@static
+BasicTransactionStatus fromCode(code: int32)
+```
+
+If `code` does not match any listed variant, implementations must not throw. Instead, return a
+`TransactionStatus` with the raw `code` set so that callers remain compatible with response codes
+introduced in future node releases.
 
 ## Questions & Comments
 
