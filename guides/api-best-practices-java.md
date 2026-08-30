@@ -264,6 +264,68 @@ public class Person {
 }
 ```
 
+### Immutable byte arrays
+
+#### The problem
+
+Java's `byte[]` is mutable. Any code holding a reference to the array can modify its contents, breaking the guarantee
+of `@@immutable id: bytes` from the meta-language.
+
+A Java `record` does not solve this – it stores the reference to the array, not a defensive copy:
+
+```java
+byte[] raw = new byte[]{1, 2, 3};
+Ledger ledger = new Ledger(raw);
+raw[0] = 99; 
+```
+
+#### Recommended approach: defensive copies
+
+Use a `final` class that copies the array on input (constructor) and on output (getter):
+This ensures that no external code can modify the internal byte array state.
+
+```java
+import java.util.Arrays;
+import java.util.Objects;
+
+public final class Ledger {
+
+    private final byte[] id;
+
+    public Ledger(@NonNull final byte[] id) {
+        Objects.requireNonNull(id, "id must not be null");
+        this.id = Arrays.copyOf(id, id.length);
+    }
+
+    @NonNull
+    public byte[] getId() {
+        return Arrays.copyOf(id, id.length);
+    }
+}
+```
+
+Implement `equals` using `Arrays.equals`, `hashCode` using `Arrays.hashCode`, and `toString` using `Arrays.toString`.
+The default `Object` implementations compare references, not contents, and produce unusable output for arrays.
+
+#### Alternative approaches
+
+**`ByteBuffer.asReadOnlyBuffer()`** — Provides a read-only view of the array. However, the buffer is still backed by
+the original mutable array. If the original array is modified, the buffer reflects the change. Only safe when the
+backing array is never exposed.
+
+**Custom `ImmutableBytes` wrapper** — A dedicated value type that encapsulates a defensively copied `byte[]` and
+provides read-only access. Useful when byte arrays are passed frequently across API boundaries and the overhead of
+repeated `Arrays.copyOf` calls needs to be centralized. The trade-off is an additional type in the public API.
+
+#### Do / Don't
+
+- Do: copy the array on input (`Arrays.copyOf` in constructors and setters).
+- Do: copy the array on output (`Arrays.copyOf` in getters).
+- Do: implement `equals`, `hashCode`, and `toString` using `java.util.Arrays` methods.
+- Don't: expose a raw `byte[]` field or return it directly from a getter.
+- Don't: rely on `record` types for `byte[]` immutability — records store the reference, not a copy.
+- Don't: assume `ByteBuffer.asReadOnlyBuffer()` guarantees immutability — the backing array can still be mutated.
+
 ## Complex Types
 
 The meta-language can be used to define complex types.
