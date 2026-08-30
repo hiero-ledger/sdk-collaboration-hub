@@ -141,6 +141,114 @@ For each numeric Java type a maximum numeric type is defined.
 | `uint64`         | `long`, `java.lang.Long`   |
 | `uint256`        | `java.math.BigInteger`     |
 
+### Unsigned Integer Semantics
+
+Java uses signed types for `uintX` mappings. Explicit validation must be applied at input boundaries to enforce
+unsigned semantics.
+
+| Meta-Language Type | Java Type          | Valid Range                       |
+|--------------------|--------------------|-----------------------------------|
+| `uint8`            | `int`              | 0 to 255                         |
+| `uint16`           | `int`              | 0 to 65535                       |
+| `uint64`           | `long`             | 0 to `Long.MAX_VALUE`            |
+
+**Validation rules:**
+
+- If the value is negative, throw `IllegalArgumentException("Value must be non-negative for unsigned types.")`.
+- If the value exceeds the maximum for the unsigned type, throw
+  `IllegalArgumentException("Value exceeds the allowed range for the unsigned type.")`.
+- Never silently clamp or transform values. Invalid inputs must be rejected immediately.
+- For `uint64`, Java's `long` cannot represent the full unsigned 64-bit range. Use `java.math.BigInteger`.
+
+**Utility class:**
+
+The SDK provides a `UnsignedValidator` utility class (see
+[UnsignedValidator.java](java-files/UnsignedValidator.java)) with static validation methods. These methods validate the
+input and return it unchanged, making them suitable for inline use in assignments:
+
+```java
+import org.hiero.sdk.validation.UnsignedValidator;
+
+public class ConsensusNode {
+
+    private final String ip;
+
+    private final int port; // uint16
+
+    private final long shard; // uint64
+
+    public ConsensusNode(@NonNull final String ip, final int port, final long shard) {
+        this.ip = Objects.requireNonNull(ip, "ip must not be null");
+        this.port = UnsignedValidator.requireUint16(port, "port");
+        this.shard = UnsignedValidator.requireUint64(shard, "shard");
+    }
+
+    @NonNull
+    public String getIp() {
+        return ip;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public long getShard() {
+        return shard;
+    }
+
+    public void setPort(final int port) {
+        this.port = UnsignedValidator.requireUint16(port, "port");
+    }
+}
+```
+
+**Builder pattern integration:**
+
+When a builder is used for a type containing unsigned fields, the builder setter methods should perform the
+validation so that invalid values are caught as early as possible:
+
+```java
+public static final class Builder {
+
+    private int port;
+
+    private long shard;
+
+    @NonNull
+    public Builder port(final int port) {
+        this.port = UnsignedValidator.requireUint16(port, "port");
+        return this;
+    }
+
+    @NonNull
+    public Builder shard(final long shard) {
+        this.shard = UnsignedValidator.requireUint64(shard, "shard");
+        return this;
+    }
+
+    @NonNull
+    public ConsensusNode build() {
+        return new ConsensusNode(this);
+    }
+}
+```
+
+**Record types:**
+
+For records mapped from types with unsigned fields, validation is performed in the compact constructor:
+
+```java
+public record Address(long shard, long realm, long num, @NonNull String checksum) {
+
+    public Address {
+        UnsignedValidator.requireUint64(shard, "shard");
+        UnsignedValidator.requireUint64(realm, "realm");
+        UnsignedValidator.requireUint64(num, "num");
+        Objects.requireNonNull(checksum, "checksum must not be null");
+    }
+}
+```
+
 ### Function Types
 
 The meta-language `function<R m(p: T, ...)>` maps to a `@FunctionalInterface` in Java. Where possible, use the
