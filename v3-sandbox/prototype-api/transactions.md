@@ -187,7 +187,7 @@ HieroClient client = ...
 // Alice builds — Transaction<Response<AccountCreateReceipt>> carries the type forward
 Transaction<Response<AccountCreateReceipt>> tx = new AccountCreateTransactionBuilder()
     .setKey(keyOfNewAccount)
-    .setInitialBalance(new Hbar(100, HbarUnit.HBAR))
+    .setInitialBalance(Hbar.of(100, HbarUnit.HBAR))
     .build(client);
 
 tx.sign(aliceKey);
@@ -212,8 +212,8 @@ arbitrary transaction types.
 ```
 // dApp builds without a client — no transactionId or nodeAccountIds generated
 Transaction<Response<Receipt>> tx = new TransferTransactionBuilder()
-    .addTransfer(alice, Hbar.from(-10))
-    .addTransfer(bob, Hbar.from(10))
+    .addTransfer(alice, Hbar.of(-10, HbarUnit.HBAR))
+    .addTransfer(bob, Hbar.of(10, HbarUnit.HBAR))
     .build();
 
 bytes txBytes = tx.toBytes();
