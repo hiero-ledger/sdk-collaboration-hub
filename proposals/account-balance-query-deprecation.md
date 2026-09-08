@@ -4,7 +4,7 @@
 
 The Hedera network is retiring the consensus node `CryptoService/cryptoGetBalance` endpoint used by `AccountBalanceQuery`. In consensus node release 77 the throttle for this endpoint will be reduced to zero, making all calls to it fail. The estimated schedule is testnet on **August 13, 2026** and mainnet on **September 9, 2026**; all dates are estimates and subject to change.
 
-This proposal deprecates `AccountBalanceQuery` across all Hiero SDKs: the class emits a runtime warning on construction and throws a hard error on execution, directing developers to the mirror node REST API. Removal of the class is out of scope and will be addressed in a future proposal. Keeping the class present but non-functional preserves reversibility: if deprecation causes significant user churn, the consensus node path can be restored by reverting a single internal override with no public API changes.
+This proposal deprecates `AccountBalanceQuery` across all Hiero SDKs: the class emits a runtime warning on construction and throws a hard error on execution, directing developers to `MirrorNodeAccountBalanceQuery` or the mirror node REST API. Removal of the class is out of scope and will be addressed in a future proposal. Keeping the class present but non-functional preserves reversibility: if deprecation causes significant user churn, the consensus node path can be restored by reverting a single internal override with no public API changes.
 
 ### Delivery stages
 
@@ -59,20 +59,22 @@ AccountBalanceQuery {
 
 ### Constructor — deprecation warning
 
-Each SDK emits its idiomatic deprecation warning on construction (JS precedent: `console.warn`, as used by `Executable.setMaxRetries`):
+Each SDK emits its idiomatic deprecation warning on construction (JS precedent: `console.warn`, as used by `Executable.setMaxRetries`). The message is the same one `execute()` throws with, so a developer sees one string wherever the query surfaces:
 
 ```
-Deprecated: AccountBalanceQuery will stop working when the Hedera network removes the CryptoGetBalance endpoint (estimated September 2026, consensus node release 77). Use the mirror node REST API to retrieve account balances.
+Deprecated: AccountBalanceQuery is no longer supported. Use MirrorNodeAccountBalanceQuery or the mirror node REST API (GET /api/v1/accounts/{id}) to retrieve account balances.
 ```
+
+The message names the SDK replacement first because every SDK now ships `MirrorNodeAccountBalanceQuery` (see the companion proposal); the REST endpoint is kept for developers who call the mirror node directly.
 
 Each SDK also marks the class with its idiomatic annotation (JSDoc `@deprecated`, Java `@Deprecated`, Go `// Deprecated:`) so IDEs and linters surface a diagnostic at every call site.
 
 ### Execute — hard error
 
-The internal execution path is overridden to fail immediately without making any network call (JS precedent: `AccountAllowanceAdjustTransaction` overriding `_execute()`):
+The internal execution path is overridden to fail immediately without making any network call (JS precedent: `AccountAllowanceAdjustTransaction` overriding `_execute()`), rejecting with the same message as the constructor warning:
 
 ```
-Error: AccountBalanceQuery is no longer supported. Use the mirror node REST API to retrieve account balances.
+Error: Deprecated: AccountBalanceQuery is no longer supported. Use MirrorNodeAccountBalanceQuery or the mirror node REST API (GET /api/v1/accounts/{id}) to retrieve account balances.
 ```
 
 ### `Client.ping()` / `Client.pingAll()` — Stage 1
@@ -105,10 +107,10 @@ Tests 1–4 should have corresponding issues in `hiero-ledger/hiero-sdk-tck` and
 
 ### Stage 2 — AccountBalanceQuery deprecation (must pass before September 9, 2026)
 
-1. Given an `AccountBalanceQuery` is constructed, then a deprecation warning is emitted containing `"AccountBalanceQuery will stop working"`.
+1. Given an `AccountBalanceQuery` is constructed, then a deprecation warning is emitted containing `"AccountBalanceQuery is no longer supported"`.
 2. Given `execute()` is called on an `AccountBalanceQuery`, then the call rejects with an error containing `"AccountBalanceQuery is no longer supported"`.
 3. Given `execute()` is called on an `AccountBalanceQuery`, then no network call to any consensus node is made.
-4. Given code migrated to the mirror node REST API, then no deprecation warning or error is emitted.
+4. Given code migrated to `MirrorNodeAccountBalanceQuery` or the mirror node REST API, then no deprecation warning or error is emitted.
 
 #### TCK — Stage 2
 
