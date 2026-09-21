@@ -119,8 +119,9 @@ HttpRequest {
 ```
 
 > `url` is absolute and already resolved — the transport never joins anything. `body` and `contentType` are null on a
-> bodyless method. `headers` is never null; an empty map is the absence of headers, and header names are lowercase
-> (see [Header representation](#header-representation)).
+> bodyless method. `headers` is never null; an empty map is the absence of headers, and header names are lowercase.
+> Request headers are single-valued while response headers are list-valued — the asymmetry is deliberate and is
+> explained under [Header representation](#header-representation).
 >
 > `deadline` bounds **the whole exchange, body included** — not time-to-first-byte. A transport must abandon the
 > exchange and raise `timeout-error` when it elapses. It is null when the caller imposes no bound of its own. The
@@ -150,6 +151,9 @@ HttpTransportConfiguration {
     @@immutable @@min(0) @@default(5) maxRedirects: uint16
     @@immutable @@min(1) @@default(33554432) maxResponseBytes: int64
     @@immutable defaultHeaders: map<string, string>
+
+    @@static
+    HttpTransportConfiguration defaults()
 }
 ```
 
@@ -159,8 +163,7 @@ HttpTransportConfiguration {
 
 #### Cancellation
 
-A caller's request to end an exchange early. The adapter creates one per attempt and the transport observes it; it is
-never created by the transport.
+A caller's request to end an exchange early. The transport observes one; it never creates one.
 
 ```
 @@finalType
@@ -169,26 +172,76 @@ Cancellation {
     bool isCancelled()
 
     @@threadSafe(cancellation)
-    void onCancel(callback: function<void run()>)
+    CancellationRegistration onCancel(callback: function<void run()>)
 
     @@static
     Cancellation none()
 }
+
+@@finalType
+CancellationRegistration {
+    @@threadSafe(cancellation)
+    void release()
+}
+
+@@finalType
+CancellationSource {
+    @@immutable cancellation: Cancellation
+
+    @@threadSafe(cancellation)
+    void cancel()
+
+    @@static
+    CancellationSource create()
+}
 ```
 
-> This type exists because the languages disagree about *where* cancellation lives — ambient in Go, a parameter in
+> These types exist because the languages disagree about *where* cancellation lives — ambient in Go, a parameter in
 > TypeScript, absent from standard Java — and a parameter every binding can name is the only way the SPI has one
 > signature. `none()` is the value for a call with no caller-supplied cancellation; it is never null.
 >
-> **The SDK constructs these; a transport only observes them.** How one is built from a caller's native cancellation
-> is language-local and deliberately unspecified. `none()` is the only factory declared here because it is the only
-> one a transport implementer ever needs; the adapter, which every SDK must build, constructs the rest from whatever
-> its language offers.
+> **The capability is required; the shape is not.** What every SDK must provide is the *ability* to create a
+> cancellation, observe it, fire it, and release an observer — not these three type names. Most languages already
+> have all four and must bind to what they have rather than invent a parallel type.
 >
-> **Lifetime and callbacks.** One `Cancellation` serves one call — every attempt and every page included — and the
-> adapter passes the caller's instance through to each attempt unchanged. `onCancel` registered on an instance that
-> has already been cancelled runs its callback immediately rather than never. There is no unregister, and none is
-> needed: the instance does not outlive the call, so a callback cannot either.
+> | Language | `Cancellation` | `CancellationSource` | `CancellationRegistration` |
+> |----------|----------------|----------------------|-----------------------------|
+> | Go | wraps a `context.Context`; `IsCancelled()` is `ctx.Err() != nil` | `context.WithCancel` — the returned `CancelFunc` **is** the source; do not introduce a type | a `func()` that stops the observing goroutine. `context.Context` has no `onCancel`, only `Done()`, so the binding pairs a goroutine with a release func |
+> | TypeScript / JavaScript | an `AbortSignal` | an `AbortController` | the `removeEventListener` closure |
+> | Java | a plain object the SDK provides | a plain object the SDK provides | `AutoCloseable` |
+> | Rust | `CancellationToken::child_token()` | `CancellationToken` | a `Drop` guard |
+> | Swift | derives via `withTaskCancellationHandler` | the `Task` handle | the handler's scope |
+> | Python | wraps a `threading.Event` | the `Event` | a callable |
+> | C++ | hand-rolled — the guideline targets a standard without `std::stop_token` | hand-rolled | an RAII guard |
+>
+> **Only Java needs a genuinely new class**, and it already writes one internally, so making it public costs that SDK
+> nothing.
+>
+> **Splitting the source from the signal is the point.** `Cancellation` is handed to third-party transports — code
+> the SDK did not write. If `cancel()` lived on it, a transport could cancel the caller's own operation. The observer
+> can only observe.
+>
+> **`cancel()` semantics.** Idempotent: a second call is a no-op. `isCancelled()` returns true **before** any callback
+> runs. Callbacks run synchronously on the thread that called `cancel()` and must not block — dispatching them would
+> need an executor this layer deliberately does not have. A callback that throws must neither prevent the others from
+> running nor propagate to the caller of `cancel()`. Cancelling after the exchange has finished is a no-op.
+>
+> **Registrations must be released, and that is why `onCancel` returns one.** `onCancel` registered on an instance
+> already cancelled runs its callback immediately rather than never. A transport must release its registration when
+> the exchange ends. Without this an application holding one source across many calls — "cancel everything on logout",
+> which is the use the type exists for — accumulates one dead closure per exchange for the lifetime of that source.
+> It is the `addEventListener` without `removeEventListener` leak, and a single-use rule would not fix it because
+> nothing can enforce one.
+>
+> **Who creates one, in this proposal.** The mirror REST queries do **not** take a `Cancellation`. No SDK's
+> `execute` accepts one today, and adding it is six query classes across seven SDKs — with Go's idiom being an
+> ambient `context.Context` rather than a parameter — so it belongs in its own additive proposal. Within this
+> document a cancellation reaches the wire through two public doors: a conformance test for an `HttpTransport`
+> implementation, and an application calling `DefaultHttpTransport.roundTrip` directly. Neither works with `none()`
+> alone, which is why `CancellationSource` is public rather than internal.
+>
+> The consequence is recorded rather than left to be discovered: **`cancelled-error` is not reachable through any
+> mirror REST query in this proposal.** It is reachable through the SPI, which is where its conformance tests live.
 >
 > Spelled `Cancellation` rather than `CancellationSignal` to avoid colliding with `android.os.CancellationSignal` on
 > the platform this document names as its reason to exist.
@@ -265,8 +318,11 @@ Two mechanisms therefore carry the bound, and both are normative:
 |----------|--------------------------------|-------------|
 | Go | wraps a `context.Context`; `IsCancelled()` is `ctx.Err() != nil` | `RoundTrip(req HttpRequest, c Cancellation) (HttpResponse, error)` |
 | TypeScript / JavaScript | wraps an `AbortSignal`; `onCancel` registers an `abort` listener | `roundTrip(request: HttpRequest, cancellation: Cancellation): Promise<HttpResponse>` |
-| Java | a plain object the adapter creates and completes | `CompletionStage<HttpResponse> roundTrip(HttpRequest request, Cancellation cancellation)` |
+| Java | a plain object, obtained from `CancellationSource.create()` | `CompletionStage<HttpResponse> roundTrip(HttpRequest request, Cancellation cancellation)` |
 | Rust | wraps whatever the runtime supplies (`tokio_util::sync::CancellationToken` where present) | `async fn round_trip(&self, req: HttpRequest, cancel: Cancellation) -> Result<HttpResponse, TransportError>` |
+
+> This table gives the `roundTrip` signature only. The binding for all three cancellation types is under
+> [Cancellation](#cancellation).
 
 > **Java returns `CompletionStage`, not `CompletableFuture`**, because
 > [`guides/api-best-practices-java.md`](../guides/api-best-practices-java.md) requires every `@@async` method to
@@ -384,13 +440,18 @@ MirrorNodeHttpRetryPolicy {
 }
 ```
 
-> **`defaults()` and `withX` are the only sanctioned way to build one, and that is deliberate.** (`default` is a
-> reserved word in Java and in C++, so the obvious spelling does not compile in two of the seven target languages.) `@@default` on an
-> `@@immutable` field is well defined in a language with builders or object spread and undefined in a language whose
-> value types have zero values. In Go, `MirrorNodeHttpRetryPolicy{MaxAttempts: 5}` yields `perAttemptTimeout = 0`,
-> `initialBackoff = maxBackoff = 0` and `retryableStatusCodes = nil` — a caller who asked for five attempts gets five
-> attempts that never retry, silently. Derivation from `defaults()` makes that state unreachable, and it needs no
-> builder type: neither the Java nor the JavaScript SDK contains a single builder for its own types.
+> <a id="fully-defaulted-construction"></a>**`defaults()` and `withX` are the only sanctioned way to build one, and
+> that is deliberate.** (`default` is a reserved word in Java and in C++, so the obvious spelling does not compile in
+> two of the seven target languages.) `@@default` on an `@@immutable` field is well defined in a language with
+> builders or object spread and undefined in a language whose value types have zero values. In Go,
+> `MirrorNodeHttpRetryPolicy{MaxAttempts: 5}` yields `perAttemptTimeout = 0`, `initialBackoff = maxBackoff = 0` and
+> `retryableStatusCodes = nil` — a caller who asked for five attempts gets five attempts that never retry, silently.
+> Derivation from `defaults()` makes that state unreachable, and it needs no builder type: neither the Java nor the
+> JavaScript SDK contains a single builder for its own types.
+>
+> **Open:** whether the `withX` names belong in this document at all, or only the requirement that a fully-defaulted
+> instance and a derived copy be obtainable, with each language free to spell it as a builder, struct update or
+> object spread. The same answer applies to `http.HttpTransportConfiguration` and `MirrorNodeHttpConfig`.
 
 Three properties of this type are decisions rather than defaults.
 
@@ -456,6 +517,44 @@ Three properties of this type are decisions rather than defaults.
 > `Client.minBackoff` in Java, JavaScript and Swift today *is* a real floor, and reusing that name on the same object
 > for a different meaning is how a knob gets set wrong.
 
+#### MirrorNodeHttpConfig
+
+Everything a `Client` holds for mirror REST, in one value.
+
+```
+@@finalType
+MirrorNodeHttpConfig {
+    @@nullable @@immutable transport: http.HttpTransport
+    @@immutable transportConfiguration: http.HttpTransportConfiguration
+    @@immutable retryPolicy: MirrorNodeHttpRetryPolicy
+    @@immutable requestHeaders: map<string, string>
+
+    @@static
+    MirrorNodeHttpConfig defaults()
+}
+```
+
+One type rather than a setter per knob, because `Client` is already the most overloaded class in every SDK and this
+proposal would otherwise add nine methods to it. Four rules make the collapse safe; each closes a hole the flat form
+did not have.
+
+1. **`transport` carries provenance.** Null means the SDK builds the transport and owns it; non-null means the
+   application supplied it and owns it. That single field is what
+   [Ownership and lifetime](#ownership-and-lifetime) turns on, so no separate flag is needed.
+2. **The getter returns the configuration as supplied, never as resolved.** It does not report the transport the
+   `Client` built for itself, so inspecting a `Client` still never constructs one, and `setMirrorNodeHttpConfig(
+   getMirrorNodeHttpConfig())` is a true no-op rather than a statement of ownership.
+3. **`set` replaces; it does not merge.** The getter never returns null, so `set(get().with…(…))` is the idiom in
+   every language. Without this rule the same call means three things: a partial object literal reads as a merge in
+   TypeScript, as a replacement with type defaults in Java, and as a replacement with *zero* in Go — including a
+   zeroed nested `retryPolicy`.
+4. **`transportConfiguration` is ignored when `transport` is non-null.** It configures the transport the SDK would
+   have built; an injected one brings its own connect timeout, redirect bound and body cap.
+
+How this type is constructed and derived follows whatever is settled for
+[`MirrorNodeHttpRetryPolicy`](#mirrornodehttpretrypolicy), including when one is nested inside the other. Its
+`defaults()` returns an instance with every field at its declared default.
+
 ---
 
 ## Updated APIs
@@ -466,32 +565,29 @@ All additive. No existing signature changes.
 
 ```
 Client {
-    Client setMirrorNodeHttpTransport(@@nullable transport: http.HttpTransport)
-    @@nullable http.HttpTransport getMirrorNodeHttpTransport()
-
-    Client setMirrorNodeHttpRetryPolicy(policy: mirrorNode.http.MirrorNodeHttpRetryPolicy)
-    mirrorNode.http.MirrorNodeHttpRetryPolicy getMirrorNodeHttpRetryPolicy()
-
-    Client setMirrorNodeHttpConnectTimeout(@@min(0) connectTimeout: duration)
-    duration getMirrorNodeHttpConnectTimeout()
-
-    Client setMirrorNodeRequestHeaders(headers: map<string, string>)
-    Client addMirrorNodeRequestHeader(name: string, value: string)
-    map<string, string> getMirrorNodeRequestHeaders()
+    Client setMirrorNodeHttpConfig(config: mirrorNode.http.MirrorNodeHttpConfig)
+    mirrorNode.http.MirrorNodeHttpConfig getMirrorNodeHttpConfig()
 }
 ```
 
-- `setMirrorNodeHttpTransport` is the single extension point for Android, corporate proxies, mTLS, tracing wrappers
-  and test fakes. Passing null restores the SDK default.
+**Two methods, not nine.** Every mirror REST knob lives on
+[`MirrorNodeHttpConfig`](#mirrornodehttpconfig), whose four rules — provenance through `transport`, a getter that
+reports what was supplied rather than what was resolved, `set` replacing rather than merging, and
+`transportConfiguration` being ignored when a transport is injected — are stated with the type.
+
+- The `transport` field is the single extension point for Android, corporate proxies, mTLS, tracing wrappers and
+  test fakes. Leaving it null keeps the SDK default.
 - **Ownership follows construction.** The `Client` closes only a transport it built itself. An **injected transport is
   never closed by the SDK** — it is almost always a wrapper over a process-wide client the application also uses, and
   shutting that down from `Client.close()` would take the application's HTTP stack with it. OkHttp makes this
   concrete: it has no `close()`, and its documented shutdown recipe rejects all future calls on that client and
   crashes any call against its cache.
-- `setMirrorNodeHttpConnectTimeout` must be called before the first mirror REST call, because the transport is built
-  once per `Client`.
-- `setMirrorNodeRequestHeaders` and `addMirrorNodeRequestHeader` **reject `user-agent` and `x-user-agent`**, matched
-  case-insensitively, because the SDK owns that header.
+- `transportConfiguration` must be set before the first mirror REST call, because the transport is built once per
+  `Client`. It also exposes `maxRedirects` and `maxResponseBytes`, which a flat `connectTimeout` setter would have
+  left unreachable from `Client` — a mirror behind a corporate gateway that returns more than the default cap would
+  otherwise have no knob.
+- `requestHeaders` **rejects `user-agent` and `x-user-agent`**, matched case-insensitively, because the SDK owns that
+  header.
 - **`requestTimeout` and the gRPC `maxAttempts` keep their current meanings.** `requestTimeout` remains the total
   budget for an operation and is **not** reused as an HTTP per-attempt bound. It does, per merged policy, bound the
   mirror REST attempt loop as a whole: `totalDeadline` inherits it by default. The `maxAttempts` on
@@ -566,9 +662,10 @@ MirrorNodeHttpClient {
 }
 ```
 
-- **It passes the caller's `Cancellation` straight through**, unwrapped, to every attempt. It derives each attempt's
-  `HttpRequest.deadline` from `perAttemptTimeout` and the call's remaining `totalDeadline`, but it never invents a
-  cancellation and never swallows one — a caller cancelling a mirror read must reach the socket.
+- **It passes the `Cancellation` it is given straight through**, unwrapped, to every attempt. It derives each
+  attempt's `HttpRequest.deadline` from `perAttemptTimeout` and the call's remaining `totalDeadline`, but it never
+  invents a cancellation and never swallows one. Today every query hands it `none()`; the pass-through is what lets a
+  later query-level cancellation reach the socket without changing this layer.
 - **It exposes no lifecycle method.** It does not own the transport it was handed and must not close it. One transport
   can back several `MirrorNodeHttpClient` instances, which is what lets a single connection pool serve several mirror
   nodes.
@@ -765,8 +862,7 @@ Overridable in full by an injected transport.
 - Keep-alive on.
 - **`x-user-agent: hiero-sdk-<language>/<semver>` on every request, on every profile, and no `User-Agent`.** The
   header is owned entirely by the SDK: `user-agent` and `x-user-agent` are **reserved keys**, rejected
-  case-insensitively by `setMirrorNodeRequestHeaders` and `addMirrorNodeRequestHeader`. There is no caller
-  contribution.
+  case-insensitively by `MirrorNodeHttpConfig.requestHeaders`. There is no caller contribution.
 
   > `x-user-agent` rather than `User-Agent` because a browser cannot set the latter: it is not a forbidden header, but
   > Chrome overrides it silently and `Headers.set` reports success, so an implementer gets no signal and a test
@@ -833,7 +929,8 @@ and the transport enforces it, because a bound the adapter merely waits out leav
 
 Where the language has an ambient cancellation or deadline mechanism (a Go `context`, an `AbortSignal`, a cancellation
 token), it is passed through the SPI as that language's binding prescribes and wins whenever it is the tighter bound.
-Cancelling one mirror read must not require cancelling anything else on the client.
+Cancellation is per call by construction — one `Cancellation` serves one call and nothing else on the `Client` shares
+it — so a later query-level binding cannot make cancelling one mirror read cancel anything else.
 
 ### Retry
 
@@ -1018,8 +1115,10 @@ gRPC retry policy.
     aborts immediately.)*
 13. Given an in-flight request and a close timeout shorter than it, when `close` is called, then it returns by the
     timeout and the request is aborted.
-14. Given a caller that cancels mid-request, when the cancellation fires, then the call fails with `cancelled-error`
-    immediately and is not retried.
+14. Given a `CancellationSource` cancelled mid-request, when the cancellation fires, then the exchange fails with
+    `cancelled-error` immediately, is not retried, and the connection is released.
+14a. Given one `CancellationSource` used across many exchanges, when each exchange ends, then the transport has
+    released its registration and no callbacks accumulate on the source.
 15. Given N concurrent requests on one transport, when they run, then each receives its own response body and no
     shared state is corrupted.
 16. Given a `deadline` of 1 s and an endpoint that sends headers immediately then drips the body for 30 s, when the
@@ -1097,10 +1196,13 @@ gRPC retry policy.
     bound applies unchanged.
 48. Given a `Client` on which no total deadline was set, when a long retry run happens, then the run is bounded by the
     client's `requestTimeout`.
-49. Given `addMirrorNodeRequestHeader("Authorization", "Bearer test")`, when any mirror request is made, then the
-    header is on the wire together with the SDK `x-user-agent`.
-50. Given `addMirrorNodeRequestHeader("User-Agent", …)` or `addMirrorNodeRequestHeader("X-User-Agent", …)`, when the
-    call is made, then it is rejected case-insensitively as a reserved key.
+49. Given a `requestHeaders` entry `Authorization: Bearer test`, when any mirror request is made, then the header is
+    on the wire together with the SDK `x-user-agent`.
+50. Given a `requestHeaders` entry named `User-Agent` or `X-User-Agent`, when it is set, then it is rejected
+    case-insensitively as a reserved key.
+50a. Given a `Client` whose config was never set, when `getMirrorNodeHttpConfig()` is called after a mirror request
+    has built the default transport, then the returned config's `transport` is still null — the getter reports what
+    was supplied, not what was resolved.
 51. Given a caller header `Content-Type` and an endpoint that sets its own, when the request is made, then the
     endpoint's value wins.
 52. Given a mirror error body carrying `_status.messages[].detail`, when the error surfaces, then the message contains
@@ -1128,7 +1230,8 @@ mid-response, or count connection-pool instances. That splits this plan in two:
 - **TCK-suitable** — observable through the public API against a controllable HTTP endpoint: 2, 3, 8, 9, 17, 19,
   20, 22, 23, 24, 25, 26, 28, 29, 31, 36, 37, 38, 38a, 44, 49, 51, 52, 54.
 - **SDK-local unit tests** — require transport injection, socket control, raw header access, or pool inspection: 1,
-  4, 5, 6, 7, 10, 11, 12, 13, 14, 15, 16, 18, 21, 27, 30, 32, 33, 34, 35, 39, 40, 41, 42, 43, 45, 46, 47, 48, 50, 55.
+  4, 5, 6, 7, 10, 11, 12, 13, 14, 14a, 15, 16, 18, 21, 27, 30, 32, 33, 34, 35, 39, 40, 41, 42, 43, 45, 46, 47, 48,
+  50, 50a, 55.
 - **Language-specific:** 53 (Java/Android).
 - **Profile-bound**, each with its constrained-profile form stated inline above: 8 and 9 (redirect bound), 54
   (streaming body cap), 4 and 5 (error granularity), 7 (connect bound — browser and React Native only), 12 (drain),
@@ -1174,12 +1277,13 @@ await client.close(); // now also closes the HTTP transport it built
 4. Execute any mirror query — it uses the injected transport, its retry policy and timeouts unchanged.
 
 ```java
-client.setMirrorNodeHttpTransport(new OkHttpMirrorTransport(
-    new OkHttpClient.Builder()
-        .proxy(corporateProxy)
-        .sslSocketFactory(sslSocketFactory, trustManager)
-        .addInterceptor(tracingInterceptor)
-        .build()));
+client.setMirrorNodeHttpConfig(client.getMirrorNodeHttpConfig()
+    .withTransport(new OkHttpMirrorTransport(
+        new OkHttpClient.Builder()
+            .proxy(corporateProxy)
+            .sslSocketFactory(sslSocketFactory, trustManager)
+            .addInterceptor(tracingInterceptor)
+            .build())));
 ```
 
 > The `OkHttpClient` here is the application's, and stays the application's: `client.close()` will not shut it down.
@@ -1188,39 +1292,45 @@ client.setMirrorNodeHttpTransport(new OkHttpMirrorTransport(
 ### Example 3: tighten the bounds for a latency-sensitive service
 
 ```java
-client.setMirrorNodeHttpConnectTimeout(Duration.ofSeconds(2));
-client.setMirrorNodeHttpRetryPolicy(MirrorNodeHttpRetryPolicy.defaults()
-    .withMaxAttempts(5)
-    .withPerAttemptTimeout(Duration.ofSeconds(3))
-    .withTotalDeadline(Duration.ofSeconds(15)));
-
-client.addMirrorNodeRequestHeader("Authorization", "Bearer " + token);
+client.setMirrorNodeHttpConfig(client.getMirrorNodeHttpConfig()
+    .withTransportConfiguration(client.getMirrorNodeHttpConfig().transportConfiguration()
+        .withConnectTimeout(Duration.ofSeconds(2)))
+    .withRetryPolicy(MirrorNodeHttpRetryPolicy.defaults()
+        .withMaxAttempts(5)
+        .withPerAttemptTimeout(Duration.ofSeconds(3))
+        .withTotalDeadline(Duration.ofSeconds(15)))
+    .withRequestHeader("Authorization", "Bearer " + token));
 ```
 
 The same lines in Go and TypeScript, to show the derivation carries:
 
 ```go
-client.SetMirrorNodeHttpConnectTimeout(2 * time.Second)
-client.SetMirrorNodeHttpRetryPolicy(hiero.DefaultMirrorNodeHttpRetryPolicy().
-    WithMaxAttempts(5).
-    WithPerAttemptTimeout(3 * time.Second).
-    WithTotalDeadline(15 * time.Second))
+cfg := client.GetMirrorNodeHttpConfig()
+client.SetMirrorNodeHttpConfig(cfg.
+    WithTransportConfiguration(cfg.TransportConfiguration().WithConnectTimeout(2 * time.Second)).
+    WithRetryPolicy(hiero.DefaultMirrorNodeHttpRetryPolicy().
+        WithMaxAttempts(5).
+        WithPerAttemptTimeout(3 * time.Second).
+        WithTotalDeadline(15 * time.Second)))
 ```
 
 ```typescript
-client.setMirrorNodeHttpConnectTimeout(2_000); // milliseconds, per the TS binding of `duration`
-client.setMirrorNodeHttpRetryPolicy(
-    MirrorNodeHttpRetryPolicy.defaults()
-        .withMaxAttempts(5)
-        .withPerAttemptTimeout(3_000)
-        .withTotalDeadline(15_000),
+const cfg = client.getMirrorNodeHttpConfig();
+client.setMirrorNodeHttpConfig(
+    cfg
+        .withTransportConfiguration(cfg.transportConfiguration.withConnectTimeout(2_000))
+        .withRetryPolicy(
+            MirrorNodeHttpRetryPolicy.defaults()
+                .withMaxAttempts(5)
+                .withPerAttemptTimeout(3_000)
+                .withTotalDeadline(15_000),
+        ),
 );
 ```
 
-> Starting from `defaults()` rather than a literal is what keeps the five fields the caller did not name at their
-> declared defaults. A struct or object literal naming only `maxAttempts` would leave the rest at their zero values in
-> at least one language, producing a policy that retries nothing.
+> Deriving from the current config, rather than writing a literal, is what keeps every field the caller did not name
+> at its existing value — `set` replaces rather than merges, so a literal naming only `retryPolicy` would reset the
+> rest.
 
 > Method and accessor naming should follow each language's best-practice guideline. Go exposes
-> `SetMirrorNodeHttpConnectTimeout`; Rust uses snake_case; TypeScript/JavaScript use
-> `setMirrorNodeHttpConnectTimeout`.
+> `SetMirrorNodeHttpConfig`; Rust uses snake_case; TypeScript/JavaScript use `setMirrorNodeHttpConfig`.
