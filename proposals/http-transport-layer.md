@@ -23,9 +23,11 @@ The design is two namespaces with one seam between them:
 The seam is what makes "inject your own HTTP stack" a two-method interface rather than a fork of the retry loop, and
 it is what lets seven SDKs implement the same SPI instead of each re-deriving one.
 
-**On Android the SPI is not an enhancement, it is the only way mirror REST ships at all.** `java.net.http` is not part
-of the Android API at any level, and the Java SDK carries no core-library desugaring — so every mirror REST feature in
-`hiero-sdk-java` is currently broken on Android, on a project that advertises Android 26+ support. With an injectable
+**On Android the SPI is not an enhancement, it is the only way mirror REST ships at all.** `java.net.http` has never
+been part of the Android API — it is absent from the platform's public API surface at every level, and **no
+core-library desugaring variant supplies it**, so it is not something an application can configure its way to.
+`hiero-sdk-java` routes every mirror REST call through it with no fallback path, so all of them fail at runtime on
+Android, on a project that advertises Android 26+ support. With an injectable
 transport an Android application supplies an OkHttp-backed one and the feature works. The same seam answers the
 browser and React Native targets of the JavaScript SDK, whose HTTP stacks likewise belong to the platform. See
 [Conformance profiles](#conformance-profiles).
@@ -679,8 +681,10 @@ to a same-origin policy:
 > budget before failing, which is the price of a platform that will not say which happened.
 
 **Android is the reason this proposal exists, not a footnote to it.** `java.net.http` is not part of the Android API
-at any level, and the Java SDK ships no core-library desugaring, so *every* mirror REST feature in `hiero-sdk-java` is
-broken on Android today while the project advertises Android 26+. An injectable transport is the only way that ships:
+at any level, and **no core-library desugaring variant supplies it** — this is not an omission an application can
+configure away. `hiero-sdk-java` routes every mirror REST call through `HttpClient.newHttpClient()` with no fallback,
+so *all* of them fail at runtime there, together with the EVM-address resolution behind `AccountId` and `ContractId`
+population, while the project advertises Android 26+. An injectable transport is the only way that ships:
 an Android application supplies an OkHttp-backed transport. Its corollary is normative — **the SDK-supplied
 `DefaultHttpTransport` must be separable or lazily linked**, or the artifact still fails to load on a platform where
 the class it references does not exist. "Lazily linked" means no `java.net.http` type is resolved unless the default
