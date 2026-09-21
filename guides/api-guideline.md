@@ -47,6 +47,7 @@ The following basic data types should be used in the API documentation.
 | `time`                     | A time value without date or timezone (nanosecond precision)          |
 | `dateTime`                 | A date and time value without timezone (nanosecond precision)         |
 | `zonedDateTime`            | A date and time value with timezone (nanosecond precision)            |
+| `duration`                 | A length of time without calendar or timezone (nanosecond precision)  |
 | `streamResult<TYPE>`       | A stream item that is either a success value of TYPE or an error      |
 | `function<R m(p: T, ...)>` | A function type (often called lambda/callable)                        |
 | `ANY`                      | A top type — accepts any value. Use sparingly (see best practices)    |
@@ -303,7 +304,9 @@ The following annotations should be used:
 
 - `@@immutable`: Indicates that the field is immutable and cannot be changed after creation.
 - `@@nullable`: Indicates that the field can be null or undefined (language-specific).
-- `@@default(value)`: Indicates that the field has a default value.
+- `@@default(value)`: Indicates that the field has a default value. A `duration` value is written as an integer
+  with a unit suffix — `ns`, `ms`, `s`, `m` or `h` — as in `@@default(30s)` or `@@default(250ms)`; a bare `0`
+  is zero duration in any unit.
 - `@@min(value)`: Indicates the minimum value for numeric fields. Should be included if the value must be enforced at
   the SDK level.
 - `@@max(value)`: Indicates the maximum value for numeric fields. Should be included if the value must be enforced at
