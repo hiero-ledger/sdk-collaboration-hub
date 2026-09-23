@@ -37,12 +37,19 @@ four listed with their per-SDK before and after in [Compatibility](#compatibilit
 that land.
 
 > **Out of scope.** Base URL, port and localhost rewriting belong to the
-> [ingress proposal](https://github.com/hiero-ledger/sdk-collaboration-hub/blob/main/proposals/mirror-node-ingress-endpoint-standardization.md).
+> [ingress proposal](https://github.com/hiero-ledger/sdk-collaboration-hub/blob/main/proposals/mirror-node-ingress-endpoint-standardization.md)
+> — and that dependency is load-bearing rather than incidental. A local network serves different endpoint families
+> on **different ports**, and each SDK rewrites the base URL per call site to reach them: Go sends the address book
+> to `38081`, the fee estimate to `8084` and `/contracts/call` to `8545`, while JavaScript starts from `5551` and
+> rewrites to `8084` and `8545` for the same two. Under this design a
+> call site can only name a `MirrorNodeRestPath`, which cannot express a host or a port, so those rewrites cannot
+> stay where they are. They move into base-URL resolution inside the SDK, which
+> [Base URL selection](#base-url-selection) permits explicitly and confines to one function — a bridge, deleted once
+> the ingress proposal resolves local ports at the base URL. Until then, removing it breaks local development.
 > Streaming is excluded deliberately: `roundTrip` buffers the whole response, which is what makes a retry replayable.
 > Topic subscriptions and gRPC-Web server streaming need a second, composed interface. Query-level product behavior —
 > auto-freeze, chunk aggregation, missing-entity semantics, integer precision — is a query-product question rather
-> than a transport one. It is specified separately, in a companion proposal opened alongside this one; this document
-> neither restates nor contradicts it.
+> than a transport one, and is being specified separately. This document neither restates nor contradicts it.
 >
 > **Application identification is also out of scope.** The `x-user-agent` header is owned entirely by the SDK and both
 > spellings are reserved on the header setters, which is what every SDK does today. Letting an application contribute
@@ -154,6 +161,11 @@ HttpTransportConfiguration {
 
     @@static
     HttpTransportConfiguration defaults()
+
+    HttpTransportConfiguration withConnectTimeout(@@min(0) connectTimeout: duration)
+    HttpTransportConfiguration withMaxRedirects(@@min(0) maxRedirects: uint16)
+    HttpTransportConfiguration withMaxResponseBytes(@@min(1) maxResponseBytes: int64)
+    HttpTransportConfiguration withDefaultHeaders(defaultHeaders: map<string, string>)
 }
 ```
 
@@ -449,9 +461,15 @@ MirrorNodeHttpRetryPolicy {
 > Derivation from `defaults()` makes that state unreachable, and it needs no builder type: neither the Java nor the
 > JavaScript SDK contains a single builder for its own types.
 >
-> **Open:** whether the `withX` names belong in this document at all, or only the requirement that a fully-defaulted
-> instance and a derived copy be obtainable, with each language free to spell it as a builder, struct update or
-> object spread. The same answer applies to `http.HttpTransportConfiguration` and `MirrorNodeHttpConfig`.
+> **The same model applies to all three configuration types** — `http.HttpTransportConfiguration`,
+> `MirrorNodeHttpRetryPolicy` and `MirrorNodeHttpConfig`. `defaults()` returns an instance with every field at its
+> declared default; each `withX` returns a **new** instance with one field changed, leaves every other field as it
+> was, does not mutate the receiver, and validates the value it is given. Naming follows each language's guideline —
+> `WithMaxAttempts` in Go, `with_max_attempts` in Rust — but the model does not vary.
+>
+> `MirrorNodeHttpConfig.withRequestHeader` adds or replaces a single header and keeps the rest, which is why no
+> `addMirrorNodeRequestHeader` is needed on `Client`. It runs the same reserved-key validation as
+> `withRequestHeaders`.
 
 Three properties of this type are decisions rather than defaults.
 
@@ -531,6 +549,12 @@ MirrorNodeHttpConfig {
 
     @@static
     MirrorNodeHttpConfig defaults()
+
+    MirrorNodeHttpConfig withTransport(@@nullable transport: http.HttpTransport)
+    MirrorNodeHttpConfig withTransportConfiguration(transportConfiguration: http.HttpTransportConfiguration)
+    MirrorNodeHttpConfig withRetryPolicy(retryPolicy: MirrorNodeHttpRetryPolicy)
+    MirrorNodeHttpConfig withRequestHeaders(requestHeaders: map<string, string>)
+    MirrorNodeHttpConfig withRequestHeader(name: string, value: string)
 }
 ```
 
@@ -847,6 +871,18 @@ one of them has it already.
 Demotion on failure is the right end state and the wrong proposal: it is a mirror-node-health design, and no SDK has
 the machinery to hang it on today. It is deliberately excluded rather than forgotten.
 
+**Resolving a base URL is the SDK's job, not a call site's.** The containment property of `MirrorNodeRestPath` is
+that *a call site* cannot name a host; it says nothing about how the SDK picks the base a path is resolved against.
+That distinction is load-bearing on a local network, where one deployment serves different endpoint families on
+different ports and every SDK rewrites the base URL per call site today to reach them.
+
+So an SDK **may** resolve a base URL from the configured one plus the endpoint family being called, provided the
+resolution happens where the `MirrorNodeHttpClient` for that call is obtained and **not** at the call site, which
+continues to pass only a `MirrorNodeRestPath`. Where the mapping is not the identity it must live in a single
+function, because it is a bridge: once the
+[ingress proposal](https://github.com/hiero-ledger/sdk-collaboration-hub/blob/main/proposals/mirror-node-ingress-endpoint-standardization.md)
+resolves local ports at the base URL, that function is deleted rather than rewritten.
+
 ### Default transport policy
 
 Overridable in full by an injected transport.
@@ -970,6 +1006,23 @@ Applies to every mirror REST call.
   > unnecessary. The loop's real bound is `totalDeadline`, and a `Retry-After: 30` sits comfortably inside it.
 - **A terminal failure consumes exactly one attempt.** It must not be retried and must not consume the remaining
   budget.
+
+  > **A local network needs a larger budget, and 1000 attempts is the wrong way to get one.** A mirror node that is
+  > still starting is not a flaky request, but the two are conflated today: JavaScript sets `maxAttempts` to 1000 on
+  > local networks for exactly this reason. With the shipped defaults a dead endpoint is reported after 3.75 s at
+  > worst, which a mirror node coming up under a local test harness will not beat, so those suites fail at startup.
+  >
+  > The bound that matters here is `totalDeadline`, not the attempt count. With `maxBackoff` at 8 s every attempt
+  > after the sixth waits at most 8 s, so covering a 90 s startup takes roughly fifteen attempts rather than a
+  > thousand. **When the mirror base URL resolves to a loopback address the default policy therefore uses
+  > `maxAttempts: 15` and `totalDeadline: 90s`; every other field is unchanged, and an explicit policy overrides it
+  > as it would anywhere else.** The constants are provisional pending a measurement of how long a local mirror node
+  > takes to answer, but the rule is not: a startup budget each SDK picks for itself is the drift this document
+  > exists to remove.
+  >
+  > This is a stopgap with a stated exit. Waiting for a service to come up is a test-harness concern rather than a
+  > transport one, and the better end state is a readiness check before the suite runs. When local harnesses do that,
+  > this branch is deleted and one default serves every network.
 - **Sleeping is cancellable.** A caller cancellation or the total deadline must interrupt a backoff sleep, not be
   discovered after it. A caller cancellation surfaces as `cancelled-error`, the total deadline as
   `deadline-exceeded-error`, and a `Client.close()` during a sleep as `client-closed-error`.
@@ -1021,6 +1074,12 @@ this document:
 | `RegisteredNodeAddressBookQuery` | `Client.maxAttempts` if set, else **1 — no retry at all**, since `GetMaxAttempts()` returns `-1` when unset; fixed retry delay, no per-request bound; paginated | 10, 2 min per request **per page** | `maxAttempts + 1`, `requestTimeout` per request **per page**, undocumented |
 | `MirrorNodeContractCallQuery` / `…EstimateGasQuery` | 3 hardcoded, 30 s | none (no retry), 30 s hardcoded, **a new HTTP client per call** | **none** — one POST, no retry, no bound |
 | `AccountId` / `ContractId` populate helpers | **none** — bare `http.Get`, no retry, no bound | none, 30 s hardcoded | none, no bound |
+| `AddressBookQuery` *(browser and React Native builds only)* | n/a — no browser target | n/a — no browser target | `maxAttempts + 1` = **11** (**1001** on a local network); **no bound and no abort signal** — the callers pass none, and a caller-supplied timeout applies per attempt *per page*. Backoff caps at a hardcoded 8 s, ignoring `client.maxBackoff`. **Retries every non-2xx status, 4xx included**, and builds its own base URL rather than using the client's. |
+
+> `AddressBookQuery` is the only JS-only row, because Go and Java ship no browser build. The name resolves to a
+> different class per target: the Node build is a gRPC server stream and out of scope here, while the browser and
+> React Native build is plain `fetch` against `/api/v1/network/nodes`. It is the network bootstrap path those
+> clients run rather than an optional query, which is why its migration is staged — see behaviour change 6.
 
 So "a tightening for Java, a loosening for JS, a no-op for Go" is true only of one Go row. Four of Go's six call
 sites move, two of them from *unbounded*. The pair belongs in a release note with this table.
@@ -1032,7 +1091,7 @@ Two further bounds are **new** rather than moved — nothing in any SDK bounds t
 | redirect hops *(Full profile, SDK-built transport only)* | Java follows **none** — `HttpClient` defaults to a redirect policy of never; Go follows **10**; the browser's own cap applies and is not observable | **5**, with `Authorization` and other caller headers dropped on a cross-origin hop | No SDK agrees today. Java starts following redirects it ignores now, which is a new class of request leaving the process; Go tightens. On the constrained profile the platform's own bound still applies, and an injected transport sets its own. |
 | response body | unbounded in every SDK | **32 MiB**, both profiles | A mirror node can otherwise make the SDK allocate without limit. This is the one new bound that introduces an error a caller has never seen — `response-too-large-error`, non-retryable. The profiles differ in *how* the cap is enforced, not in whether it holds. |
 
-Five further behavior changes are intended and belong in the same note:
+Six further behavior changes are intended and belong in the same note:
 
 1. **A total bound now applies to mirror REST.** Where an SDK previously let a retry run go unbounded — Go's fee
    estimate and populate helpers pass no timeout at all, and four of the JavaScript call sites set none — the run is
@@ -1050,9 +1109,19 @@ Five further behavior changes are intended and belong in the same note:
    set one of the two `maxAttempts` — gain the full retry policy, including retried `POST`s to
    `/api/v1/contracts/call`.
 4. **`408` becomes retryable and `5xx` narrows to the pinned list.** Some SDKs treat every 4xx as terminal; others
-   already retry `408`. `501`, `505`, `506`, `507`, `508`, `510` and `511` stop being retried.
+   already retry `408`. `501`, `505`, `506`, `507`, `508`, `510` and `511` stop being retried. For the browser
+   `AddressBookQuery` this is a **tightening**, not a loosening: it retries every non-2xx today, so `400` and `404`
+   stop being retried and start failing on the first attempt. That call site also gains a total bound where it has
+   none, which makes it the row most likely to change observable behaviour in any SDK.
 5. **`Client.close()` can now block** for up to the grace period while in-flight mirror reads drain, in runtimes that
    can block. It could not before, because nothing owned the HTTP client.
+6. **One call site migrates in two steps.** The browser `AddressBookQuery` derives its own scheme, host, port and
+   `/api/v1` prefix from the mirror node's address rather than reading the client's REST base URL, so adopting
+   `MirrorNodeRestPath` and the base-URL selection rule is a rewrite there rather than a substitution — and it is the
+   network bootstrap path for the web and React Native clients, so the blast radius of getting it wrong is the whole
+   SDK. It therefore adopts **the retry policy, the status classification and the timeout bounds first**, which is
+   where its actual defects are, and **the base-URL contract with the local-port work**, which it is blocked on
+   anyway. Every other REST call site in that SDK already funnels through one getter and migrates in one step.
 
 Two further changes are observable only in timing: terminal transport failures now fail after one attempt instead of
 consuming the budget, and a `Retry-After` shorter than the computed backoff shortens the wait while a longer one
