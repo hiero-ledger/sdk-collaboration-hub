@@ -158,14 +158,6 @@ HttpTransportConfiguration {
     @@immutable @@min(0) @@default(5) maxRedirects: uint16
     @@immutable @@min(1) @@default(33554432) maxResponseBytes: int64
     @@immutable defaultHeaders: map<string, string>
-
-    @@static
-    HttpTransportConfiguration defaults()
-
-    HttpTransportConfiguration withConnectTimeout(@@min(0) connectTimeout: duration)
-    HttpTransportConfiguration withMaxRedirects(@@min(0) maxRedirects: uint16)
-    HttpTransportConfiguration withMaxResponseBytes(@@min(1) maxResponseBytes: int64)
-    HttpTransportConfiguration withDefaultHeaders(defaultHeaders: map<string, string>)
 }
 ```
 
@@ -439,37 +431,22 @@ MirrorNodeHttpRetryPolicy {
     @@immutable @@min(0) @@default(250ms) initialBackoff: duration
     @@immutable @@min(0) @@default(8s) maxBackoff: duration
     @@immutable @@default([408, 429, 500, 502, 503, 504]) retryableStatusCodes: list<uint16>
-
-    @@static
-    MirrorNodeHttpRetryPolicy defaults()
-
-    MirrorNodeHttpRetryPolicy withMaxAttempts(@@min(1) maxAttempts: uint16)
-    MirrorNodeHttpRetryPolicy withPerAttemptTimeout(@@min(0) perAttemptTimeout: duration)
-    MirrorNodeHttpRetryPolicy withTotalDeadline(@@min(0) totalDeadline: duration)
-    MirrorNodeHttpRetryPolicy withInitialBackoff(@@min(0) initialBackoff: duration)
-    MirrorNodeHttpRetryPolicy withMaxBackoff(@@min(0) maxBackoff: duration)
-    MirrorNodeHttpRetryPolicy withRetryableStatusCodes(retryableStatusCodes: list<uint16>)
 }
 ```
 
-> <a id="fully-defaulted-construction"></a>**`defaults()` and `withX` are the only sanctioned way to build one, and
-> that is deliberate.** (`default` is a reserved word in Java and in C++, so the obvious spelling does not compile in
-> two of the seven target languages.) `@@default` on an `@@immutable` field is well defined in a language with
-> builders or object spread and undefined in a language whose value types have zero values. In Go,
-> `MirrorNodeHttpRetryPolicy{MaxAttempts: 5}` yields `perAttemptTimeout = 0`, `initialBackoff = maxBackoff = 0` and
-> `retryableStatusCodes = nil` — a caller who asked for five attempts gets five attempts that never retry, silently.
-> Derivation from `defaults()` makes that state unreachable, and it needs no builder type: neither the Java nor the
-> JavaScript SDK contains a single builder for its own types.
+> <a id="fully-defaulted-construction"></a>**No construction or derivation methods are declared**, because the right
+> shape differs by language — a builder, optional constructor parameters, object spread, copy-returning methods. The
+> `@@default` annotations are normative; how an SDK exposes them is not. Two things must hold, for this type and for
+> `http.HttpTransportConfiguration` and `MirrorNodeHttpConfig`:
 >
-> **The same model applies to all three configuration types** — `http.HttpTransportConfiguration`,
-> `MirrorNodeHttpRetryPolicy` and `MirrorNodeHttpConfig`. `defaults()` returns an instance with every field at its
-> declared default; each `withX` returns a **new** instance with one field changed, leaves every other field as it
-> was, does not mutate the receiver, and validates the value it is given. Naming follows each language's guideline —
-> `WithMaxAttempts` in Go, `with_max_attempts` in Rust — but the model does not vary.
+> 1. An instance with every field at its default is obtainable, as is a copy of one with a single field changed and
+>    the rest untouched.
+> 2. **No construction path yields a partially-defaulted instance.** In a language with zero-valued structs,
+>    `MirrorNodeHttpRetryPolicy{maxAttempts: 5}` would otherwise give five attempts that never retry — zero backoff
+>    and an empty retryable set.
 >
-> `MirrorNodeHttpConfig.withRequestHeader` adds or replaces a single header and keeps the rest, which is why no
-> `addMirrorNodeRequestHeader` is needed on `Client`. It runs the same reserved-key validation as
-> `withRequestHeaders`.
+> Setting one request header is derivation like any other, so `Client` needs nothing beyond the two methods above.
+> An SDK may still add convenience API of its own: this document declares the minimum surface, not the maximum.
 
 Three properties of this type are decisions rather than defaults.
 
@@ -546,15 +523,6 @@ MirrorNodeHttpConfig {
     @@immutable transportConfiguration: http.HttpTransportConfiguration
     @@immutable retryPolicy: MirrorNodeHttpRetryPolicy
     @@immutable requestHeaders: map<string, string>
-
-    @@static
-    MirrorNodeHttpConfig defaults()
-
-    MirrorNodeHttpConfig withTransport(@@nullable transport: http.HttpTransport)
-    MirrorNodeHttpConfig withTransportConfiguration(transportConfiguration: http.HttpTransportConfiguration)
-    MirrorNodeHttpConfig withRetryPolicy(retryPolicy: MirrorNodeHttpRetryPolicy)
-    MirrorNodeHttpConfig withRequestHeaders(requestHeaders: map<string, string>)
-    MirrorNodeHttpConfig withRequestHeader(name: string, value: string)
 }
 ```
 
@@ -575,9 +543,8 @@ did not have.
 4. **`transportConfiguration` is ignored when `transport` is non-null.** It configures the transport the SDK would
    have built; an injected one brings its own connect timeout, redirect bound and body cap.
 
-How this type is constructed and derived follows whatever is settled for
-[`MirrorNodeHttpRetryPolicy`](#mirrornodehttpretrypolicy), including when one is nested inside the other. Its
-`defaults()` returns an instance with every field at its declared default.
+Construction and derivation follow the [same four requirements](#fully-defaulted-construction) as the other two
+configuration types, including when one is nested inside another.
 
 ---
 
@@ -1226,6 +1193,9 @@ gRPC retry policy.
 31. Given a `POST` with a body and an endpoint returning `503` then `200`, when it is retried, then the body is
     replayed byte-for-byte.
 32. Given `maxAttempts` of 0, when a call is made, then it is rejected as invalid rather than silently doing nothing.
+32a. Given a retry policy built by changing only `maxAttempts`, when its other fields are read, then each holds its
+    declared default — and no construction path the SDK exposes produces a policy with any field unset. The same
+    holds for `HttpTransportConfiguration` and `MirrorNodeHttpConfig`.
 
 **Paths and pagination**
 
@@ -1299,8 +1269,8 @@ mid-response, or count connection-pool instances. That splits this plan in two:
 - **TCK-suitable** — observable through the public API against a controllable HTTP endpoint: 2, 3, 8, 9, 17, 19,
   20, 22, 23, 24, 25, 26, 28, 29, 31, 36, 37, 38, 38a, 44, 49, 51, 52, 54.
 - **SDK-local unit tests** — require transport injection, socket control, raw header access, or pool inspection: 1,
-  4, 5, 6, 7, 10, 11, 12, 13, 14, 14a, 15, 16, 18, 21, 27, 30, 32, 33, 34, 35, 39, 40, 41, 42, 43, 45, 46, 47, 48,
-  50, 50a, 55.
+  4, 5, 6, 7, 10, 11, 12, 13, 14, 14a, 15, 16, 18, 21, 27, 30, 32, 32a, 33, 34, 35, 39, 40, 41, 42, 43, 45, 46, 47,
+  48, 50, 50a, 55.
 - **Language-specific:** 53 (Java/Android).
 - **Profile-bound**, each with its constrained-profile form stated inline above: 8 and 9 (redirect bound), 54
   (streaming body cap), 4 and 5 (error granularity), 7 (connect bound — browser and React Native only), 12 (drain),
@@ -1360,46 +1330,48 @@ client.setMirrorNodeHttpConfig(client.getMirrorNodeHttpConfig()
 
 ### Example 3: tighten the bounds for a latency-sensitive service
 
+The same configuration in three SDKs, each spelled the way that language builds values. **These are illustrations,
+not declarations.**
+
+Java, with a builder:
+
 ```java
-client.setMirrorNodeHttpConfig(client.getMirrorNodeHttpConfig()
-    .withTransportConfiguration(client.getMirrorNodeHttpConfig().transportConfiguration()
-        .withConnectTimeout(Duration.ofSeconds(2)))
-    .withRetryPolicy(MirrorNodeHttpRetryPolicy.defaults()
-        .withMaxAttempts(5)
-        .withPerAttemptTimeout(Duration.ofSeconds(3))
-        .withTotalDeadline(Duration.ofSeconds(15)))
-    .withRequestHeader("Authorization", "Bearer " + token));
+client.setMirrorNodeHttpConfig(
+    MirrorNodeHttpConfig.builder(client.getMirrorNodeHttpConfig())
+        .transportConfiguration(b -> b.connectTimeout(Duration.ofSeconds(2)))
+        .retryPolicy(b -> b.maxAttempts(5)
+                           .perAttemptTimeout(Duration.ofSeconds(3))
+                           .totalDeadline(Duration.ofSeconds(15)))
+        .requestHeader("Authorization", "Bearer " + token)
+        .build());
 ```
 
-The same lines in Go and TypeScript, to show the derivation carries:
+Go, with copy-returning methods:
 
 ```go
 cfg := client.GetMirrorNodeHttpConfig()
 client.SetMirrorNodeHttpConfig(cfg.
     WithTransportConfiguration(cfg.TransportConfiguration().WithConnectTimeout(2 * time.Second)).
-    WithRetryPolicy(hiero.DefaultMirrorNodeHttpRetryPolicy().
+    WithRetryPolicy(cfg.RetryPolicy().
         WithMaxAttempts(5).
         WithPerAttemptTimeout(3 * time.Second).
         WithTotalDeadline(15 * time.Second)))
 ```
 
+TypeScript, with optional parameters over the current value:
+
 ```typescript
 const cfg = client.getMirrorNodeHttpConfig();
-client.setMirrorNodeHttpConfig(
-    cfg
-        .withTransportConfiguration(cfg.transportConfiguration.withConnectTimeout(2_000))
-        .withRetryPolicy(
-            MirrorNodeHttpRetryPolicy.defaults()
-                .withMaxAttempts(5)
-                .withPerAttemptTimeout(3_000)
-                .withTotalDeadline(15_000),
-        ),
-);
+client.setMirrorNodeHttpConfig({
+    ...cfg,
+    transportConfiguration: { ...cfg.transportConfiguration, connectTimeout: 2_000 },
+    retryPolicy: { ...cfg.retryPolicy, maxAttempts: 5, perAttemptTimeout: 3_000, totalDeadline: 15_000 },
+});
 ```
 
-> Deriving from the current config, rather than writing a literal, is what keeps every field the caller did not name
-> at its existing value — `set` replaces rather than merges, so a literal naming only `retryPolicy` would reset the
-> rest.
+> All three start from the current configuration rather than a bare literal, which is what keeps the fields the
+> caller did not name at their existing values — `set` replaces rather than merges. In the TypeScript form the
+> spread is doing that work, and omitting it would reset every unnamed field.
 
-> Method and accessor naming should follow each language's best-practice guideline. Go exposes
+> Method and accessor naming follows each language's best-practice guideline. Go exposes
 > `SetMirrorNodeHttpConfig`; Rust uses snake_case; TypeScript/JavaScript use `setMirrorNodeHttpConfig`.
