@@ -96,6 +96,29 @@ ContractId extends Address {
 FileId extends Address {
 }
 
+TokenId extends common.Address {
+}
+
+TopicId extends common.Address {
+}
+
+abstraction Page<$$T> {
+    @@immutable data: list<$$T>
+    @@immutable size: int32
+    @@immutable pageIndex: int32
+
+    bool hasNext()
+    bool isFirst()
+
+    @@async
+    @@throws(mirror-node-error)
+    Page<$$T> next()
+
+    @@async
+    @@throws(mirror-node-error)
+    Page<$$T> first()
+}
+
 // factory methods of AccountId that should be added to the namespace in the best language dependent way
 
 // Parses AccountId from string format: "shard.realm.num" or "shard.realm.num-checksum"
