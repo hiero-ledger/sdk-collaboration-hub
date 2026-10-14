@@ -51,9 +51,9 @@ HBarExchangeRate {
     bool isExpired()
 }
 
-// Represents a specific ledger instance
-Ledger {
-    @@immutable id: bytes // identifier of the ledger
+// Represents a specific network instance (e.g. Hedera mainnet, Hedera testnet, a custom Hiero network)
+Network {
+    @@immutable id: bytes // identifier of the network, as returned by the consensus node
     @@immutable @@nullable name: string // human readable name of the network
 }
 
@@ -77,7 +77,7 @@ abstraction Address {
     @@immutable checksum: string // checksum of the address
     
     // Validates the checksum of the address
-    bool validateChecksum(ledger: Ledger)
+    bool validateChecksum(network: Network)
     
     // returns address in format "shard.realm.num"
     string toString()
@@ -107,6 +107,10 @@ FileId extends Address {
 ## Questions & Comments
 
 - [@hendrikebbers](https://github.com/hendrikebbers): Should we rename `Ledger` to `Network`?
+  **Resolved**: Renamed to `Network`. Developer experience is a V3 design principle, and "Network" is immediately
+  understood by any developer regardless of DLT background. It is also consistent with the naming already used
+  in the `config` namespace (`NetworkSetting`, `getNetworkSetting`, `registerNetworkSetting`). All PoC authors
+  referring to `common.Ledger` should update to `common.Network`.
 - [@hendrikebbers](https://github.com/hendrikebbers): Do we want an abstraction for currency? HBAR is the only one for
   now and can be seen as Hedera specific.
 - [@hendrikebbers](https://github.com/hendrikebbers): Do we want to have separate types for `AccountId`, `ContractId`
