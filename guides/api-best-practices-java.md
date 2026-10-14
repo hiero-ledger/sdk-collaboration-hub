@@ -2662,8 +2662,9 @@ src/
 
 ## Namespace Mapping
 
-The meta-language uses namespaces to group related types and functionality. In Java, namespaces map to a combination of
-**packages** and **JPMS modules**.
+The meta-language uses namespaces to group related types and functionality. In Java, each namespace maps to a **Java
+package**. A Java module may contain one or more namespaces. It is not required to create a separate module for each
+namespace.
 
 ### Namespace Concept
 
@@ -2689,10 +2690,8 @@ enum TransactionStatus {
 
 ### Java Implementation of Namespaces
 
-Namespaces are implemented using:
-
-1. **Java Package** - for code organization (`org.hiero.transactions`)
-2. **JPMS Module** - for encapsulation and dependency management
+Each namespace is implemented as a **Java Package** for code organization (e.g., `org.hiero.transactions`). One or more
+namespace packages may reside within the same JPMS module for encapsulation and dependency management.
 
 **Package Structure**:
 
