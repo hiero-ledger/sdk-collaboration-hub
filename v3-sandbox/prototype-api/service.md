@@ -7,4 +7,16 @@ The idea is to make it easier to use the SDK and to allow a better integration i
 
 ```
 namespace enterprise.service
+
+Page<T> {
+  @immutable pageIndex:int32;
+  @immutable size:int32;
+  @immutable data:list<T>;
+  @immutable hasNext:boolean;
+  @immutable isFirst:boolean;
+  
+  @async Page<T> next();
+  @async Page<T> first();
+}
+
 ```
