@@ -18,8 +18,19 @@ Param<$$LangType, $$SolidityType> {
     @@immutable supplier:ParamSupplier<$$SolidityType>
 }
 
+// Holds the ABI-encoded return value of a smart contract call.
+// Accessors decode by position; index 0 is the first return value in the Solidity signature.
+// All accessors are @@nullable — they return null when the value at that index is absent or is
+// a different Solidity type than requested.
 ContractCallResult {
-    //TODO: Provide a good and extentsible way to receive 0-N of the possible return types
+    @@immutable rawResult: bytes                           // raw ABI-encoded bytes from the network response
+
+    @@nullable string getString(index: int32)              // decodes a Solidity string return value
+    @@nullable bytes getBytes(index: int32)                // decodes a Solidity bytes return value
+    @@nullable int64 getInt64(index: int32)                // decodes a Solidity int64 return value
+    @@nullable uint64 getUint64(index: int32)              // decodes a Solidity uint64 return value
+    @@nullable bool getBool(index: int32)                  // decodes a Solidity bool return value
+    @@nullable common.Address getAddress(index: int32)     // decodes a Solidity address return value
 }
 
 SmartContractService {
@@ -46,3 +57,10 @@ Param<int8> int8(value:int8)
 Param<uint256> uint256(value:uint256)
 Param<int256> int256(value:int256)
 ```
+
+## Questions & Comments
+
+- Should `ContractCallResult` expose accessors by name (e.g. `getString(name: string)`) in addition to by index, using the ABI JSON attached to the call? Named access requires the caller to supply the ABI, which adds complexity but improves readability.
+- How should tuple and fixed/dynamic array return types be handled? A `getBytes` fallback lets callers decode them manually, but a typed `getArray` or `getTuple` accessor would be cleaner in languages that support it.
+- `uint64` is the largest unsigned integer type that maps cleanly across all 7 target languages. Solidity `uint256` and `int256` appear in the `//TODO` factory methods above; the same gap exists for return values. Should `ContractCallResult` expose a `BigInteger`-style accessor, or leave wide integers to `rawResult`?
+- Is `rawResult` always standard ABI encoding, or do custom precompiles return non-ABI-encoded bytes? If the latter, callers using `rawResult` directly may need to know which encoding to expect.
