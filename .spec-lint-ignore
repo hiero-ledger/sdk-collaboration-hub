@@ -1,0 +1,5 @@
+# Spec lint ignore patterns (repo-relative globs)
+# Keep this list minimal to avoid masking real regressions.
+#
+# Example:
+# proposals/hips/hip-XXXX.md
