@@ -96,12 +96,47 @@ ContractId extends Address {
 FileId extends Address {
 }
 
+// TopicId identifies a Hedera Consensus Service topic.
+TopicId extends Address {
+}
+
+// TokenId identifies a Hedera Token Service token.
+TokenId extends Address {
+}
+
+// ScheduleId identifies a scheduled transaction.
+ScheduleId extends Address {
+}
+
+// NodeId identifies a consensus node. Note that node IDs are assigned sequentially by the network
+// and do not follow the shard.realm.num format — only the num field is meaningful.
+NodeId extends Address {
+}
+
 // factory methods of AccountId that should be added to the namespace in the best language dependent way
 
 // Parses AccountId from string format: "shard.realm.num" or "shard.realm.num-checksum"
 // @@throws(illegal-format) if format is invalid, values are negative, or parsing fails
 // Supports optional checksum suffix after dash
 @@throws(illegal-format) AccountId fromString(accountId: string)
+
+// Parses ContractId from string format: "shard.realm.num" or "shard.realm.num-checksum"
+@@throws(illegal-format) ContractId fromString(contractId: string)
+
+// Parses FileId from string format: "shard.realm.num" or "shard.realm.num-checksum"
+@@throws(illegal-format) FileId fromString(fileId: string)
+
+// Parses TopicId from string format: "shard.realm.num" or "shard.realm.num-checksum"
+@@throws(illegal-format) TopicId fromString(topicId: string)
+
+// Parses TokenId from string format: "shard.realm.num" or "shard.realm.num-checksum"
+@@throws(illegal-format) TokenId fromString(tokenId: string)
+
+// Parses ScheduleId from string format: "shard.realm.num" or "shard.realm.num-checksum"
+@@throws(illegal-format) ScheduleId fromString(scheduleId: string)
+
+// Parses NodeId from string format: num (e.g. "3") or "0.0.num"
+@@throws(illegal-format) NodeId fromString(nodeId: string)
 ```
 
 ## Questions & Comments
