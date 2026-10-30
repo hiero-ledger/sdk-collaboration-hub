@@ -48,5 +48,15 @@ set<TransactionSupport> getAllTransactionSupports() // returns all TransactionSu
 ## Questions & Comments
 
 - [@hendrikebbers](https://github.com/hendrikebbers): Do we have classes like `TransactionBody.Builder` for every language in the generated proto files?
+
 - [@hendrikebbers](https://github.com/hendrikebbers): Is `MethodDescriptor` specific for Java or is it the same for all languages?
+
+  **Decision:** `grpc.MethodDescriptor` is cross-language. It is defined as a portable value type
+  with `serviceName: string` and `methodName: string`. See [grpc.md](grpc.md) for the full rationale.
+
 - [@hendrikebbers](https://github.com/hendrikebbers): Can we provide all information needed for `MethodDescriptor` in a custom complex type and by doing so remove the dependency to `grpc` in the public API?
+
+  **Decision:** Yes — this is exactly what `grpc.MethodDescriptor` does. The public SPI uses only
+  this custom type. Language-specific gRPC runtime types (e.g. `io.grpc.MethodDescriptor` in Java)
+  are constructed inside the transport layer from these two string fields and are not part of the
+  public API.
