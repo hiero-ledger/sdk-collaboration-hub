@@ -18,7 +18,7 @@ constant HEDERA_TESTNET_IDENTIFIER:string = "hedera-testnet" // identifier for t
 // The full configuration to connect to a specific network
 NetworkSetting {
  
-    @@immutable ledger: common.Ledger // the definition of the ledger
+    @@immutable network: common.Network // the network this setting connects to
    
     // Returns an immutable set of consensus nodes
     // Modifications to the returned set do not affect the original
